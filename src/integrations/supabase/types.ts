@@ -333,6 +333,75 @@ export type Database = {
         }
         Relationships: []
       }
+      job_document_profiles: {
+        Row: {
+          created_at: string
+          id: string
+          job_document_id: string
+          profile_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          job_document_id: string
+          profile_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          job_document_id?: string
+          profile_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "job_document_profiles_job_document_id_fkey"
+            columns: ["job_document_id"]
+            isOneToOne: false
+            referencedRelation: "job_documents"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "job_document_profiles_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      job_documents: {
+        Row: {
+          category: Database["public"]["Enums"]["job_category"]
+          created_at: string
+          created_by: string | null
+          file_name: string | null
+          file_url: string | null
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          category: Database["public"]["Enums"]["job_category"]
+          created_at?: string
+          created_by?: string | null
+          file_name?: string | null
+          file_url?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          category?: Database["public"]["Enums"]["job_category"]
+          created_at?: string
+          created_by?: string | null
+          file_name?: string | null
+          file_url?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       payments: {
         Row: {
           actual_payment_date: string | null
@@ -816,6 +885,7 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "user"
+      job_category: "Admin" | "Prothèse"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -944,6 +1014,7 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user"],
+      job_category: ["Admin", "Prothèse"],
     },
   },
 } as const
