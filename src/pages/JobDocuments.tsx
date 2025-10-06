@@ -29,7 +29,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { toast } from "sonner";
-import { ArrowLeft, Plus, Trash2, FileText } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, FileText, Edit } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 
 type JobCategory = "Admin" | "Prothèse";
@@ -58,10 +58,14 @@ const JobDocuments = () => {
   const [documents, setDocuments] = useState<JobDocument[]>([]);
   const [profiles, setProfiles] = useState<Profile[]>([]);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+  const [editingDoc, setEditingDoc] = useState<JobDocument | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     category: "" as JobCategory,
     selectedProfiles: [] as string[],
+    fileUrl: "",
+    fileName: "",
   });
 
   useEffect(() => {
@@ -170,6 +174,8 @@ const JobDocuments = () => {
           name: formData.name,
           category: formData.category,
           created_by: user?.id,
+          file_url: formData.fileUrl || null,
+          file_name: formData.fileName || null,
         })
         .select()
         .single();
@@ -189,7 +195,7 @@ const JobDocuments = () => {
 
       toast.success("Fiche de poste créée avec succès");
       setIsDialogOpen(false);
-      setFormData({ name: "", category: "" as JobCategory, selectedProfiles: [] });
+      setFormData({ name: "", category: "" as JobCategory, selectedProfiles: [], fileUrl: "", fileName: "" });
       fetchDocuments();
     } catch (error) {
       console.error("Error creating document:", error);
@@ -223,6 +229,77 @@ const JobDocuments = () => {
         ? prev.selectedProfiles.filter(id => id !== profileId)
         : [...prev.selectedProfiles, profileId]
     }));
+  };
+
+  const handleEdit = (doc: JobDocument) => {
+    setEditingDoc(doc);
+    setFormData({
+      name: doc.name,
+      category: doc.category,
+      selectedProfiles: doc.tagged_profiles?.map(p => p.id) || [],
+      fileUrl: doc.file_url || "",
+      fileName: doc.file_name || "",
+    });
+    setIsEditDialogOpen(true);
+  };
+
+  const handleUpdate = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!editingDoc) return;
+
+    if (!formData.name || !formData.category) {
+      toast.error("Veuillez remplir tous les champs requis");
+      return;
+    }
+
+    if (formData.selectedProfiles.length === 0) {
+      toast.error("Veuillez sélectionner au moins un profil");
+      return;
+    }
+
+    try {
+      const { error: docError } = await supabase
+        .from("job_documents")
+        .update({
+          name: formData.name,
+          category: formData.category,
+          file_url: formData.fileUrl || null,
+          file_name: formData.fileName || null,
+        })
+        .eq("id", editingDoc.id);
+
+      if (docError) throw docError;
+
+      // Delete existing profile links
+      const { error: deleteError } = await supabase
+        .from("job_document_profiles")
+        .delete()
+        .eq("job_document_id", editingDoc.id);
+
+      if (deleteError) throw deleteError;
+
+      // Insert new profile links
+      const profileLinks = formData.selectedProfiles.map(profileId => ({
+        job_document_id: editingDoc.id,
+        profile_id: profileId,
+      }));
+
+      const { error: linkError } = await supabase
+        .from("job_document_profiles")
+        .insert(profileLinks);
+
+      if (linkError) throw linkError;
+
+      toast.success("Fiche mise à jour avec succès");
+      setIsEditDialogOpen(false);
+      setEditingDoc(null);
+      setFormData({ name: "", category: "" as JobCategory, selectedProfiles: [], fileUrl: "", fileName: "" });
+      fetchDocuments();
+    } catch (error) {
+      console.error("Error updating document:", error);
+      toast.error("Erreur lors de la mise à jour");
+    }
   };
 
   if (loading) {
@@ -303,6 +380,30 @@ const JobDocuments = () => {
                     </Select>
                   </div>
 
+                   <div className="space-y-2">
+                    <Label htmlFor="fileUrl">Lien du document</Label>
+                    <Input
+                      id="fileUrl"
+                      value={formData.fileUrl}
+                      onChange={(e) =>
+                        setFormData({ ...formData, fileUrl: e.target.value })
+                      }
+                      placeholder="https://..."
+                    />
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="fileName">Nom du fichier (optionnel)</Label>
+                    <Input
+                      id="fileName"
+                      value={formData.fileName}
+                      onChange={(e) =>
+                        setFormData({ ...formData, fileName: e.target.value })
+                      }
+                      placeholder="Ex: Guide prothésiste.pdf"
+                    />
+                  </div>
+
                   <div className="space-y-2">
                     <Label>Profils autorisés * (au moins 1)</Label>
                     <div className="border rounded-md p-4 max-h-60 overflow-y-auto space-y-2">
@@ -354,31 +455,55 @@ const JobDocuments = () => {
                         Catégorie: {doc.category}
                       </CardDescription>
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      onClick={() => handleDelete(doc.id)}
-                    >
-                      <Trash2 className="h-4 w-4 text-destructive" />
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleEdit(doc)}
+                      >
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDelete(doc.id)}
+                      >
+                        <Trash2 className="h-4 w-4 text-destructive" />
+                      </Button>
+                    </div>
                   </div>
                 </CardHeader>
                 <CardContent>
-                  <div className="text-sm">
-                    <p className="font-semibold mb-2">Profils autorisés:</p>
-                    <div className="flex flex-wrap gap-2">
-                      {doc.tagged_profiles && doc.tagged_profiles.length > 0 ? (
-                        doc.tagged_profiles.map((profile) => (
-                          <span
-                            key={profile.id}
-                            className="px-2 py-1 bg-secondary text-secondary-foreground rounded-md text-xs"
-                          >
-                            {profile.full_name || profile.email}
-                          </span>
-                        ))
-                      ) : (
-                        <span className="text-muted-foreground">Aucun profil</span>
-                      )}
+                  <div className="space-y-4 text-sm">
+                    {doc.file_url && (
+                      <div>
+                        <p className="font-semibold mb-1">Document:</p>
+                        <a
+                          href={doc.file_url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-primary hover:underline"
+                        >
+                          {doc.file_name || doc.file_url}
+                        </a>
+                      </div>
+                    )}
+                    <div>
+                      <p className="font-semibold mb-2">Profils autorisés:</p>
+                      <div className="flex flex-wrap gap-2">
+                        {doc.tagged_profiles && doc.tagged_profiles.length > 0 ? (
+                          doc.tagged_profiles.map((profile) => (
+                            <span
+                              key={profile.id}
+                              className="px-2 py-1 bg-secondary text-secondary-foreground rounded-md text-xs"
+                            >
+                              {profile.full_name || profile.email}
+                            </span>
+                          ))
+                        ) : (
+                          <span className="text-muted-foreground">Aucun profil</span>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </CardContent>
@@ -386,6 +511,100 @@ const JobDocuments = () => {
             ))
           )}
         </div>
+
+        {/* Edit Dialog */}
+        <Dialog open={isEditDialogOpen} onOpenChange={setIsEditDialogOpen}>
+          <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+            <DialogHeader>
+              <DialogTitle>Modifier la fiche de poste</DialogTitle>
+              <DialogDescription>
+                Modifiez les informations et les profils autorisés
+              </DialogDescription>
+            </DialogHeader>
+            <form onSubmit={handleUpdate}>
+              <div className="space-y-4 py-4">
+                <div className="space-y-2">
+                  <Label htmlFor="edit-name">Nom de la fiche *</Label>
+                  <Input
+                    id="edit-name"
+                    value={formData.name}
+                    onChange={(e) =>
+                      setFormData({ ...formData, name: e.target.value })
+                    }
+                    placeholder="Ex: Prothésiste CAD/CAM"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="edit-category">Catégorie *</Label>
+                  <Select
+                    value={formData.category}
+                    onValueChange={(value: JobCategory) =>
+                      setFormData({ ...formData, category: value })
+                    }
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Sélectionnez une catégorie" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Admin">Admin</SelectItem>
+                      <SelectItem value="Prothèse">Prothèse</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="edit-fileUrl">Lien du document</Label>
+                  <Input
+                    id="edit-fileUrl"
+                    value={formData.fileUrl}
+                    onChange={(e) =>
+                      setFormData({ ...formData, fileUrl: e.target.value })
+                    }
+                    placeholder="https://..."
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="edit-fileName">Nom du fichier (optionnel)</Label>
+                  <Input
+                    id="edit-fileName"
+                    value={formData.fileName}
+                    onChange={(e) =>
+                      setFormData({ ...formData, fileName: e.target.value })
+                    }
+                    placeholder="Ex: Guide prothésiste.pdf"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <Label>Profils autorisés * (au moins 1)</Label>
+                  <div className="border rounded-md p-4 max-h-60 overflow-y-auto space-y-2">
+                    {profiles.map((profile) => (
+                      <div key={profile.id} className="flex items-center space-x-2">
+                        <Checkbox
+                          id={`edit-${profile.id}`}
+                          checked={formData.selectedProfiles.includes(profile.id)}
+                          onCheckedChange={() => toggleProfileSelection(profile.id)}
+                        />
+                        <label
+                          htmlFor={`edit-${profile.id}`}
+                          className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+                        >
+                          {profile.full_name || profile.email}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <DialogFooter>
+                <Button type="submit">Mettre à jour</Button>
+              </DialogFooter>
+            </form>
+          </DialogContent>
+        </Dialog>
       </div>
     </div>
   );
