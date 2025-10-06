@@ -1,51 +1,27 @@
 
-import { useLocation, Link } from "react-router-dom";
-import { useEffect } from "react";
-import { Button } from "@/components/ui/button";
-import Navigation from "@/components/Navigation";
+import { useNavigate } from "react-router-dom";
+import { Home } from "lucide-react";
 
 const NotFound = () => {
-  const location = useLocation();
-
-  useEffect(() => {
-    console.error(
-      "404 Error: User attempted to access non-existent route:",
-      location.pathname
-    );
-  }, [location.pathname]);
+  const navigate = useNavigate();
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-pink-50 via-white to-orange-50">
-      <Navigation />
-      <div className="pt-28 flex items-center justify-center min-h-[calc(100vh-7rem)]">
-        <div className="text-center p-8 max-w-md">
-          <div className="mb-8">
-            <h1 className="text-6xl font-bold text-pink-600 mb-4">404</h1>
-            <h2 className="text-2xl font-bold text-gray-900 mb-4">
-              Page Not Found
-            </h2>
-            <p className="text-gray-600 mb-6">
-              Oops! The page you're looking for doesn't exist. It might have been moved, deleted, or you entered the wrong URL.
-            </p>
-          </div>
-          
-          <div className="space-y-3">
-            <Button asChild className="w-full">
-              <Link to="/">Go to Home</Link>
-            </Button>
-            <Button variant="outline" asChild className="w-full">
-              <Link to="/profile">My Profile</Link>
-            </Button>
-            <Button variant="ghost" onClick={() => window.history.back()} className="w-full">
-              Go Back
-            </Button>
-          </div>
-          
-          <div className="mt-8 text-sm text-gray-500">
-            <p>If you think this is a mistake, please contact support.</p>
-            <p className="mt-1">Path: <code className="bg-gray-100 px-2 py-1 rounded">{location.pathname}</code></p>
-          </div>
-        </div>
+    <div className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-accent/10 flex items-center justify-center p-6">
+      <div className="text-center">
+        <h1 className="text-9xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+          404
+        </h1>
+        <p className="text-2xl font-semibold mt-4 mb-2">Page non trouvée</p>
+        <p className="text-muted-foreground mb-8">
+          La page que vous recherchez n'existe pas ou a été déplacée.
+        </p>
+        <button
+          onClick={() => navigate("/")}
+          className="inline-flex items-center gap-2 bg-gradient-to-r from-primary to-accent hover:opacity-90 text-white font-semibold py-3 px-6 rounded-lg transition-opacity"
+        >
+          <Home className="w-5 h-5" />
+          Retour à l'accueil
+        </button>
       </div>
     </div>
   );

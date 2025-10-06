@@ -1,219 +1,141 @@
-
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "@/contexts/AuthContext";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { validatePassword } from "@/utils/passwordValidation";
+import { Sparkles, Loader2 } from "lucide-react";
+import { toast } from "sonner";
 
 const Auth = () => {
-  const { user, loading } = useAuth();
-  const navigate = useNavigate();
-  const { toast } = useToast();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [isLoading, setIsLoading] = useState(false);
-  const [showForgotPassword, setShowForgotPassword] = useState(false);
-  const [resetEmail, setResetEmail] = useState("");
-  const [isResetLoading, setIsResetLoading] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [isSignUp, setIsSignUp] = useState(false);
+  const navigate = useNavigate();
 
-  useEffect(() => {
-    if (user && !loading) {
-      console.log("Auth - User is authenticated, redirecting to profile");
-      navigate("/profile");
-    }
-  }, [user, loading, navigate]);
-
-  const handleForgotPassword = async (e: React.FormEvent) => {
+  const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!resetEmail) {
-      toast({
-        title: "Email Required",
-        description: "Please enter your email address",
-        variant: "destructive",
-      });
-      return;
-    }
+    setLoading(true);
 
-    setIsResetLoading(true);
     try {
-      const { error } = await supabase.auth.resetPasswordForEmail(resetEmail, {
-        redirectTo: `${window.location.origin}/auth?reset=true`,
-      });
+      if (isSignUp) {
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+        });
 
-      if (error) throw error;
+        if (error) throw error;
 
-      toast({
-        title: "Reset Email Sent",
-        description: "Check your email for password reset instructions",
-      });
-      
-      setShowForgotPassword(false);
-      setResetEmail("");
+        toast.success("Inscription réussie", {
+          description: "Vérifiez votre email pour confirmer votre compte.",
+        });
+      } else {
+        const { error } = await supabase.auth.signInWithPassword({
+          email,
+          password,
+        });
+
+        if (error) throw error;
+
+        toast.success("Connexion réussie", {
+          description: "Bienvenue sur Cuspide",
+        });
+        navigate("/");
+      }
     } catch (error: any) {
-      toast({
-        title: "Error",
+      toast.error("Erreur", {
         description: error.message,
-        variant: "destructive",
       });
     } finally {
-      setIsResetLoading(false);
+      setLoading(false);
     }
   };
-
-  const handleSignIn = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-
-    try {
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) throw error;
-
-      toast({
-        title: "Welcome back!",
-        description: "You have been signed in successfully.",
-      });
-
-      // Redirect to profile after successful sign in
-      navigate("/profile");
-    } catch (error: any) {
-      toast({
-        title: "Error",
-        description: error.message,
-        variant: "destructive",
-      });
-    }
-
-    setIsLoading(false);
-  };
-
-  const handleGoToLanding = () => {
-    navigate("/");
-  };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center px-4">
-        <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary"></div>
-      </div>
-    );
-  }
-
-  if (showForgotPassword) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 p-4 sm:p-6">
-        <Card className="w-full max-w-sm sm:max-w-md">
-          <CardHeader className="text-center space-y-2">
-            <CardTitle className="text-xl sm:text-2xl font-bold">Reset Password</CardTitle>
-            <CardDescription className="text-sm sm:text-base">Enter your email to receive reset instructions</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleForgotPassword} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="reset-email">Email</Label>
-                <Input
-                  id="reset-email"
-                  type="email"
-                  placeholder="Enter your email"
-                  value={resetEmail}
-                  onChange={(e) => setResetEmail(e.target.value)}
-                  className="h-12 text-base"
-                  autoComplete="email"
-                  required
-                />
-              </div>
-              <Button type="submit" className="w-full h-12 text-base" disabled={isResetLoading}>
-                {isResetLoading ? "Sending..." : "Send Reset Email"}
-              </Button>
-              <Button 
-                type="button" 
-                variant="outline" 
-                className="w-full h-12 text-base" 
-                onClick={() => setShowForgotPassword(false)}
-                disabled={isResetLoading}
-              >
-                Back to Sign In
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 p-4 sm:p-8">
-      <Card className="w-full max-w-sm sm:max-w-md">
-        <CardHeader className="text-center space-y-2">
-          <CardTitle className="text-xl sm:text-2xl font-bold">Bienvenue</CardTitle>
-          <CardDescription className="text-sm sm:text-base">Connexion à votre espace Cuspide</CardDescription>
-        </CardHeader>
-        <CardContent>
-          <form onSubmit={handleSignIn} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="signin-email">Email</Label>
-              <Input
-                id="signin-email"
-                type="email"
-                placeholder="Enter your email"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                className="h-12 text-base"
-                autoComplete="email"
-                autoCapitalize="none"
-                autoCorrect="off"
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="signin-password">Password</Label>
-              <Input
-                id="signin-password"
-                type="password"
-                placeholder="Enter your password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                className="h-12 text-base"
-                autoComplete="current-password"
-                required
-              />
-            </div>
-            <Button type="submit" className="w-full h-12 text-base" disabled={isLoading}>
-              {isLoading ? "Signing In..." : "Sign In"}
-            </Button>
-            <div className="text-center">
-              <Button
-                type="button"
-                variant="link"
-                onClick={() => setShowForgotPassword(true)}
-                className="text-sm text-muted-foreground hover:text-primary"
-              >
-                Forgot your password?
-              </Button>
-            </div>
-          </form>
-          
-          <div className="mt-6 pt-6 border-t border-gray-200">
-            <div className="text-center">
-              <Button
-                onClick={handleGoToLanding}
-                variant="outline"
-                className="w-full h-12 text-base"
-              >
-                Retour à l'accueil
-              </Button>
+    <div className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-accent/10 flex items-center justify-center p-6">
+      <div className="w-full max-w-md">
+        <div className="bg-card border border-border rounded-2xl shadow-2xl shadow-primary/10 p-8">
+          <div className="flex justify-center mb-8">
+            <div className="w-16 h-16 bg-gradient-to-br from-primary to-accent rounded-xl flex items-center justify-center">
+              <Sparkles className="w-10 h-10 text-white" />
             </div>
           </div>
-        </CardContent>
-      </Card>
+
+          <h1 className="text-3xl font-bold text-center mb-2 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+            Cuspide
+          </h1>
+          <p className="text-center text-muted-foreground mb-8">
+            {isSignUp ? "Créer un compte" : "Connexion à votre espace"}
+          </p>
+
+          <form onSubmit={handleAuth} className="space-y-6">
+            <div className="space-y-2">
+              <label htmlFor="email" className="block text-sm font-medium">
+                Email
+              </label>
+              <input
+                id="email"
+                type="email"
+                placeholder="votre@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="w-full px-4 py-3 border border-border rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <label htmlFor="password" className="block text-sm font-medium">
+                Mot de passe
+              </label>
+              <input
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+                className="w-full px-4 py-3 border border-border rounded-lg focus:border-primary focus:outline-none focus:ring-2 focus:ring-primary/20"
+              />
+            </div>
+
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-gradient-to-r from-primary to-accent hover:opacity-90 text-white font-semibold py-3 px-4 rounded-lg transition-opacity disabled:opacity-50"
+            >
+              {loading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  Chargement...
+                </span>
+              ) : isSignUp ? (
+                "S'inscrire"
+              ) : (
+                "Se connecter"
+              )}
+            </button>
+          </form>
+
+          <div className="mt-6 text-center">
+            <button
+              onClick={() => setIsSignUp(!isSignUp)}
+              className="text-sm text-muted-foreground hover:text-primary transition-colors"
+            >
+              {isSignUp
+                ? "Vous avez déjà un compte ? Se connecter"
+                : "Pas encore de compte ? S'inscrire"}
+            </button>
+          </div>
+
+          <div className="mt-8 pt-6 border-t border-border">
+            <button
+              onClick={() => navigate("/")}
+              className="w-full py-3 px-4 border border-border rounded-lg hover:bg-accent/10 transition-colors"
+            >
+              Retour à l'accueil
+            </button>
+          </div>
+        </div>
+      </div>
     </div>
   );
 };

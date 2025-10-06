@@ -1,7 +1,6 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
-import { Button } from "@/components/ui/button";
 import { Sparkles } from "lucide-react";
 
 const Index = () => {
@@ -39,9 +38,12 @@ const Index = () => {
             </div>
             <div className="flex items-center gap-4">
               <span className="text-sm text-muted-foreground">{user.email}</span>
-              <Button variant="outline" onClick={() => navigate("/auth")}>
+              <button
+                onClick={() => navigate("/auth")}
+                className="px-4 py-2 border border-border rounded-lg hover:bg-accent/10 transition-colors"
+              >
                 Déconnexion
-              </Button>
+              </button>
             </div>
           </div>
         </header>
@@ -98,13 +100,12 @@ const Index = () => {
         <p className="text-xl text-muted-foreground mb-8">
           Application interne pour les collaborateurs du laboratoire de prothèse dentaire
         </p>
-        <Button
-          size="lg"
+        <button
           onClick={() => navigate("/auth")}
-          className="bg-gradient-to-r from-primary to-accent hover:opacity-90 text-white font-semibold px-8 py-6 text-lg"
+          className="bg-gradient-to-r from-primary to-accent hover:opacity-90 text-white font-semibold px-8 py-4 rounded-lg text-lg transition-opacity"
         >
           Se connecter
-        </Button>
+        </button>
       </div>
     </div>
   );
