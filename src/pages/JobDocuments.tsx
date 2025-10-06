@@ -29,7 +29,7 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { toast } from "sonner";
-import { ArrowLeft, Plus, Trash2, FileText, Edit } from "lucide-react";
+import { ArrowLeft, Plus, Trash2, FileText, Edit, Upload, Link as LinkIcon } from "lucide-react";
 import { Checkbox } from "@/components/ui/checkbox";
 
 type JobCategory = "Admin" | "Prothèse";
@@ -60,12 +60,13 @@ const JobDocuments = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
   const [editingDoc, setEditingDoc] = useState<JobDocument | null>(null);
+  const [uploadingFile, setUploadingFile] = useState(false);
+  const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [formData, setFormData] = useState({
     name: "",
     category: "" as JobCategory,
     selectedProfiles: [] as string[],
     fileUrl: "",
-    fileName: "",
   });
 
   useEffect(() => {
@@ -154,6 +155,39 @@ const JobDocuments = () => {
     }
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      setSelectedFile(file);
+      // Clear file URL if file is selected
+      setFormData(prev => ({ ...prev, fileUrl: "" }));
+    }
+  };
+
+  const uploadFile = async (file: File): Promise<string | null> => {
+    try {
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
+      const filePath = `${fileName}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('job-documents')
+        .upload(filePath, file);
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage
+        .from('job-documents')
+        .getPublicUrl(filePath);
+
+      return data.publicUrl;
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      toast.error("Erreur lors de l'upload du fichier");
+      return null;
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
@@ -167,15 +201,35 @@ const JobDocuments = () => {
       return;
     }
 
+    if (!formData.fileUrl && !selectedFile) {
+      toast.error("Veuillez fournir un lien ou télécharger un fichier");
+      return;
+    }
+
     try {
+      setUploadingFile(true);
+      let fileUrl = formData.fileUrl;
+      let fileName = null;
+
+      // Upload file if selected
+      if (selectedFile) {
+        const uploadedUrl = await uploadFile(selectedFile);
+        if (!uploadedUrl) {
+          setUploadingFile(false);
+          return;
+        }
+        fileUrl = uploadedUrl;
+        fileName = selectedFile.name;
+      }
+
       const { data: docData, error: docError } = await supabase
         .from("job_documents")
         .insert({
           name: formData.name,
           category: formData.category,
           created_by: user?.id,
-          file_url: formData.fileUrl || null,
-          file_name: formData.fileName || null,
+          file_url: fileUrl,
+          file_name: fileName,
         })
         .select()
         .single();
@@ -195,11 +249,14 @@ const JobDocuments = () => {
 
       toast.success("Fiche de poste créée avec succès");
       setIsDialogOpen(false);
-      setFormData({ name: "", category: "" as JobCategory, selectedProfiles: [], fileUrl: "", fileName: "" });
+      setFormData({ name: "", category: "" as JobCategory, selectedProfiles: [], fileUrl: "" });
+      setSelectedFile(null);
       fetchDocuments();
     } catch (error) {
       console.error("Error creating document:", error);
       toast.error("Erreur lors de la création de la fiche");
+    } finally {
+      setUploadingFile(false);
     }
   };
 
@@ -238,8 +295,8 @@ const JobDocuments = () => {
       category: doc.category,
       selectedProfiles: doc.tagged_profiles?.map(p => p.id) || [],
       fileUrl: doc.file_url || "",
-      fileName: doc.file_name || "",
     });
+    setSelectedFile(null);
     setIsEditDialogOpen(true);
   };
 
@@ -258,14 +315,34 @@ const JobDocuments = () => {
       return;
     }
 
+    if (!formData.fileUrl && !selectedFile) {
+      toast.error("Veuillez fournir un lien ou télécharger un fichier");
+      return;
+    }
+
     try {
+      setUploadingFile(true);
+      let fileUrl = formData.fileUrl;
+      let fileName = editingDoc.file_name;
+
+      // Upload file if selected
+      if (selectedFile) {
+        const uploadedUrl = await uploadFile(selectedFile);
+        if (!uploadedUrl) {
+          setUploadingFile(false);
+          return;
+        }
+        fileUrl = uploadedUrl;
+        fileName = selectedFile.name;
+      }
+
       const { error: docError } = await supabase
         .from("job_documents")
         .update({
           name: formData.name,
           category: formData.category,
-          file_url: formData.fileUrl || null,
-          file_name: formData.fileName || null,
+          file_url: fileUrl,
+          file_name: fileName,
         })
         .eq("id", editingDoc.id);
 
@@ -294,11 +371,14 @@ const JobDocuments = () => {
       toast.success("Fiche mise à jour avec succès");
       setIsEditDialogOpen(false);
       setEditingDoc(null);
-      setFormData({ name: "", category: "" as JobCategory, selectedProfiles: [], fileUrl: "", fileName: "" });
+      setFormData({ name: "", category: "" as JobCategory, selectedProfiles: [], fileUrl: "" });
+      setSelectedFile(null);
       fetchDocuments();
     } catch (error) {
       console.error("Error updating document:", error);
       toast.error("Erreur lors de la mise à jour");
+    } finally {
+      setUploadingFile(false);
     }
   };
 
@@ -380,28 +460,46 @@ const JobDocuments = () => {
                     </Select>
                   </div>
 
-                   <div className="space-y-2">
+                  <div className="space-y-2">
                     <Label htmlFor="fileUrl">Lien du document</Label>
-                    <Input
-                      id="fileUrl"
-                      value={formData.fileUrl}
-                      onChange={(e) =>
-                        setFormData({ ...formData, fileUrl: e.target.value })
-                      }
-                      placeholder="https://..."
-                    />
+                    <div className="flex gap-2">
+                      <LinkIcon className="h-4 w-4 text-muted-foreground mt-3" />
+                      <Input
+                        id="fileUrl"
+                        value={formData.fileUrl}
+                        onChange={(e) => {
+                          setFormData({ ...formData, fileUrl: e.target.value });
+                          if (e.target.value) setSelectedFile(null);
+                        }}
+                        placeholder="https://..."
+                        disabled={!!selectedFile}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-4">
+                    <div className="flex-1 h-px bg-border" />
+                    <span className="text-sm text-muted-foreground">OU</span>
+                    <div className="flex-1 h-px bg-border" />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="fileName">Nom du fichier (optionnel)</Label>
-                    <Input
-                      id="fileName"
-                      value={formData.fileName}
-                      onChange={(e) =>
-                        setFormData({ ...formData, fileName: e.target.value })
-                      }
-                      placeholder="Ex: Guide prothésiste.pdf"
-                    />
+                    <Label htmlFor="file">Télécharger un fichier</Label>
+                    <div className="flex gap-2">
+                      <Upload className="h-4 w-4 text-muted-foreground mt-3" />
+                      <Input
+                        id="file"
+                        type="file"
+                        onChange={handleFileChange}
+                        disabled={!!formData.fileUrl}
+                        accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx"
+                      />
+                    </div>
+                    {selectedFile && (
+                      <p className="text-sm text-muted-foreground">
+                        Fichier sélectionné: {selectedFile.name}
+                      </p>
+                    )}
                   </div>
 
                   <div className="space-y-2">
@@ -427,7 +525,9 @@ const JobDocuments = () => {
                 </div>
 
                 <DialogFooter>
-                  <Button type="submit">Créer</Button>
+                  <Button type="submit" disabled={uploadingFile}>
+                    {uploadingFile ? "Téléchargement..." : "Créer"}
+                  </Button>
                 </DialogFooter>
               </form>
             </DialogContent>
@@ -555,26 +655,44 @@ const JobDocuments = () => {
 
                 <div className="space-y-2">
                   <Label htmlFor="edit-fileUrl">Lien du document</Label>
-                  <Input
-                    id="edit-fileUrl"
-                    value={formData.fileUrl}
-                    onChange={(e) =>
-                      setFormData({ ...formData, fileUrl: e.target.value })
-                    }
-                    placeholder="https://..."
-                  />
+                  <div className="flex gap-2">
+                    <LinkIcon className="h-4 w-4 text-muted-foreground mt-3" />
+                    <Input
+                      id="edit-fileUrl"
+                      value={formData.fileUrl}
+                      onChange={(e) => {
+                        setFormData({ ...formData, fileUrl: e.target.value });
+                        if (e.target.value) setSelectedFile(null);
+                      }}
+                      placeholder="https://..."
+                      disabled={!!selectedFile}
+                    />
+                  </div>
+                </div>
+
+                <div className="flex items-center gap-4">
+                  <div className="flex-1 h-px bg-border" />
+                  <span className="text-sm text-muted-foreground">OU</span>
+                  <div className="flex-1 h-px bg-border" />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="edit-fileName">Nom du fichier (optionnel)</Label>
-                  <Input
-                    id="edit-fileName"
-                    value={formData.fileName}
-                    onChange={(e) =>
-                      setFormData({ ...formData, fileName: e.target.value })
-                    }
-                    placeholder="Ex: Guide prothésiste.pdf"
-                  />
+                  <Label htmlFor="edit-file">Télécharger un fichier</Label>
+                  <div className="flex gap-2">
+                    <Upload className="h-4 w-4 text-muted-foreground mt-3" />
+                    <Input
+                      id="edit-file"
+                      type="file"
+                      onChange={handleFileChange}
+                      disabled={!!formData.fileUrl}
+                      accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx"
+                    />
+                  </div>
+                  {selectedFile && (
+                    <p className="text-sm text-muted-foreground">
+                      Fichier sélectionné: {selectedFile.name}
+                    </p>
+                  )}
                 </div>
 
                 <div className="space-y-2">
@@ -600,7 +718,9 @@ const JobDocuments = () => {
               </div>
 
               <DialogFooter>
-                <Button type="submit">Mettre à jour</Button>
+                <Button type="submit" disabled={uploadingFile}>
+                  {uploadingFile ? "Téléchargement..." : "Mettre à jour"}
+                </Button>
               </DialogFooter>
             </form>
           </DialogContent>
