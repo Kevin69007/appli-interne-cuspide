@@ -447,10 +447,8 @@ const Protocols = () => {
                         <SelectValue placeholder="Sélectionnez une catégorie" />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Prothèse">Prothèse</SelectItem>
                         <SelectItem value="Admin">Admin</SelectItem>
-                        <SelectItem value="Technique">Technique</SelectItem>
-                        <SelectItem value="Qualité">Qualité</SelectItem>
+                        <SelectItem value="Prothèse">Prothèse</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
@@ -642,10 +640,8 @@ const Protocols = () => {
                       <SelectValue placeholder="Sélectionnez une catégorie" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="Prothèse">Prothèse</SelectItem>
                       <SelectItem value="Admin">Admin</SelectItem>
-                      <SelectItem value="Technique">Technique</SelectItem>
-                      <SelectItem value="Qualité">Qualité</SelectItem>
+                      <SelectItem value="Prothèse">Prothèse</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
