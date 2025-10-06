@@ -153,8 +153,8 @@ const Auth = () => {
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 via-white to-purple-50 p-4 sm:p-8">
       <Card className="w-full max-w-sm sm:max-w-md">
         <CardHeader className="text-center space-y-2">
-          <CardTitle className="text-xl sm:text-2xl font-bold">Welcome Back</CardTitle>
-          <CardDescription className="text-sm sm:text-base">Sign in to your PawPets account</CardDescription>
+          <CardTitle className="text-xl sm:text-2xl font-bold">Bienvenue</CardTitle>
+          <CardDescription className="text-sm sm:text-base">Connexion à votre espace Cuspide</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSignIn} className="space-y-4">
@@ -203,15 +203,12 @@ const Auth = () => {
           
           <div className="mt-6 pt-6 border-t border-gray-200">
             <div className="text-center">
-              <p className="text-sm text-muted-foreground mb-3">
-                Don't have an account?
-              </p>
               <Button
                 onClick={handleGoToLanding}
                 variant="outline"
                 className="w-full h-12 text-base"
               >
-                Select a Pet to Sign Up
+                Retour à l'accueil
               </Button>
             </div>
           </div>
