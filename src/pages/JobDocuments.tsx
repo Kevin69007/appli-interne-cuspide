@@ -86,9 +86,12 @@ const JobDocuments = () => {
         .from("user_roles")
         .select("role")
         .eq("user_id", user.id)
-        .single();
+        .maybeSingle();
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error checking admin status:", error);
+        throw error;
+      }
       
       if (data?.role === "admin") {
         setIsAdmin(true);
