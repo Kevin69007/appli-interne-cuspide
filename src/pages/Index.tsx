@@ -60,7 +60,8 @@ const Index = () => {
             {[
               { title: "Fiches de poste", icon: "📋", path: "/fiches-de-poste" },
               { title: "Objectifs & Primes", icon: "🎯" },
-              { title: "Protocoles & Quiz", icon: "🧠" },
+              { title: "Protocoles", icon: "📝", path: "/protocoles" },
+              { title: "Quiz", icon: "🧠", path: "/quiz" },
               { title: "Commandes", icon: "🛒" },
               { title: "Congés & Mood Bar", icon: "🌴" },
               { title: "Enquêtes & Idées", icon: "💡" },

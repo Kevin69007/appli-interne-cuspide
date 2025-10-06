@@ -515,6 +515,144 @@ export type Database = {
         }
         Relationships: []
       }
+      protocol_profiles: {
+        Row: {
+          created_at: string
+          id: string
+          profile_id: string
+          protocol_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          profile_id: string
+          protocol_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          profile_id?: string
+          protocol_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "protocol_profiles_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "protocol_profiles_protocol_id_fkey"
+            columns: ["protocol_id"]
+            isOneToOne: false
+            referencedRelation: "protocols"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      protocols: {
+        Row: {
+          category: string
+          created_at: string
+          created_by: string | null
+          file_name: string | null
+          file_url: string | null
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          created_by?: string | null
+          file_name?: string | null
+          file_url?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          file_name?: string | null
+          file_url?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      quiz: {
+        Row: {
+          category: string
+          created_at: string
+          created_by: string | null
+          file_name: string | null
+          file_url: string | null
+          id: string
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          created_by?: string | null
+          file_name?: string | null
+          file_url?: string | null
+          id?: string
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          created_by?: string | null
+          file_name?: string | null
+          file_url?: string | null
+          id?: string
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      quiz_profiles: {
+        Row: {
+          created_at: string
+          id: string
+          profile_id: string
+          quiz_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          profile_id: string
+          quiz_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          profile_id?: string
+          quiz_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_profiles_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quiz_profiles_quiz_id_fkey"
+            columns: ["quiz_id"]
+            isOneToOne: false
+            referencedRelation: "quiz"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       response_blocks: {
         Row: {
           bloc_id: string

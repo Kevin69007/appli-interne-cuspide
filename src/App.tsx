@@ -7,6 +7,8 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import JobDocuments from "./pages/JobDocuments";
+import Protocols from "./pages/Protocols";
+import Quiz from "./pages/Quiz";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -34,6 +36,8 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
               <Route path="/fiches-de-poste" element={<JobDocuments />} />
+              <Route path="/protocoles" element={<Protocols />} />
+              <Route path="/quiz" element={<Quiz />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </ErrorBoundary>
