@@ -6,6 +6,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import {
   Dialog,
   DialogContent,
   DialogDescription,
@@ -430,14 +437,22 @@ const Quiz = () => {
 
                   <div className="space-y-2">
                     <Label htmlFor="category">Catégorie *</Label>
-                    <Input
-                      id="category"
+                    <Select
                       value={formData.category}
-                      onChange={(e) =>
-                        setFormData({ ...formData, category: e.target.value })
+                      onValueChange={(value) =>
+                        setFormData({ ...formData, category: value })
                       }
-                      placeholder="Ex: Prothèse, Admin"
-                    />
+                    >
+                      <SelectTrigger>
+                        <SelectValue placeholder="Sélectionnez une catégorie" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="Prothèse">Prothèse</SelectItem>
+                        <SelectItem value="Admin">Admin</SelectItem>
+                        <SelectItem value="Technique">Technique</SelectItem>
+                        <SelectItem value="Culture générale">Culture générale</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
 
                   <div className="space-y-2">
@@ -617,14 +632,22 @@ const Quiz = () => {
 
                 <div className="space-y-2">
                   <Label htmlFor="edit-category">Catégorie *</Label>
-                  <Input
-                    id="edit-category"
+                  <Select
                     value={formData.category}
-                    onChange={(e) =>
-                      setFormData({ ...formData, category: e.target.value })
+                    onValueChange={(value) =>
+                      setFormData({ ...formData, category: value })
                     }
-                    placeholder="Ex: Prothèse, Admin"
-                  />
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Sélectionnez une catégorie" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="Prothèse">Prothèse</SelectItem>
+                      <SelectItem value="Admin">Admin</SelectItem>
+                      <SelectItem value="Technique">Technique</SelectItem>
+                      <SelectItem value="Culture générale">Culture générale</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
 
                 <div className="space-y-2">
