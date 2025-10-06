@@ -1,0 +1,170 @@
+
+-- Update the collect_breeding_babies function to normalize gender to lowercase
+CREATE OR REPLACE FUNCTION public.collect_breeding_babies(breeding_pair_id_param uuid, user_id_param uuid)
+RETURNS json
+LANGUAGE plpgsql
+SECURITY DEFINER
+AS $$
+DECLARE
+  breeding_pair_record RECORD;
+  baby_record RECORD;
+  pet_match_record RECORD;
+  babies_transferred INTEGER := 0;
+  total_babies INTEGER := 0;
+  is_past_wean_date BOOLEAN := false;
+  normalized_gender TEXT;
+BEGIN
+  -- Step 1: Lock and verify breeding pair (allow completed pairs if babies exist)
+  SELECT * INTO breeding_pair_record
+  FROM breeding_pairs
+  WHERE id = breeding_pair_id_param 
+  AND user_id = user_id_param
+  AND is_born = true
+  FOR UPDATE;
+  
+  IF NOT FOUND THEN
+    RETURN json_build_object(
+      'success', false, 
+      'error', 'Breeding pair not found or not ready for collection'
+    );
+  END IF;
+  
+  -- Step 2: Check if babies exist (this is the key check now)
+  SELECT COUNT(*) INTO total_babies
+  FROM litter_babies
+  WHERE breeding_pair_id = breeding_pair_id_param;
+  
+  IF total_babies = 0 THEN
+    RETURN json_build_object(
+      'success', false, 
+      'error', 'No babies found for this breeding pair'
+    );
+  END IF;
+  
+  -- Step 3: Check if we're past the wean date
+  is_past_wean_date := NOW() >= breeding_pair_record.wean_date;
+  
+  -- Step 4: Auto-wean if past due date but not marked as weaned
+  IF is_past_wean_date AND NOT breeding_pair_record.is_weaned THEN
+    UPDATE breeding_pairs
+    SET is_weaned = true
+    WHERE id = breeding_pair_id_param;
+    
+    -- Update our local record
+    breeding_pair_record.is_weaned := true;
+  END IF;
+  
+  -- Step 5: Verify weaning is complete (either marked as weaned or past due date)
+  -- BUT allow collection if pair is already completed (emergency collection)
+  IF NOT breeding_pair_record.is_weaned AND NOT is_past_wean_date AND NOT breeding_pair_record.is_completed THEN
+    RETURN json_build_object(
+      'success', false, 
+      'error', 'Babies are still weaning. Please wait until ' || breeding_pair_record.wean_date::date
+    );
+  END IF;
+  
+  -- Step 6: Transfer each baby to user_pets
+  FOR baby_record IN 
+    SELECT * FROM litter_babies 
+    WHERE breeding_pair_id = breeding_pair_id_param
+  LOOP
+    -- Find matching pet_id (robust matching)
+    SELECT id INTO pet_match_record
+    FROM pets
+    WHERE LOWER(name) = LOWER(baby_record.breed)
+    LIMIT 1;
+    
+    -- If no exact match, find a reasonable fallback
+    IF pet_match_record IS NULL THEN
+      SELECT id INTO pet_match_record
+      FROM pets
+      WHERE LOWER(name) LIKE '%' || LOWER(SPLIT_PART(baby_record.breed, ' ', 1)) || '%'
+      LIMIT 1;
+    END IF;
+    
+    -- Absolute fallback - use first available pet
+    IF pet_match_record IS NULL THEN
+      SELECT id INTO pet_match_record
+      FROM pets
+      LIMIT 1;
+    END IF;
+    
+    -- FIX: Normalize gender to lowercase to match user_pets constraint
+    IF baby_record.breed = 'Tortie' THEN
+      normalized_gender := 'female';
+    ELSE
+      normalized_gender := LOWER(baby_record.gender);
+    END IF;
+    
+    -- Insert baby into user_pets with normalized gender
+    INSERT INTO user_pets (
+      user_id,
+      pet_id,
+      pet_name,
+      breed,
+      gender,
+      friendliness,
+      playfulness,
+      energy,
+      loyalty,
+      curiosity,
+      birthday,
+      parent1_id,
+      parent2_id,
+      description,
+      hunger,
+      water,
+      adopted_at
+    ) VALUES (
+      user_id_param,
+      pet_match_record.id,
+      baby_record.pet_name,
+      baby_record.breed,
+      normalized_gender, -- Using normalized lowercase gender
+      baby_record.friendliness,
+      baby_record.playfulness,
+      baby_record.energy,
+      baby_record.loyalty,
+      baby_record.curiosity,
+      baby_record.birthday,
+      breeding_pair_record.parent1_id,
+      breeding_pair_record.parent2_id,
+      baby_record.description,
+      100,
+      100,
+      NOW()
+    );
+    
+    babies_transferred := babies_transferred + 1;
+  END LOOP;
+  
+  -- Step 7: Clean up litter babies
+  DELETE FROM litter_babies
+  WHERE breeding_pair_id = breeding_pair_id_param;
+  
+  -- Step 8: Mark breeding pair as completed (if not already)
+  UPDATE breeding_pairs
+  SET is_completed = true
+  WHERE id = breeding_pair_id_param;
+  
+  -- Step 9: Release parents from breeding
+  UPDATE user_pets
+  SET 
+    is_for_breeding = false,
+    breeding_cooldown_until = NULL
+  WHERE id IN (breeding_pair_record.parent1_id, breeding_pair_record.parent2_id);
+  
+  RETURN json_build_object(
+    'success', true,
+    'message', 'Successfully collected ' || babies_transferred || ' babies',
+    'babies_transferred', babies_transferred
+  );
+  
+EXCEPTION
+  WHEN OTHERS THEN
+    RETURN json_build_object(
+      'success', false,
+      'error', 'Collection failed: ' || SQLERRM
+    );
+END;
+$$;
