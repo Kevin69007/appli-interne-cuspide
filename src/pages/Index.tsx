@@ -58,7 +58,7 @@ const Index = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
-              { title: "Fiches de poste", icon: "📋" },
+              { title: "Fiches de poste", icon: "📋", path: "/fiches-de-poste" },
               { title: "Objectifs & Primes", icon: "🎯" },
               { title: "Protocoles & Quiz", icon: "🧠" },
               { title: "Commandes", icon: "🛒" },
@@ -71,6 +71,7 @@ const Index = () => {
             ].map((item, index) => (
               <div
                 key={index}
+                onClick={() => item.path && navigate(item.path)}
                 className="group p-6 rounded-xl border border-border bg-card hover:border-primary hover:shadow-lg hover:shadow-primary/20 transition-all duration-300 cursor-pointer"
               >
                 <div className="text-4xl mb-4">{item.icon}</div>

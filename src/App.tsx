@@ -6,6 +6,7 @@ import ErrorBoundary from "@/components/ErrorBoundary";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
+import JobDocuments from "./pages/JobDocuments";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -32,6 +33,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/auth" element={<Auth />} />
+              <Route path="/fiches-de-poste" element={<JobDocuments />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </ErrorBoundary>
