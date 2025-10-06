@@ -86,6 +86,7 @@ const JobDocuments = () => {
         .from("user_roles")
         .select("role")
         .eq("user_id", user.id)
+        .eq("role", "admin")
         .maybeSingle();
 
       if (error) {
@@ -93,7 +94,7 @@ const JobDocuments = () => {
         throw error;
       }
       
-      if (data?.role === "admin") {
+      if (data) {
         setIsAdmin(true);
       } else {
         toast.error("Accès refusé : vous devez être administrateur");
