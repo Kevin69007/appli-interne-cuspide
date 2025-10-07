@@ -35,20 +35,18 @@ const App = () => (
       <Toaster />
       <BrowserRouter>
         <AuthProvider>
-          <ErrorBoundary>
-            <Routes>
-              <Route path="/" element={<Index />} />
-              <Route path="/auth" element={<Auth />} />
-              <Route path="/fiches-de-poste" element={<JobDocuments />} />
-              <Route path="/protocoles" element={<Protocols />} />
-              <Route path="/quiz" element={<Quiz />} />
-              <Route path="/objectifs-primes" element={<ObjectifsPrimes />} />
-              <Route path="/objectifs-primes/manager" element={<ObjectifsPrimesManager />} />
-              <Route path="/objectifs-primes/employe" element={<ObjectifsPrimesEmploye />} />
-              <Route path="/objectifs-primes/admin" element={<ObjectifsPrimesAdmin />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </ErrorBoundary>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/auth" element={<Auth />} />
+            <Route path="/fiches-de-poste" element={<JobDocuments />} />
+            <Route path="/protocoles" element={<Protocols />} />
+            <Route path="/quiz" element={<Quiz />} />
+            <Route path="/objectifs-primes" element={<ObjectifsPrimes />} />
+            <Route path="/objectifs-primes/manager" element={<ObjectifsPrimesManager />} />
+            <Route path="/objectifs-primes/employe" element={<ObjectifsPrimesEmploye />} />
+            <Route path="/objectifs-primes/admin" element={<ObjectifsPrimesAdmin />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
         </AuthProvider>
       </BrowserRouter>
     </QueryClientProvider>
