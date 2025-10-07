@@ -6,6 +6,8 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Settings, Users, Trophy, FileText, Shield, ChevronLeft } from "lucide-react";
+import { AddEmployeeDialog } from "@/components/objectifs-primes/AddEmployeeDialog";
+import { EmployeeObjectivesDialog } from "@/components/objectifs-primes/EmployeeObjectivesDialog";
 
 const Admin = () => {
   const navigate = useNavigate();
@@ -141,7 +143,10 @@ const Admin = () => {
             <Card className="p-6">
               <div className="flex justify-between items-center mb-6">
                 <h3 className="text-lg font-semibold">Gestion des employés</h3>
-                <Button>+ Ajouter un employé</Button>
+                <div className="flex gap-2">
+                  <EmployeeObjectivesDialog />
+                  <AddEmployeeDialog />
+                </div>
               </div>
               <div className="text-center py-12 text-muted-foreground">
                 <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />

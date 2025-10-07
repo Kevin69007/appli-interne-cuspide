@@ -1,7 +1,9 @@
 import { Card } from "@/components/ui/card";
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { AddEventDialog } from "./AddEventDialog";
+import { supabase } from "@/integrations/supabase/client";
 
 interface CalendarEvent {
   date: number;
@@ -18,8 +20,52 @@ const MOCK_EVENTS: CalendarEvent[] = [
 ];
 
 export const MonthCalendar = () => {
-  const [currentDate] = useState(new Date());
+  const [currentDate, setCurrentDate] = useState(new Date());
+  const [events, setEvents] = useState<CalendarEvent[]>([]);
+  const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [showAddDialog, setShowAddDialog] = useState(false);
   const monthName = currentDate.toLocaleDateString("fr-FR", { month: "long", year: "numeric" });
+
+  useEffect(() => {
+    fetchEvents();
+  }, [currentDate]);
+
+  const fetchEvents = async () => {
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+    const firstDay = new Date(year, month, 1).toISOString().split('T')[0];
+    const lastDay = new Date(year, month + 1, 0).toISOString().split('T')[0];
+
+    const { data, error } = await supabase
+      .from("agenda_entries")
+      .select("*")
+      .gte("date", firstDay)
+      .lte("date", lastDay);
+
+    if (!error && data) {
+      const mappedEvents: CalendarEvent[] = data.map(entry => ({
+        date: new Date(entry.date).getDate(),
+        type: entry.categorie as any,
+        label: entry.detail || entry.categorie,
+        validated: entry.statut_validation === 'valide'
+      }));
+      setEvents(mappedEvents);
+    }
+  };
+
+  const handleDayClick = (day: number) => {
+    const clickedDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
+    setSelectedDate(clickedDate);
+    setShowAddDialog(true);
+  };
+
+  const handlePreviousMonth = () => {
+    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() - 1));
+  };
+
+  const handleNextMonth = () => {
+    setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1));
+  };
   
   // Get days in month
   const year = currentDate.getFullYear();
@@ -34,7 +80,7 @@ export const MonthCalendar = () => {
   const emptyDays = Array.from({ length: startDay }, (_, i) => i);
   
   const getEventsForDay = (day: number) => {
-    return MOCK_EVENTS.filter(e => e.date === day);
+    return events.filter(e => e.date === day);
   };
   
   const getEventColor = (type: string) => {
@@ -55,10 +101,10 @@ export const MonthCalendar = () => {
           <h3 className="text-lg font-semibold capitalize">{monthName}</h3>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="icon">
+          <Button variant="outline" size="icon" onClick={handlePreviousMonth}>
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <Button variant="outline" size="icon">
+          <Button variant="outline" size="icon" onClick={handleNextMonth}>
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
@@ -85,8 +131,9 @@ export const MonthCalendar = () => {
           return (
             <div
               key={day}
+              onClick={() => handleDayClick(day)}
               className={`
-                aspect-square border rounded-lg p-1 flex flex-col
+                aspect-square border rounded-lg p-1 flex flex-col cursor-pointer
                 ${isToday ? "border-primary bg-primary/5" : "border-border"}
                 hover:bg-muted/50 transition-colors
               `}
@@ -129,6 +176,15 @@ export const MonthCalendar = () => {
           <span>Incidents</span>
         </div>
       </div>
+
+      {selectedDate && (
+        <AddEventDialog
+          open={showAddDialog}
+          onOpenChange={setShowAddDialog}
+          selectedDate={selectedDate}
+          onEventAdded={fetchEvents}
+        />
+      )}
     </Card>
   );
 };
