@@ -14,6 +14,103 @@ export type Database = {
   }
   public: {
     Tables: {
+      agenda_entries: {
+        Row: {
+          auteur_id: string | null
+          categorie: Database["public"]["Enums"]["categorie_agenda"]
+          commentaire_validation: string | null
+          created_at: string
+          date: string
+          detail: string | null
+          duree_minutes: number | null
+          employee_id: string
+          gravite: Database["public"]["Enums"]["gravite_erreur"] | null
+          id: string
+          motif: string | null
+          photos: string[] | null
+          points: number | null
+          statut_objectif: Database["public"]["Enums"]["statut_objectif"] | null
+          statut_validation:
+            | Database["public"]["Enums"]["statut_validation"]
+            | null
+          type: string | null
+          type_absence: Database["public"]["Enums"]["type_absence"] | null
+          type_incident:
+            | Database["public"]["Enums"]["type_incident_materiel"]
+            | null
+          updated_at: string
+        }
+        Insert: {
+          auteur_id?: string | null
+          categorie: Database["public"]["Enums"]["categorie_agenda"]
+          commentaire_validation?: string | null
+          created_at?: string
+          date: string
+          detail?: string | null
+          duree_minutes?: number | null
+          employee_id: string
+          gravite?: Database["public"]["Enums"]["gravite_erreur"] | null
+          id?: string
+          motif?: string | null
+          photos?: string[] | null
+          points?: number | null
+          statut_objectif?:
+            | Database["public"]["Enums"]["statut_objectif"]
+            | null
+          statut_validation?:
+            | Database["public"]["Enums"]["statut_validation"]
+            | null
+          type?: string | null
+          type_absence?: Database["public"]["Enums"]["type_absence"] | null
+          type_incident?:
+            | Database["public"]["Enums"]["type_incident_materiel"]
+            | null
+          updated_at?: string
+        }
+        Update: {
+          auteur_id?: string | null
+          categorie?: Database["public"]["Enums"]["categorie_agenda"]
+          commentaire_validation?: string | null
+          created_at?: string
+          date?: string
+          detail?: string | null
+          duree_minutes?: number | null
+          employee_id?: string
+          gravite?: Database["public"]["Enums"]["gravite_erreur"] | null
+          id?: string
+          motif?: string | null
+          photos?: string[] | null
+          points?: number | null
+          statut_objectif?:
+            | Database["public"]["Enums"]["statut_objectif"]
+            | null
+          statut_validation?:
+            | Database["public"]["Enums"]["statut_validation"]
+            | null
+          type?: string | null
+          type_absence?: Database["public"]["Enums"]["type_absence"] | null
+          type_incident?:
+            | Database["public"]["Enums"]["type_incident_materiel"]
+            | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agenda_entries_auteur_id_fkey"
+            columns: ["auteur_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agenda_entries_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       analytics: {
         Row: {
           avg_response_time: number | null
@@ -50,6 +147,120 @@ export type Database = {
         }
         Relationships: []
       }
+      audit_log: {
+        Row: {
+          action: string
+          ancien_contenu: Json | null
+          created_at: string
+          id: string
+          nouveau_contenu: Json | null
+          record_id: string | null
+          table_name: string
+          user_id: string | null
+        }
+        Insert: {
+          action: string
+          ancien_contenu?: Json | null
+          created_at?: string
+          id?: string
+          nouveau_contenu?: Json | null
+          record_id?: string | null
+          table_name: string
+          user_id?: string | null
+        }
+        Update: {
+          action?: string
+          ancien_contenu?: Json | null
+          created_at?: string
+          id?: string
+          nouveau_contenu?: Json | null
+          record_id?: string | null
+          table_name?: string
+          user_id?: string | null
+        }
+        Relationships: []
+      }
+      challenge_progress: {
+        Row: {
+          challenge_id: string
+          date_completion: string | null
+          employee_id: string
+          id: string
+          points: number | null
+          progression: Json | null
+        }
+        Insert: {
+          challenge_id: string
+          date_completion?: string | null
+          employee_id: string
+          id?: string
+          points?: number | null
+          progression?: Json | null
+        }
+        Update: {
+          challenge_id?: string
+          date_completion?: string | null
+          employee_id?: string
+          id?: string
+          points?: number | null
+          progression?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "challenge_progress_challenge_id_fkey"
+            columns: ["challenge_id"]
+            isOneToOne: false
+            referencedRelation: "challenges"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "challenge_progress_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      challenges: {
+        Row: {
+          created_at: string
+          criteres: Json | null
+          date_debut: string
+          date_fin: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          recompense: string | null
+          titre: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          criteres?: Json | null
+          date_debut: string
+          date_fin: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          recompense?: string | null
+          titre: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          criteres?: Json | null
+          date_debut?: string
+          date_fin?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          recompense?: string | null
+          titre?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       conditional_blocks: {
         Row: {
           bloc_id: string
@@ -83,6 +294,36 @@ export type Database = {
           parent_bloc_id?: string
           priority?: number
           updated_at?: string
+        }
+        Relationships: []
+      }
+      configuration: {
+        Row: {
+          categorie: string
+          cle: string
+          created_at: string
+          description: string | null
+          id: string
+          updated_at: string
+          valeur: Json
+        }
+        Insert: {
+          categorie: string
+          cle: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          updated_at?: string
+          valeur?: Json
+        }
+        Update: {
+          categorie?: string
+          cle?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          updated_at?: string
+          valeur?: Json
         }
         Relationships: []
       }
@@ -250,6 +491,53 @@ export type Database = {
           },
         ]
       }
+      employees: {
+        Row: {
+          atelier: string | null
+          created_at: string
+          equipe: string | null
+          id: string
+          nom: string
+          poste: string | null
+          prenom: string
+          profile_id: string | null
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          atelier?: string | null
+          created_at?: string
+          equipe?: string | null
+          id?: string
+          nom: string
+          poste?: string | null
+          prenom: string
+          profile_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          atelier?: string | null
+          created_at?: string
+          equipe?: string | null
+          id?: string
+          nom?: string
+          poste?: string | null
+          prenom?: string
+          profile_id?: string | null
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employees_profile_id_fkey"
+            columns: ["profile_id"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       escalations: {
         Row: {
           assigned_to: string | null
@@ -401,6 +689,119 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      monthly_scores: {
+        Row: {
+          annee: number
+          cloture_par: string | null
+          created_at: string
+          date_cloture: string | null
+          employee_id: string
+          id: string
+          mois: number
+          prime_montant: number | null
+          score_attitude: number | null
+          score_global: number | null
+          score_horaires: number | null
+          score_materiel: number | null
+          score_objectifs: number | null
+          score_protocoles: number | null
+          statut: Database["public"]["Enums"]["statut_score_mensuel"] | null
+          updated_at: string
+        }
+        Insert: {
+          annee: number
+          cloture_par?: string | null
+          created_at?: string
+          date_cloture?: string | null
+          employee_id: string
+          id?: string
+          mois: number
+          prime_montant?: number | null
+          score_attitude?: number | null
+          score_global?: number | null
+          score_horaires?: number | null
+          score_materiel?: number | null
+          score_objectifs?: number | null
+          score_protocoles?: number | null
+          statut?: Database["public"]["Enums"]["statut_score_mensuel"] | null
+          updated_at?: string
+        }
+        Update: {
+          annee?: number
+          cloture_par?: string | null
+          created_at?: string
+          date_cloture?: string | null
+          employee_id?: string
+          id?: string
+          mois?: number
+          prime_montant?: number | null
+          score_attitude?: number | null
+          score_global?: number | null
+          score_horaires?: number | null
+          score_materiel?: number | null
+          score_objectifs?: number | null
+          score_protocoles?: number | null
+          statut?: Database["public"]["Enums"]["statut_score_mensuel"] | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "monthly_scores_cloture_par_fkey"
+            columns: ["cloture_par"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "monthly_scores_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          employee_id: string
+          id: string
+          lu: boolean | null
+          message: string | null
+          titre: string
+          type: string
+          url: string | null
+        }
+        Insert: {
+          created_at?: string
+          employee_id: string
+          id?: string
+          lu?: boolean | null
+          message?: string | null
+          titre: string
+          type: string
+          url?: string | null
+        }
+        Update: {
+          created_at?: string
+          employee_id?: string
+          id?: string
+          lu?: boolean | null
+          message?: string | null
+          titre?: string
+          type?: string
+          url?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notifications_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       payments: {
         Row: {
@@ -617,6 +1018,45 @@ export type Database = {
         }
         Relationships: []
       }
+      quiz_monthly: {
+        Row: {
+          annee: number
+          bareme: Json | null
+          contenu: Json
+          created_at: string
+          id: string
+          is_active: boolean | null
+          mois: number
+          titre: string
+          type: Database["public"]["Enums"]["type_quiz"]
+          updated_at: string
+        }
+        Insert: {
+          annee: number
+          bareme?: Json | null
+          contenu?: Json
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          mois: number
+          titre: string
+          type: Database["public"]["Enums"]["type_quiz"]
+          updated_at?: string
+        }
+        Update: {
+          annee?: number
+          bareme?: Json | null
+          contenu?: Json
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          mois?: number
+          titre?: string
+          type?: Database["public"]["Enums"]["type_quiz"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       quiz_profiles: {
         Row: {
           created_at: string
@@ -649,6 +1089,67 @@ export type Database = {
             columns: ["quiz_id"]
             isOneToOne: false
             referencedRelation: "quiz"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      quiz_responses: {
+        Row: {
+          date_reponse: string
+          employee_id: string
+          id: string
+          mood_commentaire: string | null
+          mood_note: number | null
+          quiz_id: string
+          reponses: Json | null
+          score: number | null
+          vote_collegue_id: string | null
+          vote_justification: string | null
+        }
+        Insert: {
+          date_reponse?: string
+          employee_id: string
+          id?: string
+          mood_commentaire?: string | null
+          mood_note?: number | null
+          quiz_id: string
+          reponses?: Json | null
+          score?: number | null
+          vote_collegue_id?: string | null
+          vote_justification?: string | null
+        }
+        Update: {
+          date_reponse?: string
+          employee_id?: string
+          id?: string
+          mood_commentaire?: string | null
+          mood_note?: number | null
+          quiz_id?: string
+          reponses?: Json | null
+          score?: number | null
+          vote_collegue_id?: string | null
+          vote_justification?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "quiz_responses_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quiz_responses_quiz_id_fkey"
+            columns: ["quiz_id"]
+            isOneToOne: false
+            referencedRelation: "quiz_monthly"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "quiz_responses_vote_collegue_id_fkey"
+            columns: ["vote_collegue_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
             referencedColumns: ["id"]
           },
         ]
@@ -890,6 +1391,10 @@ export type Database = {
         Args: { "": string } | { "": unknown }
         Returns: unknown
       }
+      can_auto_declare: {
+        Args: { p_categorie: string }
+        Returns: boolean
+      }
       get_current_user_role: {
         Args: Record<PropertyKey, never>
         Returns: Database["public"]["Enums"]["app_role"]
@@ -932,6 +1437,14 @@ export type Database = {
       hnswhandler: {
         Args: { "": unknown }
         Returns: unknown
+      }
+      is_employee_team_member: {
+        Args: { p_employee_id: string }
+        Returns: boolean
+      }
+      is_manager: {
+        Args: Record<PropertyKey, never>
+        Returns: boolean
       }
       ivfflat_bit_support: {
         Args: { "": unknown }
@@ -1023,7 +1536,24 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "user" | "manager"
+      categorie_agenda:
+        | "protocoles"
+        | "objectifs"
+        | "horaires"
+        | "materiel"
+        | "challenges"
+      gravite_erreur: "mineur" | "majeur" | "critique"
       job_category: "Admin" | "Prothèse"
+      statut_objectif: "atteint" | "en_cours" | "non_atteint"
+      statut_score_mensuel: "ouvert" | "cloture" | "publie"
+      statut_validation: "en_attente" | "valide" | "refuse"
+      type_absence: "retard" | "absence"
+      type_incident_materiel:
+        | "poste_sale"
+        | "machine_non_eteinte"
+        | "entretien_non_fait"
+        | "autre"
+      type_quiz: "technique" | "collegue" | "mood"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -1152,7 +1682,26 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "user", "manager"],
+      categorie_agenda: [
+        "protocoles",
+        "objectifs",
+        "horaires",
+        "materiel",
+        "challenges",
+      ],
+      gravite_erreur: ["mineur", "majeur", "critique"],
       job_category: ["Admin", "Prothèse"],
+      statut_objectif: ["atteint", "en_cours", "non_atteint"],
+      statut_score_mensuel: ["ouvert", "cloture", "publie"],
+      statut_validation: ["en_attente", "valide", "refuse"],
+      type_absence: ["retard", "absence"],
+      type_incident_materiel: [
+        "poste_sale",
+        "machine_non_eteinte",
+        "entretien_non_fait",
+        "autre",
+      ],
+      type_quiz: ["technique", "collegue", "mood"],
     },
   },
 } as const
