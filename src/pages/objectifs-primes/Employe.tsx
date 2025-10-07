@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Trophy, Target, Clock, AlertCircle, ChevronLeft, Star } from "lucide-react";
+import { MonthCalendar } from "@/components/objectifs-primes/MonthCalendar";
 
 const Employe = () => {
   const navigate = useNavigate();
@@ -153,6 +154,11 @@ const Employe = () => {
               </div>
             </div>
           </Card>
+        </div>
+
+        {/* Agenda du mois */}
+        <div className="mb-8">
+          <MonthCalendar />
         </div>
 
         {/* Historique récent */}

@@ -21,14 +21,23 @@ export const useUserRole = () => {
         const { data, error } = await supabase
           .from("user_roles")
           .select("role")
-          .eq("user_id", user.id)
-          .single();
+          .eq("user_id", user.id);
 
         if (error) {
           console.error("Error fetching user role:", error);
           setRole("user");
+        } else if (data && data.length > 0) {
+          // Prioritize admin > manager > user
+          const roles = data.map(r => r.role);
+          if (roles.includes("admin")) {
+            setRole("admin");
+          } else if (roles.includes("manager")) {
+            setRole("manager");
+          } else {
+            setRole("user");
+          }
         } else {
-          setRole(data?.role as UserRole);
+          setRole("user");
         }
       } catch (error) {
         console.error("Error:", error);
