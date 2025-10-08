@@ -1631,7 +1631,7 @@ export type Database = {
         | "absence"
         | "incident"
         | "a_faire"
-      gravite_erreur: "mineur" | "majeur" | "critique"
+      gravite_erreur: "mineure" | "moyenne" | "majeure" | "critique"
       job_category: "Admin" | "Prothèse"
       statut_objectif: "atteint" | "en_cours" | "non_atteint"
       statut_score_mensuel: "ouvert" | "cloture" | "publie"
@@ -1781,7 +1781,7 @@ export const Constants = {
         "incident",
         "a_faire",
       ],
-      gravite_erreur: ["mineur", "majeur", "critique"],
+      gravite_erreur: ["mineure", "moyenne", "majeure", "critique"],
       job_category: ["Admin", "Prothèse"],
       statut_objectif: ["atteint", "en_cours", "non_atteint"],
       statut_score_mensuel: ["ouvert", "cloture", "publie"],
