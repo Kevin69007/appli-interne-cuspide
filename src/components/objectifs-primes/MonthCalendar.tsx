@@ -85,7 +85,8 @@ export const MonthCalendar = () => {
   
   const getEventColor = (type: string) => {
     switch (type) {
-      case "objectif": return "bg-green-500/20 text-green-700 dark:text-green-400";
+      case "objectif":
+      case "objectifs": return "bg-green-500/20 text-green-700 dark:text-green-400";
       case "formation": return "bg-blue-500/20 text-blue-700 dark:text-blue-400";
       case "absence": return "bg-purple-500/20 text-purple-700 dark:text-purple-400";
       case "incident": return "bg-orange-500/20 text-orange-700 dark:text-orange-400";
