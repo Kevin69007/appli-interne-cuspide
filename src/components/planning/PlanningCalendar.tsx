@@ -1,10 +1,21 @@
 import { useState, useEffect } from "react";
-import { ChevronLeft, ChevronRight, Plus } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { CreateScheduleDialog } from "./CreateScheduleDialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useUserRole } from "@/hooks/useUserRole";
+import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface WorkSchedule {
   id: string;
@@ -31,6 +42,7 @@ export const PlanningCalendar = () => {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState<string>("all");
   const [teams, setTeams] = useState<string[]>([]);
+  const [scheduleToDelete, setScheduleToDelete] = useState<string | null>(null);
 
   useEffect(() => {
     fetchSchedules();
@@ -112,6 +124,24 @@ export const PlanningCalendar = () => {
     setCurrentDate(new Date(currentDate.getFullYear(), currentDate.getMonth() + 1));
   };
 
+  const handleDeleteSchedule = async () => {
+    if (!scheduleToDelete) return;
+
+    const { error } = await supabase
+      .from("work_schedules")
+      .delete()
+      .eq("id", scheduleToDelete);
+
+    if (error) {
+      toast.error("Erreur lors de la suppression");
+      console.error(error);
+    } else {
+      toast.success("Horaire supprimé");
+      fetchSchedules();
+    }
+    setScheduleToDelete(null);
+  };
+
   const days = getDaysInMonth();
   const monthName = currentDate.toLocaleDateString("fr-FR", { month: "long", year: "numeric" });
 
@@ -184,14 +214,31 @@ export const PlanningCalendar = () => {
                     {daySchedules.map((schedule) => (
                       <div
                         key={schedule.id}
-                        className="text-xs bg-primary/10 rounded px-1 py-0.5 truncate"
+                        className="text-xs bg-primary/10 rounded px-1 py-0.5 group relative"
                         title={`${schedule.employees.prenom} ${schedule.employees.nom}: ${schedule.heure_debut} - ${schedule.heure_fin}`}
                       >
-                        <div className="font-medium truncate">
-                          {schedule.employees.prenom} {schedule.employees.nom}
-                        </div>
-                        <div className="text-muted-foreground">
-                          {schedule.heure_debut} - {schedule.heure_fin}
+                        <div className="flex items-center justify-between gap-1">
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium truncate">
+                              {schedule.employees.prenom} {schedule.employees.nom}
+                            </div>
+                            <div className="text-muted-foreground">
+                              {schedule.heure_debut} - {schedule.heure_fin}
+                            </div>
+                          </div>
+                          {canManage && (
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setScheduleToDelete(schedule.id);
+                              }}
+                            >
+                              <Trash2 className="h-3 w-3 text-destructive" />
+                            </Button>
+                          )}
                         </div>
                       </div>
                     ))}
@@ -210,6 +257,23 @@ export const PlanningCalendar = () => {
           onScheduleCreated={fetchSchedules}
         />
       )}
+
+      <AlertDialog open={!!scheduleToDelete} onOpenChange={() => setScheduleToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
+            <AlertDialogDescription>
+              Êtes-vous sûr de vouloir supprimer cet horaire ? Cette action est irréversible.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDeleteSchedule} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

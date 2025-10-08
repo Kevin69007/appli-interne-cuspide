@@ -5,23 +5,25 @@ import { useState, useEffect } from "react";
 import { AddEventDialog } from "./AddEventDialog";
 import { EventDetailsDialog } from "./EventDetailsDialog";
 import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface CalendarEvent {
   id: string;
   date: number;
-  type: "objectif" | "absence" | "incident" | "formation" | "a_faire";
+  type: "objectif" | "absence" | "incident" | "formation" | "a_faire" | "horaire";
   label: string;
   validated?: boolean;
-  source?: 'agenda' | 'task';
+  source?: 'agenda' | 'task' | 'schedule';
 }
 
 export const MonthCalendar = () => {
+  const { user } = useAuth();
   const [currentDate, setCurrentDate] = useState(new Date());
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
-  const [selectedEventSource, setSelectedEventSource] = useState<'agenda' | 'task'>('agenda');
+  const [selectedEventSource, setSelectedEventSource] = useState<'agenda' | 'task' | 'schedule'>('agenda');
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
   const monthName = currentDate.toLocaleDateString("fr-FR", { month: "long", year: "numeric" });
 
@@ -30,25 +32,46 @@ export const MonthCalendar = () => {
   }, [currentDate]);
 
   const fetchEvents = async () => {
+    if (!user) return;
+
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
     const firstDay = new Date(year, month, 1).toISOString().split('T')[0];
     const lastDay = new Date(year, month + 1, 0).toISOString().split('T')[0];
 
+    // Get user's employee record
+    const { data: employeeData } = await supabase
+      .from("employees")
+      .select("id")
+      .eq("user_id", user.id)
+      .single();
+
+    if (!employeeData) return;
+
     // Fetch agenda entries (absences, incidents, objectifs)
     const { data: agendaData, error: agendaError } = await supabase
       .from("agenda_entries")
       .select("*")
+      .eq("employee_id", employeeData.id)
       .gte("date", firstDay)
       .lte("date", lastDay);
 
-    // Fetch tasks (remplace les événements "à faire")
+    // Fetch tasks
     const { data: tasksData, error: tasksError } = await supabase
       .from("tasks")
       .select("*")
+      .eq("assigned_to", employeeData.id)
       .gte("date_echeance", firstDay)
       .lte("date_echeance", lastDay)
       .neq("statut", "annulee");
+
+    // Fetch work schedules
+    const { data: schedulesData, error: schedulesError } = await supabase
+      .from("work_schedules")
+      .select("*")
+      .eq("employee_id", employeeData.id)
+      .gte("date", firstDay)
+      .lte("date", lastDay);
 
     const mappedEvents: CalendarEvent[] = [];
 
@@ -66,7 +89,7 @@ export const MonthCalendar = () => {
       });
     }
 
-    // Map tasks as "a_faire" events
+    // Map tasks
     if (!tasksError && tasksData) {
       tasksData.forEach(task => {
         mappedEvents.push({
@@ -80,6 +103,19 @@ export const MonthCalendar = () => {
       });
     }
 
+    // Map work schedules
+    if (!schedulesError && schedulesData) {
+      schedulesData.forEach(schedule => {
+        mappedEvents.push({
+          id: schedule.id,
+          date: new Date(schedule.date).getDate(),
+          type: "horaire",
+          label: `${schedule.heure_debut} - ${schedule.heure_fin}`,
+          source: 'schedule'
+        });
+      });
+    }
+
     setEvents(mappedEvents);
   };
 
@@ -89,8 +125,14 @@ export const MonthCalendar = () => {
     setShowAddDialog(true);
   };
 
-  const handleEventClick = (eventId: string, source: 'agenda' | 'task', e: React.MouseEvent) => {
+  const handleEventClick = (eventId: string, source: 'agenda' | 'task' | 'schedule', e: React.MouseEvent) => {
     e.stopPropagation();
+    
+    // Ne pas ouvrir de détails pour les horaires de travail
+    if (source === 'schedule') {
+      return;
+    }
+    
     setSelectedEventId(eventId);
     setSelectedEventSource(source);
     setShowDetailsDialog(true);
@@ -125,8 +167,8 @@ export const MonthCalendar = () => {
       case "objectif":
       case "objectifs": return "bg-green-500/20 text-green-700 dark:text-green-400";
       case "a_faire": return "bg-blue-500/20 text-blue-700 dark:text-blue-400";
+      case "horaire": return "bg-cyan-500/20 text-cyan-700 dark:text-cyan-400";
       case "absence": 
-        // Différencier absence validée (violet) vs en attente (jaune)
         return validated 
           ? "bg-purple-500/20 text-purple-700 dark:text-purple-400 border-l-2 border-purple-500"
           : "bg-yellow-500/20 text-yellow-700 dark:text-yellow-400 border-l-2 border-yellow-500";
@@ -188,7 +230,7 @@ export const MonthCalendar = () => {
                   <div
                     key={i}
                     onClick={(e) => handleEventClick(event.id, event.source || 'agenda', e)}
-                    className={`text-[0.5rem] px-1 rounded ${getEventColor(event.type, event.validated)} truncate cursor-pointer hover:opacity-80 transition-opacity`}
+                    className={`text-[0.5rem] px-1 rounded ${getEventColor(event.type, event.validated)} truncate ${event.source === 'schedule' ? 'cursor-default' : 'cursor-pointer hover:opacity-80'} transition-opacity`}
                     title={`${event.label}${event.type === 'absence' ? (event.validated ? ' (Validé)' : ' (En attente)') : ''}`}
                   >
                     {event.label}
@@ -202,6 +244,10 @@ export const MonthCalendar = () => {
 
       {/* Legend */}
       <div className="mt-6 pt-4 border-t grid grid-cols-2 gap-2 text-xs">
+        <div className="flex items-center gap-2">
+          <div className="w-3 h-3 rounded bg-cyan-500/20" />
+          <span>Horaires de travail</span>
+        </div>
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded bg-green-500/20" />
           <span>Objectifs</span>
@@ -233,7 +279,7 @@ export const MonthCalendar = () => {
         />
       )}
 
-      {selectedEventId && (
+      {selectedEventId && selectedEventSource !== 'schedule' && (
         <EventDetailsDialog
           open={showDetailsDialog}
           onOpenChange={setShowDetailsDialog}
