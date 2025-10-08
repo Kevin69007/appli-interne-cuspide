@@ -79,7 +79,7 @@ const Index = () => {
               { title: "Congés & Mood Bar", icon: "🌴", path: "/conges-mood-bar", restricted: true },
               { title: "Commandes", icon: "🛒" },
               { title: "Enquêtes & Idées", icon: "💡" },
-              { title: "Planning", icon: "📅" },
+              { title: "Planning", icon: "📅", path: "/agenda" },
               { title: "Entretiens Locaux", icon: "🧼" },
               { title: "Info Pointage", icon: "⏱️" },
               { title: "Dashboard", icon: "📊" },
