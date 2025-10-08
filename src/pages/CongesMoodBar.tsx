@@ -100,18 +100,86 @@ const CongesMoodBar = () => {
   };
 
   const handleLeaveValidation = async (leaveId: string, approved: boolean) => {
-    const { error } = await supabase
-      .from("agenda_entries")
-      .update({ statut_validation: approved ? "valide" : "refuse" })
-      .eq("id", leaveId);
+    try {
+      // Get the original leave request to extract dates
+      const { data: originalRequest, error: fetchError } = await supabase
+        .from("agenda_entries")
+        .select("*")
+        .eq("id", leaveId)
+        .single();
 
-    if (error) {
+      if (fetchError || !originalRequest) {
+        toast.error("Erreur lors de la récupération de la demande");
+        return;
+      }
+
+      // Update the original request status
+      const { error: updateError } = await supabase
+        .from("agenda_entries")
+        .update({ statut_validation: approved ? "valide" : "refuse" })
+        .eq("id", leaveId);
+
+      if (updateError) {
+        toast.error("Erreur lors de la validation");
+        return;
+      }
+
+      // If approved and there's a duration, create entries for all days in the period
+      if (approved && originalRequest.duree_minutes) {
+        const workDays = Math.round(originalRequest.duree_minutes / (8 * 60));
+        
+        // Extract dates from detail if formatted as "Du XX/XX/XXXX au XX/XX/XXXX"
+        const detailMatch = originalRequest.detail?.match(/Du (\d{2}\/\d{2}\/\d{4}) au (\d{2}\/\d{2}\/\d{4})/);
+        
+        if (detailMatch && workDays > 1) {
+          const [_, startStr, endStr] = detailMatch;
+          const [startDay, startMonth, startYear] = startStr.split('/');
+          const [endDay, endMonth, endYear] = endStr.split('/');
+          
+          const startDate = new Date(parseInt(startYear), parseInt(startMonth) - 1, parseInt(startDay));
+          const endDate = new Date(parseInt(endYear), parseInt(endMonth) - 1, parseInt(endDay));
+
+          // Create entries for all work days in the range (except the first day which already exists)
+          const entriesToCreate = [];
+          const currentDate = new Date(startDate);
+          currentDate.setDate(currentDate.getDate() + 1); // Start from day 2
+
+          while (currentDate <= endDate) {
+            const dayOfWeek = currentDate.getDay();
+            // Skip weekends
+            if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+              entriesToCreate.push({
+                employee_id: originalRequest.employee_id,
+                date: currentDate.toISOString().split('T')[0],
+                categorie: 'absence',
+                type_absence: originalRequest.type_absence,
+                detail: originalRequest.detail,
+                statut_validation: 'valide',
+                points: 0
+              });
+            }
+            currentDate.setDate(currentDate.getDate() + 1);
+          }
+
+          if (entriesToCreate.length > 0) {
+            const { error: insertError } = await supabase
+              .from("agenda_entries")
+              .insert(entriesToCreate);
+
+            if (insertError) {
+              console.error("Error creating additional entries:", insertError);
+              toast.warning("Demande approuvée mais erreur lors de la création des jours supplémentaires");
+            }
+          }
+        }
+      }
+
+      toast.success(approved ? "Demande approuvée et jours ajoutés au calendrier" : "Demande refusée");
+      fetchData();
+    } catch (error) {
+      console.error("Error validating leave:", error);
       toast.error("Erreur lors de la validation");
-      return;
     }
-
-    toast.success(approved ? "Demande approuvée" : "Demande refusée");
-    fetchData();
   };
 
   const getAbsenceTypeLabel = (type: string) => {
@@ -217,31 +285,55 @@ const CongesMoodBar = () => {
           <TabsContent value="absences" className="space-y-4 mt-6">
             <div className="grid gap-2">
               {allAbsences.map((absence) => (
-                <div key={absence.id} className="border rounded-lg p-3 flex items-center justify-between">
-                  <div className="flex-1">
-                    <div className="font-medium">
-                      {absence.employees?.prenom} {absence.employees?.nom}
+                <Card key={absence.id}>
+                  <CardContent className="p-4 flex items-center justify-between">
+                    <div className="flex-1">
+                      <div className="font-medium">
+                        {absence.employees?.prenom} {absence.employees?.nom}
+                      </div>
+                      <div className="text-sm text-muted-foreground">
+                        {new Date(absence.date).toLocaleDateString("fr-FR")} -{" "}
+                        {getAbsenceTypeLabel(absence.type_absence)}
+                      </div>
+                      {absence.detail && (
+                        <div className="text-sm text-muted-foreground mt-1">{absence.detail}</div>
+                      )}
                     </div>
-                    <div className="text-sm text-muted-foreground">
-                      {new Date(absence.date).toLocaleDateString("fr-FR")} -{" "}
-                      {getAbsenceTypeLabel(absence.type_absence)}
+                    <div className="flex items-center gap-2">
+                      <Badge
+                        variant={
+                          absence.statut_validation === "valide"
+                            ? "default"
+                            : absence.statut_validation === "refuse"
+                            ? "destructive"
+                            : "outline"
+                        }
+                      >
+                        {absence.statut_validation}
+                      </Badge>
+                      {absence.statut_validation === "valide" && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleLeaveValidation(absence.id, false)}
+                        >
+                          <X className="h-3 w-3 mr-1" />
+                          Révoquer
+                        </Button>
+                      )}
+                      {absence.statut_validation === "refuse" && (
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleLeaveValidation(absence.id, true)}
+                        >
+                          <Check className="h-3 w-3 mr-1" />
+                          Approuver
+                        </Button>
+                      )}
                     </div>
-                    {absence.detail && (
-                      <div className="text-sm text-muted-foreground mt-1">{absence.detail}</div>
-                    )}
-                  </div>
-                  <Badge
-                    variant={
-                      absence.statut_validation === "valide"
-                        ? "default"
-                        : absence.statut_validation === "refuse"
-                        ? "destructive"
-                        : "outline"
-                    }
-                  >
-                    {absence.statut_validation}
-                  </Badge>
-                </div>
+                  </CardContent>
+                </Card>
               ))}
             </div>
           </TabsContent>

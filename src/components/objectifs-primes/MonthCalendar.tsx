@@ -87,7 +87,7 @@ export const MonthCalendar = () => {
     switch (type) {
       case "objectif":
       case "objectifs": return "bg-green-500/20 text-green-700 dark:text-green-400";
-      case "formation": return "bg-blue-500/20 text-blue-700 dark:text-blue-400";
+      case "a_faire": return "bg-blue-500/20 text-blue-700 dark:text-blue-400";
       case "absence": return "bg-purple-500/20 text-purple-700 dark:text-purple-400";
       case "incident": return "bg-orange-500/20 text-orange-700 dark:text-orange-400";
       default: return "bg-muted";
@@ -166,7 +166,7 @@ export const MonthCalendar = () => {
         </div>
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded bg-blue-500/20" />
-          <span>Formations</span>
+          <span>À faire</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded bg-purple-500/20" />
