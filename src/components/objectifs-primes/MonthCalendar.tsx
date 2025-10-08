@@ -3,27 +3,24 @@ import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from "lucide-reac
 import { Button } from "@/components/ui/button";
 import { useState, useEffect } from "react";
 import { AddEventDialog } from "./AddEventDialog";
+import { EventDetailsDialog } from "./EventDetailsDialog";
 import { supabase } from "@/integrations/supabase/client";
 
 interface CalendarEvent {
+  id: string;
   date: number;
   type: "objectif" | "absence" | "incident" | "formation";
   label: string;
   validated?: boolean;
 }
 
-const MOCK_EVENTS: CalendarEvent[] = [
-  { date: 5, type: "objectif", label: "Production +2", validated: true },
-  { date: 12, type: "formation", label: "Formation stérilisation" },
-  { date: 18, type: "absence", label: "Congé", validated: true },
-  { date: 22, type: "incident", label: "Retard 15min" },
-];
-
 export const MonthCalendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date());
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [showAddDialog, setShowAddDialog] = useState(false);
+  const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  const [showDetailsDialog, setShowDetailsDialog] = useState(false);
   const monthName = currentDate.toLocaleDateString("fr-FR", { month: "long", year: "numeric" });
 
   useEffect(() => {
@@ -44,6 +41,7 @@ export const MonthCalendar = () => {
 
     if (!error && data) {
       const mappedEvents: CalendarEvent[] = data.map(entry => ({
+        id: entry.id,
         date: new Date(entry.date).getDate(),
         type: entry.categorie as any,
         label: entry.detail || entry.categorie,
@@ -57,6 +55,12 @@ export const MonthCalendar = () => {
     const clickedDate = new Date(currentDate.getFullYear(), currentDate.getMonth(), day);
     setSelectedDate(clickedDate);
     setShowAddDialog(true);
+  };
+
+  const handleEventClick = (eventId: string, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedEventId(eventId);
+    setShowDetailsDialog(true);
   };
 
   const handlePreviousMonth = () => {
@@ -146,7 +150,8 @@ export const MonthCalendar = () => {
                 {events.map((event, i) => (
                   <div
                     key={i}
-                    className={`text-[0.5rem] px-1 rounded ${getEventColor(event.type)} truncate`}
+                    onClick={(e) => handleEventClick(event.id, e)}
+                    className={`text-[0.5rem] px-1 rounded ${getEventColor(event.type)} truncate cursor-pointer hover:opacity-80 transition-opacity`}
                     title={event.label}
                   >
                     {event.label}
@@ -184,6 +189,14 @@ export const MonthCalendar = () => {
           onOpenChange={setShowAddDialog}
           selectedDate={selectedDate}
           onEventAdded={fetchEvents}
+        />
+      )}
+
+      {selectedEventId && (
+        <EventDetailsDialog
+          open={showDetailsDialog}
+          onOpenChange={setShowDetailsDialog}
+          eventId={selectedEventId}
         />
       )}
     </Card>
