@@ -1558,6 +1558,53 @@ export type Database = {
         }
         Relationships: []
       }
+      work_schedules: {
+        Row: {
+          commentaire: string | null
+          created_at: string
+          created_by: string
+          date: string
+          employee_id: string
+          heure_debut: string
+          heure_fin: string
+          id: string
+          pause_minutes: number | null
+          updated_at: string
+        }
+        Insert: {
+          commentaire?: string | null
+          created_at?: string
+          created_by: string
+          date: string
+          employee_id: string
+          heure_debut: string
+          heure_fin: string
+          id?: string
+          pause_minutes?: number | null
+          updated_at?: string
+        }
+        Update: {
+          commentaire?: string | null
+          created_at?: string
+          created_by?: string
+          date?: string
+          employee_id?: string
+          heure_debut?: string
+          heure_fin?: string
+          id?: string
+          pause_minutes?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_schedules_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
