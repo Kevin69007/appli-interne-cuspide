@@ -16,6 +16,7 @@ import ObjectifsPrimesAdmin from "./pages/objectifs-primes/Admin";
 import CommunicationGenerale from "./pages/CommunicationGenerale";
 import Taches from "./pages/Taches";
 import CongesMoodBar from "./pages/CongesMoodBar";
+import Agenda from "./pages/Agenda";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -51,6 +52,7 @@ const App = () => (
             <Route path="/communication-generale" element={<CommunicationGenerale />} />
             <Route path="/taches" element={<Taches />} />
             <Route path="/conges-mood-bar" element={<CongesMoodBar />} />
+            <Route path="/agenda" element={<Agenda />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
