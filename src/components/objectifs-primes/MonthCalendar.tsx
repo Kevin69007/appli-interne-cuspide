@@ -9,9 +9,10 @@ import { supabase } from "@/integrations/supabase/client";
 interface CalendarEvent {
   id: string;
   date: number;
-  type: "objectif" | "absence" | "incident" | "formation";
+  type: "objectif" | "absence" | "incident" | "formation" | "a_faire";
   label: string;
   validated?: boolean;
+  source?: 'agenda' | 'task';
 }
 
 export const MonthCalendar = () => {
@@ -20,6 +21,7 @@ export const MonthCalendar = () => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [showAddDialog, setShowAddDialog] = useState(false);
   const [selectedEventId, setSelectedEventId] = useState<string | null>(null);
+  const [selectedEventSource, setSelectedEventSource] = useState<'agenda' | 'task'>('agenda');
   const [showDetailsDialog, setShowDetailsDialog] = useState(false);
   const monthName = currentDate.toLocaleDateString("fr-FR", { month: "long", year: "numeric" });
 
@@ -33,22 +35,52 @@ export const MonthCalendar = () => {
     const firstDay = new Date(year, month, 1).toISOString().split('T')[0];
     const lastDay = new Date(year, month + 1, 0).toISOString().split('T')[0];
 
-    const { data, error } = await supabase
+    // Fetch agenda entries (absences, incidents, objectifs)
+    const { data: agendaData, error: agendaError } = await supabase
       .from("agenda_entries")
       .select("*")
       .gte("date", firstDay)
       .lte("date", lastDay);
 
-    if (!error && data) {
-      const mappedEvents: CalendarEvent[] = data.map(entry => ({
-        id: entry.id,
-        date: new Date(entry.date).getDate(),
-        type: entry.categorie as any,
-        label: entry.detail || entry.categorie,
-        validated: entry.statut_validation === 'valide'
-      }));
-      setEvents(mappedEvents);
+    // Fetch tasks (remplace les événements "à faire")
+    const { data: tasksData, error: tasksError } = await supabase
+      .from("tasks")
+      .select("*")
+      .gte("date_echeance", firstDay)
+      .lte("date_echeance", lastDay)
+      .neq("statut", "annulee");
+
+    const mappedEvents: CalendarEvent[] = [];
+
+    // Map agenda entries
+    if (!agendaError && agendaData) {
+      agendaData.forEach(entry => {
+        mappedEvents.push({
+          id: entry.id,
+          date: new Date(entry.date).getDate(),
+          type: entry.categorie as any,
+          label: entry.detail || entry.categorie,
+          validated: entry.statut_validation === 'valide',
+          source: 'agenda'
+        });
+      });
     }
+
+    // Map tasks as "a_faire" events
+    if (!tasksError && tasksData) {
+      tasksData.forEach(task => {
+        mappedEvents.push({
+          id: task.id,
+          date: new Date(task.date_echeance).getDate(),
+          type: "a_faire",
+          label: task.titre,
+          validated: task.statut === 'terminee',
+          source: 'task'
+        });
+      });
+    }
+
+    setEvents(mappedEvents);
   };
 
   const handleDayClick = (day: number) => {
@@ -57,9 +89,10 @@ export const MonthCalendar = () => {
     setShowAddDialog(true);
   };
 
-  const handleEventClick = (eventId: string, e: React.MouseEvent) => {
+  const handleEventClick = (eventId: string, source: 'agenda' | 'task', e: React.MouseEvent) => {
     e.stopPropagation();
     setSelectedEventId(eventId);
+    setSelectedEventSource(source);
     setShowDetailsDialog(true);
   };
 
@@ -150,7 +183,7 @@ export const MonthCalendar = () => {
                 {events.map((event, i) => (
                   <div
                     key={i}
-                    onClick={(e) => handleEventClick(event.id, e)}
+                    onClick={(e) => handleEventClick(event.id, event.source || 'agenda', e)}
                     className={`text-[0.5rem] px-1 rounded ${getEventColor(event.type)} truncate cursor-pointer hover:opacity-80 transition-opacity`}
                     title={event.label}
                   >
@@ -197,6 +230,8 @@ export const MonthCalendar = () => {
           open={showDetailsDialog}
           onOpenChange={setShowDetailsDialog}
           eventId={selectedEventId}
+          source={selectedEventSource}
+          onUpdate={fetchEvents}
         />
       )}
     </Card>

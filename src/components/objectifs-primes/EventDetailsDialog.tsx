@@ -29,10 +29,13 @@ interface EventDetailsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   eventId: string;
+  source: 'agenda' | 'task';
+  onUpdate?: () => void;
 }
 
-export const EventDetailsDialog = ({ open, onOpenChange, eventId }: EventDetailsDialogProps) => {
+export const EventDetailsDialog = ({ open, onOpenChange, eventId, source, onUpdate }: EventDetailsDialogProps) => {
   const [event, setEvent] = useState<EventDetails | null>(null);
+  const [taskDetails, setTaskDetails] = useState<any | null>(null);
   const [employeeName, setEmployeeName] = useState("");
   const [authorName, setAuthorName] = useState("");
   const [loading, setLoading] = useState(true);
@@ -41,41 +44,67 @@ export const EventDetailsDialog = ({ open, onOpenChange, eventId }: EventDetails
     if (open && eventId) {
       fetchEventDetails();
     }
-  }, [open, eventId]);
+  }, [open, eventId, source]);
 
   const fetchEventDetails = async () => {
     setLoading(true);
     
-    const { data: eventData, error: eventError } = await supabase
-      .from("agenda_entries")
-      .select("*")
-      .eq("id", eventId)
-      .single();
-
-    if (!eventError && eventData) {
-      setEvent(eventData as EventDetails);
-
-      // Fetch employee name
-      const { data: empData } = await supabase
-        .from("employees")
-        .select("nom, prenom")
-        .eq("id", eventData.employee_id)
+    if (source === 'task') {
+      // Fetch task details
+      const { data: taskData, error: taskError } = await supabase
+        .from("tasks")
+        .select(`
+          *,
+          assigned_employee:employees!tasks_assigned_to_fkey(nom, prenom),
+          creator_employee:employees!tasks_created_by_fkey(nom, prenom),
+          dependency_employee:employees!tasks_depend_de_fkey(nom, prenom)
+        `)
+        .eq("id", eventId)
         .single();
 
-      if (empData) {
-        setEmployeeName(`${empData.prenom} ${empData.nom}`);
+      if (!taskError && taskData) {
+        setTaskDetails(taskData);
+        
+        if (taskData.assigned_employee) {
+          setEmployeeName(`${taskData.assigned_employee.prenom} ${taskData.assigned_employee.nom}`);
+        }
+        if (taskData.creator_employee) {
+          setAuthorName(`${taskData.creator_employee.prenom} ${taskData.creator_employee.nom}`);
+        }
       }
+    } else {
+      // Fetch agenda entry details
+      const { data: eventData, error: eventError } = await supabase
+        .from("agenda_entries")
+        .select("*")
+        .eq("id", eventId)
+        .single();
 
-      // Fetch author name if exists
-      if (eventData.auteur_id) {
-        const { data: authData } = await supabase
+      if (!eventError && eventData) {
+        setEvent(eventData as EventDetails);
+
+        // Fetch employee name
+        const { data: empData } = await supabase
           .from("employees")
           .select("nom, prenom")
-          .eq("id", eventData.auteur_id)
+          .eq("id", eventData.employee_id)
           .single();
 
-        if (authData) {
-          setAuthorName(`${authData.prenom} ${authData.nom}`);
+        if (empData) {
+          setEmployeeName(`${empData.prenom} ${empData.nom}`);
+        }
+
+        // Fetch author name if exists
+        if (eventData.auteur_id) {
+          const { data: authData } = await supabase
+            .from("employees")
+            .select("nom, prenom")
+            .eq("id", eventData.auteur_id)
+            .single();
+
+          if (authData) {
+            setAuthorName(`${authData.prenom} ${authData.nom}`);
+          }
         }
       }
     }
@@ -132,8 +161,143 @@ export const EventDetailsDialog = ({ open, onOpenChange, eventId }: EventDetails
     );
   }
 
-  if (!event) return null;
+  if (!event && !taskDetails) return null;
 
+  // Render task details
+  if (source === 'task' && taskDetails) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FileText className="h-5 w-5" />
+              Détails de la tâche
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="space-y-4 mt-4">
+            {/* Title */}
+            <div className="flex items-start gap-3">
+              <FileText className="h-5 w-5 text-muted-foreground mt-0.5" />
+              <div className="flex-1">
+                <p className="text-sm text-muted-foreground">Titre</p>
+                <p className="font-medium">{taskDetails.titre}</p>
+              </div>
+            </div>
+
+            {/* Description */}
+            {taskDetails.description && (
+              <div className="flex items-start gap-3">
+                <FileText className="h-5 w-5 text-muted-foreground mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-sm text-muted-foreground">Description</p>
+                  <p>{taskDetails.description}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Assigned to */}
+            <div className="flex items-start gap-3">
+              <User className="h-5 w-5 text-muted-foreground mt-0.5" />
+              <div className="flex-1">
+                <p className="text-sm text-muted-foreground">Assigné à</p>
+                <p className="font-medium">{employeeName}</p>
+              </div>
+            </div>
+
+            {/* Created by */}
+            {authorName && (
+              <div className="flex items-start gap-3">
+                <User className="h-5 w-5 text-muted-foreground mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-sm text-muted-foreground">Créé par</p>
+                  <p className="font-medium">{authorName}</p>
+                </div>
+              </div>
+            )}
+
+            {/* Due date */}
+            <div className="flex items-start gap-3">
+              <Calendar className="h-5 w-5 text-muted-foreground mt-0.5" />
+              <div className="flex-1">
+                <p className="text-sm text-muted-foreground">Date d'échéance</p>
+                <p>{new Date(taskDetails.date_echeance).toLocaleDateString('fr-FR')}</p>
+              </div>
+            </div>
+
+            {/* Priority */}
+            <div className="flex items-start gap-3">
+              <AlertCircle className="h-5 w-5 text-muted-foreground mt-0.5" />
+              <div className="flex-1">
+                <p className="text-sm text-muted-foreground">Priorité</p>
+                <Badge variant={taskDetails.priorite === 'haute' ? 'destructive' : taskDetails.priorite === 'normale' ? 'default' : 'outline'}>
+                  {taskDetails.priorite}
+                </Badge>
+              </div>
+            </div>
+
+            {/* Status */}
+            <div className="flex items-start gap-3">
+              <Clock3 className="h-5 w-5 text-muted-foreground mt-0.5" />
+              <div className="flex-1">
+                <p className="text-sm text-muted-foreground">Statut</p>
+                <Badge variant={taskDetails.statut === 'terminee' ? 'default' : 'outline'}>
+                  {taskDetails.statut === 'terminee' ? 'Terminée' : 
+                   taskDetails.statut === 'en_cours' ? 'En cours' : 
+                   taskDetails.statut === 'en_attente' ? 'En attente' : taskDetails.statut}
+                </Badge>
+              </div>
+            </div>
+
+            {/* Dependency */}
+            {taskDetails.dependency_employee && (
+              <div className="flex items-start gap-3">
+                <User className="h-5 w-5 text-muted-foreground mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-sm text-muted-foreground">Dépend de</p>
+                  <p className="font-medium">
+                    {taskDetails.dependency_employee.prenom} {taskDetails.dependency_employee.nom}
+                  </p>
+                </div>
+              </div>
+            )}
+
+            {/* Comments */}
+            {taskDetails.commentaires && taskDetails.commentaires.length > 0 && (
+              <div className="flex items-start gap-3">
+                <FileText className="h-5 w-5 text-muted-foreground mt-0.5" />
+                <div className="flex-1">
+                  <p className="text-sm text-muted-foreground">Commentaires</p>
+                  <div className="space-y-2 mt-2">
+                    {taskDetails.commentaires.map((comment: any, idx: number) => (
+                      <div key={idx} className="bg-muted p-2 rounded text-sm">
+                        <p className="font-medium">{comment.auteur}</p>
+                        <p className="text-muted-foreground text-xs">
+                          {new Date(comment.date).toLocaleString('fr-FR')}
+                        </p>
+                        <p>{comment.texte}</p>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Created at */}
+            <div className="flex items-start gap-3">
+              <Clock className="h-5 w-5 text-muted-foreground mt-0.5" />
+              <div className="flex-1">
+                <p className="text-sm text-muted-foreground">Créé le</p>
+                <p>{new Date(taskDetails.created_at).toLocaleString('fr-FR')}</p>
+              </div>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
+
+  // Render agenda entry details
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
