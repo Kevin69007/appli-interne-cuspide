@@ -783,6 +783,57 @@ export type Database = {
         }
         Relationships: []
       }
+      maintenance_log: {
+        Row: {
+          completed_at: string
+          completed_by: string | null
+          created_at: string
+          id: string
+          machine_piece: string
+          maintenance_type: string
+          notes: string | null
+          photos: string[] | null
+          task_id: string | null
+        }
+        Insert: {
+          completed_at?: string
+          completed_by?: string | null
+          created_at?: string
+          id?: string
+          machine_piece: string
+          maintenance_type: string
+          notes?: string | null
+          photos?: string[] | null
+          task_id?: string | null
+        }
+        Update: {
+          completed_at?: string
+          completed_by?: string | null
+          created_at?: string
+          id?: string
+          machine_piece?: string
+          maintenance_type?: string
+          notes?: string | null
+          photos?: string[] | null
+          task_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "maintenance_log_completed_by_fkey"
+            columns: ["completed_by"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "maintenance_log_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       monthly_scores: {
         Row: {
           annee: number
@@ -1329,7 +1380,10 @@ export type Database = {
           depend_de: string | null
           description: string | null
           id: string
+          machine_piece: string | null
+          maintenance_type: string | null
           parent_task_id: string | null
+          photos: string[] | null
           priorite: string | null
           rappels: Json | null
           recurrence: Json | null
@@ -1346,7 +1400,10 @@ export type Database = {
           depend_de?: string | null
           description?: string | null
           id?: string
+          machine_piece?: string | null
+          maintenance_type?: string | null
           parent_task_id?: string | null
+          photos?: string[] | null
           priorite?: string | null
           rappels?: Json | null
           recurrence?: Json | null
@@ -1363,7 +1420,10 @@ export type Database = {
           depend_de?: string | null
           description?: string | null
           id?: string
+          machine_piece?: string | null
+          maintenance_type?: string | null
           parent_task_id?: string | null
+          photos?: string[] | null
           priorite?: string | null
           rappels?: Json | null
           recurrence?: Json | null

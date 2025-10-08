@@ -7,6 +7,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { RecurrenceSelector } from "./RecurrenceSelector";
+import { RecurrenceSelectorNew } from "./RecurrenceSelectorNew";
+import { Textarea } from "@/components/ui/textarea";
 
 interface Employee {
   id: string;
@@ -20,6 +22,7 @@ interface CreateTaskDialogProps {
   currentEmployeeId: string | null;
   onTaskCreated: () => void;
   canAssignOthers: boolean;
+  isMaintenance?: boolean;
 }
 
 export const CreateTaskDialog = ({
@@ -28,6 +31,7 @@ export const CreateTaskDialog = ({
   currentEmployeeId,
   onTaskCreated,
   canAssignOthers,
+  isMaintenance = false,
 }: CreateTaskDialogProps) => {
   const [loading, setLoading] = useState(false);
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -39,6 +43,8 @@ export const CreateTaskDialog = ({
     priorite: "normale" as "basse" | "normale" | "haute",
     recurrence: null as any,
     depend_de: null as string | null,
+    machine_piece: "",
+    maintenance_type: "" as "machine" | "piece" | "",
   });
 
   useEffect(() => {
@@ -79,19 +85,24 @@ export const CreateTaskDialog = ({
 
     setLoading(true);
     try {
-      const { data, error } = await supabase.from("tasks").insert([
-        {
-          titre: formData.titre,
-          description: formData.description,
-          created_by: currentEmployeeId,
-          assigned_to: formData.assigned_to,
-          date_echeance: formData.date_echeance,
-          priorite: formData.priorite,
-          recurrence: formData.recurrence,
-          depend_de: formData.depend_de,
-          statut: "en_cours",
-        },
-      ]).select();
+      const taskData: any = {
+        titre: formData.titre,
+        description: formData.description,
+        created_by: currentEmployeeId,
+        assigned_to: formData.assigned_to,
+        date_echeance: formData.date_echeance,
+        priorite: formData.priorite,
+        recurrence: formData.recurrence,
+        depend_de: formData.depend_de,
+        statut: "en_cours",
+      };
+
+      if (isMaintenance && formData.machine_piece && formData.maintenance_type) {
+        taskData.machine_piece = formData.machine_piece;
+        taskData.maintenance_type = formData.maintenance_type;
+      }
+
+      const { data, error } = await supabase.from("tasks").insert([taskData]).select();
 
       console.log("Task creation result:", { data, error });
 
@@ -106,6 +117,8 @@ export const CreateTaskDialog = ({
         priorite: "normale",
         recurrence: null,
         depend_de: null,
+        machine_piece: "",
+        maintenance_type: "",
       });
       onOpenChange(false);
       onTaskCreated();
@@ -150,13 +163,47 @@ export const CreateTaskDialog = ({
 
           <div>
             <Label htmlFor="description">Description</Label>
-            <Input
+            <Textarea
               id="description"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               placeholder="Description détaillée"
+              rows={3}
             />
           </div>
+
+          {isMaintenance && (
+            <>
+              <div>
+                <Label htmlFor="maintenance_type">Type d'entretien *</Label>
+                <Select
+                  value={formData.maintenance_type}
+                  onValueChange={(v: any) => setFormData({ ...formData, maintenance_type: v })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sélectionner un type" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="machine">Machine</SelectItem>
+                    <SelectItem value="piece">Pièce/Local</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div>
+                <Label htmlFor="machine_piece">
+                  {formData.maintenance_type === "machine" ? "Nom de la machine" : "Nom de la pièce/local"} *
+                </Label>
+                <Input
+                  id="machine_piece"
+                  value={formData.machine_piece}
+                  onChange={(e) => setFormData({ ...formData, machine_piece: e.target.value })}
+                  placeholder={formData.maintenance_type === "machine" ? "Ex: Four de cuisson" : "Ex: Salle de finition"}
+                  required={isMaintenance}
+                />
+              </div>
+            </>
+          )}
 
           {canAssignOthers && (
             <div>
@@ -231,7 +278,7 @@ export const CreateTaskDialog = ({
             </div>
           )}
 
-          <RecurrenceSelector
+          <RecurrenceSelectorNew
             value={formData.recurrence}
             onChange={(recurrence) => setFormData({ ...formData, recurrence })}
           />

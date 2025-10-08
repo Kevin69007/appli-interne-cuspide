@@ -19,6 +19,8 @@ import CongesMoodBar from "./pages/CongesMoodBar";
 import Agenda from "./pages/Agenda";
 import Logs from "./pages/Logs";
 
+import EntretiensMachines from "./pages/EntretiensMachines";
+
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
@@ -55,6 +57,7 @@ const App = () => (
             <Route path="/conges-mood-bar" element={<CongesMoodBar />} />
             <Route path="/agenda" element={<Agenda />} />
             <Route path="/logs" element={<Logs />} />
+            <Route path="/entretiens-machines" element={<EntretiensMachines />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

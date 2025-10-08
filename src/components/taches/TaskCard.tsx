@@ -12,9 +12,10 @@ interface TaskCardProps {
   currentEmployeeId: string | null;
   onUpdate: () => void;
   isHelpRequest?: boolean;
+  isMaintenance?: boolean;
 }
 
-export const TaskCard = ({ task, currentEmployeeId, onUpdate, isHelpRequest }: TaskCardProps) => {
+export const TaskCard = ({ task, currentEmployeeId, onUpdate, isHelpRequest, isMaintenance }: TaskCardProps) => {
   const [showDetails, setShowDetails] = useState(false);
 
   const getPriorityColor = (priorite: string) => {
@@ -90,6 +91,12 @@ export const TaskCard = ({ task, currentEmployeeId, onUpdate, isHelpRequest }: T
 
             <div className="flex flex-wrap items-center gap-2 ml-8">
               <Badge className={getPriorityColor(task.priorite)}>{task.priorite}</Badge>
+
+              {isMaintenance && task.machine_piece && (
+                <Badge variant="outline" className="bg-purple-500/20 text-purple-700 dark:text-purple-400">
+                  {task.maintenance_type === "machine" ? "🔧" : "🏠"} {task.machine_piece}
+                </Badge>
+              )}
 
               <div className="flex items-center gap-1 text-sm text-muted-foreground">
                 <Clock className="h-4 w-4" />

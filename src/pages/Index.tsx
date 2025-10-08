@@ -80,7 +80,7 @@ const Index = () => {
               { title: "Commandes", icon: "🛒" },
               { title: "Enquêtes & Idées", icon: "💡" },
               { title: "Planning", icon: "📅", path: "/agenda" },
-              { title: "Entretiens Locaux", icon: "🧼" },
+              { title: "Entretiens Locaux et Machines", icon: "🧼", path: "/entretiens-machines" },
               { title: "Info Pointage", icon: "⏱️" },
               { title: "Dashboard", icon: "📊" },
               { title: "Journal d'audit", icon: "📜", path: "/logs", restricted: true },
