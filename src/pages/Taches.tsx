@@ -61,7 +61,7 @@ const Taches = () => {
       .from("employees")
       .select("id, nom, prenom, user_id")
       .eq("user_id", user?.id)
-      .single();
+      .maybeSingle();
 
     console.log("Employee data:", data, "Error:", error);
     if (!error && data) {
@@ -69,6 +69,7 @@ const Taches = () => {
       console.log("Current employee ID set to:", data.id);
     } else {
       console.error("Failed to fetch employee:", error);
+      toast.error("Vous devez être associé à un employé pour créer des tâches");
     }
   };
 

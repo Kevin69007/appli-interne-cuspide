@@ -68,6 +68,7 @@ export const CreateTaskDialog = ({
     e.preventDefault();
     if (!currentEmployeeId) {
       console.error("No currentEmployeeId available");
+      toast.error("Impossible de créer une tâche : employé non identifié");
       return;
     }
 
