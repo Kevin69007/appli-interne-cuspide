@@ -66,11 +66,19 @@ export const CreateTaskDialog = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!currentEmployeeId) return;
+    if (!currentEmployeeId) {
+      console.error("No currentEmployeeId available");
+      return;
+    }
+
+    console.log("Creating task with data:", {
+      currentEmployeeId,
+      formData,
+    });
 
     setLoading(true);
     try {
-      const { error } = await supabase.from("tasks").insert([
+      const { data, error } = await supabase.from("tasks").insert([
         {
           titre: formData.titre,
           description: formData.description,
@@ -82,7 +90,9 @@ export const CreateTaskDialog = ({
           depend_de: formData.depend_de,
           statut: "en_cours",
         },
-      ]);
+      ]).select();
+
+      console.log("Task creation result:", { data, error });
 
       if (error) throw error;
 
