@@ -25,6 +25,7 @@ interface WorkSchedule {
   heure_fin: string;
   pause_minutes: number;
   commentaire: string | null;
+  schedule_group_id: string | null;
   employees: {
     nom: string;
     prenom: string;
@@ -42,7 +43,8 @@ export const PlanningCalendar = () => {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState<string>("all");
   const [teams, setTeams] = useState<string[]>([]);
-  const [scheduleToDelete, setScheduleToDelete] = useState<string | null>(null);
+  const [scheduleToDelete, setScheduleToDelete] = useState<WorkSchedule | null>(null);
+  const [deleteMode, setDeleteMode] = useState<'single' | 'series'>('single');
 
   useEffect(() => {
     fetchSchedules();
@@ -127,19 +129,30 @@ export const PlanningCalendar = () => {
   const handleDeleteSchedule = async () => {
     if (!scheduleToDelete) return;
 
-    const { error } = await supabase
-      .from("work_schedules")
-      .delete()
-      .eq("id", scheduleToDelete);
+    let query = supabase.from("work_schedules").delete();
+
+    if (deleteMode === 'single') {
+      query = query.eq("id", scheduleToDelete.id);
+    } else {
+      // Supprimer toute la série
+      if (!scheduleToDelete.schedule_group_id) {
+        toast.error("Cet horaire n'appartient à aucune série");
+        return;
+      }
+      query = query.eq("schedule_group_id", scheduleToDelete.schedule_group_id);
+    }
+
+    const { error } = await query;
 
     if (error) {
       toast.error("Erreur lors de la suppression");
       console.error(error);
     } else {
-      toast.success("Horaire supprimé");
+      toast.success(deleteMode === 'single' ? "Horaire supprimé" : "Série supprimée");
       fetchSchedules();
     }
     setScheduleToDelete(null);
+    setDeleteMode('single');
   };
 
   const days = getDaysInMonth();
@@ -233,7 +246,7 @@ export const PlanningCalendar = () => {
                               className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity"
                               onClick={(e) => {
                                 e.stopPropagation();
-                                setScheduleToDelete(schedule.id);
+                                setScheduleToDelete(schedule);
                               }}
                             >
                               <Trash2 className="h-3 w-3 text-destructive" />
@@ -258,12 +271,45 @@ export const PlanningCalendar = () => {
         />
       )}
 
-      <AlertDialog open={!!scheduleToDelete} onOpenChange={() => setScheduleToDelete(null)}>
+      <AlertDialog open={!!scheduleToDelete} onOpenChange={() => {
+        setScheduleToDelete(null);
+        setDeleteMode('single');
+      }}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Confirmer la suppression</AlertDialogTitle>
-            <AlertDialogDescription>
-              Êtes-vous sûr de vouloir supprimer cet horaire ? Cette action est irréversible.
+            <AlertDialogTitle>Supprimer l'horaire</AlertDialogTitle>
+            <AlertDialogDescription className="space-y-4">
+              <p>Comment souhaitez-vous supprimer cet horaire ?</p>
+              
+              <div className="space-y-2">
+                <div className="flex items-center space-x-2">
+                  <input
+                    type="radio"
+                    id="delete-single"
+                    checked={deleteMode === 'single'}
+                    onChange={() => setDeleteMode('single')}
+                    className="cursor-pointer"
+                  />
+                  <label htmlFor="delete-single" className="cursor-pointer text-sm">
+                    Uniquement cet horaire ({scheduleToDelete && new Date(scheduleToDelete.date).toLocaleDateString('fr-FR')})
+                  </label>
+                </div>
+                
+                {scheduleToDelete?.schedule_group_id && (
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="radio"
+                      id="delete-series"
+                      checked={deleteMode === 'series'}
+                      onChange={() => setDeleteMode('series')}
+                      className="cursor-pointer"
+                    />
+                    <label htmlFor="delete-series" className="cursor-pointer text-sm">
+                      Toute la série d'horaires récurrents
+                    </label>
+                  </div>
+                )}
+              </div>
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

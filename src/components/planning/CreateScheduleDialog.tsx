@@ -79,6 +79,7 @@ export const CreateScheduleDialog = ({
 
     try {
       const schedules = [];
+      const scheduleGroupId = crypto.randomUUID(); // ID unique pour cette série
       const debut = startOfDay(new Date(dateDebut));
       // Si pas de date de fin, on prend 4 semaines par défaut pour couvrir tous les jours sélectionnés
       const fin = hasDateFin && dateFin 
@@ -102,6 +103,7 @@ export const CreateScheduleDialog = ({
               pause_minutes: pauseMinutes,
               commentaire: commentaire || null,
               created_by: user.id,
+              schedule_group_id: scheduleGroupId,
             });
           });
         }

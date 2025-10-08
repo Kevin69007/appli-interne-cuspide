@@ -1569,6 +1569,7 @@ export type Database = {
           heure_fin: string
           id: string
           pause_minutes: number | null
+          schedule_group_id: string | null
           updated_at: string
         }
         Insert: {
@@ -1581,6 +1582,7 @@ export type Database = {
           heure_fin: string
           id?: string
           pause_minutes?: number | null
+          schedule_group_id?: string | null
           updated_at?: string
         }
         Update: {
@@ -1593,6 +1595,7 @@ export type Database = {
           heure_fin?: string
           id?: string
           pause_minutes?: number | null
+          schedule_group_id?: string | null
           updated_at?: string
         }
         Relationships: [
@@ -1687,7 +1690,7 @@ export type Database = {
       }
       l2_normalize: {
         Args: { "": string } | { "": unknown } | { "": unknown }
-        Returns: string
+        Returns: unknown
       }
       match_response_blocks: {
         Args: {
