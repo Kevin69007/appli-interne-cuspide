@@ -17,7 +17,7 @@ export const AddEmployeeDialog = ({ onEmployeeAdded }: { onEmployeeAdded?: () =>
     poste: "",
     email: "",
     password: "",
-    role: "prothesiste" as "admin" | "manager" | "prothesiste"
+    role: "collaborateur" as "admin" | "manager" | "collaborateur"
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -66,7 +66,7 @@ export const AddEmployeeDialog = ({ onEmployeeAdded }: { onEmployeeAdded?: () =>
 
       toast.success(`${formData.prenom} ${formData.nom} a été ajouté avec succès.`);
 
-      setFormData({ nom: "", prenom: "", poste: "", email: "", password: "", role: "prothesiste" });
+      setFormData({ nom: "", prenom: "", poste: "", email: "", password: "", role: "collaborateur" });
       setOpen(false);
       onEmployeeAdded?.();
     } catch (error: any) {
@@ -138,7 +138,7 @@ export const AddEmployeeDialog = ({ onEmployeeAdded }: { onEmployeeAdded?: () =>
             <Label htmlFor="role">Rôle</Label>
             <Select
               value={formData.role}
-              onValueChange={(value: "admin" | "manager" | "prothesiste") => 
+              onValueChange={(value: "admin" | "manager" | "collaborateur") => 
                 setFormData({ ...formData, role: value })
               }
             >
@@ -146,7 +146,7 @@ export const AddEmployeeDialog = ({ onEmployeeAdded }: { onEmployeeAdded?: () =>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="prothesiste">Prothésiste</SelectItem>
+                <SelectItem value="collaborateur">Collaborateur</SelectItem>
                 <SelectItem value="manager">Manager</SelectItem>
                 <SelectItem value="admin">Admin</SelectItem>
               </SelectContent>
