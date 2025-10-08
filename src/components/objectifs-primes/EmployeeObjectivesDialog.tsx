@@ -4,9 +4,11 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Target } from "lucide-react";
+import { Target, X } from "lucide-react";
+import { CreateObjectiveDialog } from "./CreateObjectiveDialog";
 
 interface Employee {
   id: string;
@@ -14,18 +16,22 @@ interface Employee {
   prenom: string;
 }
 
+interface Objective {
+  nom: string;
+  valeur_cible: number;
+  indicateur: string;
+}
+
 export const EmployeeObjectivesDialog = () => {
   const [open, setOpen] = useState(false);
   const [employees, setEmployees] = useState<Employee[]>([]);
-  const [selectedEmployee, setSelectedEmployee] = useState("");
+  const [selectedEmployees, setSelectedEmployees] = useState<string[]>([]);
+  const [objectives, setObjectives] = useState<Objective[]>([]);
   const [loading, setLoading] = useState(false);
   
-  const [objectives, setObjectives] = useState({
+  const [period, setPeriod] = useState({
     mois: new Date().getMonth() + 1,
-    annee: new Date().getFullYear(),
-    objectif_production: 0,
-    objectif_qualite: 0,
-    objectif_temps: 0
+    annee: new Date().getFullYear()
   });
 
   useEffect(() => {
@@ -45,28 +51,54 @@ export const EmployeeObjectivesDialog = () => {
     }
   };
 
+  const handleEmployeeToggle = (employeeId: string) => {
+    setSelectedEmployees(prev => 
+      prev.includes(employeeId)
+        ? prev.filter(id => id !== employeeId)
+        : [...prev, employeeId]
+    );
+  };
+
+  const handleAddObjective = (objective: Objective) => {
+    setObjectives([...objectives, objective]);
+  };
+
+  const handleRemoveObjective = (index: number) => {
+    setObjectives(objectives.filter((_, i) => i !== index));
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedEmployee) return;
+    if (selectedEmployees.length === 0) {
+      toast.error("Veuillez sélectionner au moins un employé");
+      return;
+    }
+    if (objectives.length === 0) {
+      toast.error("Veuillez créer au moins un objectif");
+      return;
+    }
     
     setLoading(true);
 
     try {
+      const entries = selectedEmployees.map(employeeId => ({
+        employee_id: employeeId,
+        date: new Date(period.annee, period.mois - 1, 1).toISOString().split('T')[0],
+        categorie: 'objectifs' as const,
+        detail: JSON.stringify(objectives),
+        statut_validation: 'en_attente' as const
+      }));
+
       const { error } = await supabase
         .from("agenda_entries")
-        .insert([{
-          employee_id: selectedEmployee,
-          date: new Date(objectives.annee, objectives.mois - 1, 1).toISOString().split('T')[0],
-          categorie: 'objectifs' as any,
-          detail: `Production: ${objectives.objectif_production}, Qualité: ${objectives.objectif_qualite}, Temps: ${objectives.objectif_temps}`,
-          statut_validation: 'en_attente'
-        }]);
+        .insert(entries);
 
       if (error) throw error;
 
-      toast.success("Les objectifs ont été enregistrés avec succès.");
+      toast.success(`Les objectifs ont été définis pour ${selectedEmployees.length} employé(s).`);
 
-      setSelectedEmployee("");
+      setSelectedEmployees([]);
+      setObjectives([]);
       setOpen(false);
     } catch (error) {
       console.error("Error setting objectives:", error);
@@ -84,33 +116,17 @@ export const EmployeeObjectivesDialog = () => {
           Définir objectifs
         </Button>
       </DialogTrigger>
-      <DialogContent>
+      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Définir les objectifs par employé</DialogTitle>
+          <DialogTitle>Définir les objectifs</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div>
-            <Label htmlFor="employee">Employé</Label>
-            <Select value={selectedEmployee} onValueChange={setSelectedEmployee}>
-              <SelectTrigger>
-                <SelectValue placeholder="Sélectionner un employé" />
-              </SelectTrigger>
-              <SelectContent>
-                {employees.map((emp) => (
-                  <SelectItem key={emp.id} value={emp.id}>
-                    {emp.prenom} {emp.nom}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
+        <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-2 gap-4">
             <div>
               <Label htmlFor="mois">Mois</Label>
               <Select 
-                value={objectives.mois.toString()} 
-                onValueChange={(v) => setObjectives({ ...objectives, mois: parseInt(v) })}
+                value={period.mois.toString()} 
+                onValueChange={(v) => setPeriod({ ...period, mois: parseInt(v) })}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -129,47 +145,72 @@ export const EmployeeObjectivesDialog = () => {
               <Input
                 id="annee"
                 type="number"
-                value={objectives.annee}
-                onChange={(e) => setObjectives({ ...objectives, annee: parseInt(e.target.value) })}
+                value={period.annee}
+                onChange={(e) => setPeriod({ ...period, annee: parseInt(e.target.value) })}
               />
             </div>
           </div>
 
           <div>
-            <Label htmlFor="production">Objectif Production</Label>
-            <Input
-              id="production"
-              type="number"
-              value={objectives.objectif_production}
-              onChange={(e) => setObjectives({ ...objectives, objectif_production: parseInt(e.target.value) || 0 })}
-            />
+            <Label>Employés (sélection multiple)</Label>
+            <div className="border rounded-md p-4 max-h-48 overflow-y-auto space-y-2">
+              {employees.map((emp) => (
+                <div key={emp.id} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={emp.id}
+                    checked={selectedEmployees.includes(emp.id)}
+                    onCheckedChange={() => handleEmployeeToggle(emp.id)}
+                  />
+                  <Label htmlFor={emp.id} className="cursor-pointer font-normal">
+                    {emp.prenom} {emp.nom}
+                  </Label>
+                </div>
+              ))}
+            </div>
           </div>
 
           <div>
-            <Label htmlFor="qualite">Objectif Qualité (%)</Label>
-            <Input
-              id="qualite"
-              type="number"
-              value={objectives.objectif_qualite}
-              onChange={(e) => setObjectives({ ...objectives, objectif_qualite: parseInt(e.target.value) || 0 })}
-            />
-          </div>
-
-          <div>
-            <Label htmlFor="temps">Objectif Temps (min)</Label>
-            <Input
-              id="temps"
-              type="number"
-              value={objectives.objectif_temps}
-              onChange={(e) => setObjectives({ ...objectives, objectif_temps: parseInt(e.target.value) || 0 })}
-            />
+            <div className="flex items-center justify-between mb-4">
+              <Label>Objectifs</Label>
+              <CreateObjectiveDialog onObjectiveCreated={handleAddObjective} />
+            </div>
+            
+            {objectives.length === 0 ? (
+              <p className="text-sm text-muted-foreground text-center py-4 border rounded-md">
+                Aucun objectif défini. Cliquez sur "Créer objectif" pour commencer.
+              </p>
+            ) : (
+              <div className="space-y-2">
+                {objectives.map((obj, index) => (
+                  <div key={index} className="flex items-center justify-between p-3 border rounded-md">
+                    <div>
+                      <p className="font-medium">{obj.nom}</p>
+                      <p className="text-sm text-muted-foreground">
+                        Cible: {obj.valeur_cible} {obj.indicateur}
+                      </p>
+                    </div>
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      onClick={() => handleRemoveObjective(index)}
+                    >
+                      <X className="h-4 w-4" />
+                    </Button>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Annuler
             </Button>
-            <Button type="submit" disabled={loading || !selectedEmployee}>
+            <Button 
+              type="submit" 
+              disabled={loading || selectedEmployees.length === 0 || objectives.length === 0}
+            >
               {loading ? "Enregistrement..." : "Enregistrer"}
             </Button>
           </div>

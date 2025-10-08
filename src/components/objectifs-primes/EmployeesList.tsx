@@ -2,7 +2,9 @@ import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
-import { Loader2 } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Loader2, Pencil } from "lucide-react";
+import { EditEmployeeDialog } from "./EditEmployeeDialog";
 
 interface Employee {
   id: string;
@@ -16,6 +18,8 @@ interface Employee {
 export const EmployeesList = () => {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [loading, setLoading] = useState(true);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(null);
 
   const fetchEmployees = async () => {
     try {
@@ -105,30 +109,56 @@ export const EmployeesList = () => {
     );
   }
 
+  const handleEdit = (employeeId: string) => {
+    setSelectedEmployeeId(employeeId);
+    setEditDialogOpen(true);
+  };
+
   return (
-    <Table>
-      <TableHeader>
-        <TableRow>
-          <TableHead>Nom</TableHead>
-          <TableHead>Prénom</TableHead>
-          <TableHead>Poste</TableHead>
-          <TableHead>Rôle</TableHead>
-        </TableRow>
-      </TableHeader>
-      <TableBody>
-        {employees.map((employee) => (
-          <TableRow key={employee.id}>
-            <TableCell className="font-medium">{employee.nom}</TableCell>
-            <TableCell>{employee.prenom}</TableCell>
-            <TableCell>{employee.poste || "-"}</TableCell>
-            <TableCell>
-              <Badge variant={getRoleBadgeVariant(employee.role)}>
-                {getRoleLabel(employee.role)}
-              </Badge>
-            </TableCell>
+    <>
+      <Table>
+        <TableHeader>
+          <TableRow>
+            <TableHead>Nom</TableHead>
+            <TableHead>Prénom</TableHead>
+            <TableHead>Poste</TableHead>
+            <TableHead>Rôle</TableHead>
+            <TableHead className="text-right">Actions</TableHead>
           </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+        </TableHeader>
+        <TableBody>
+          {employees.map((employee) => (
+            <TableRow key={employee.id}>
+              <TableCell className="font-medium">{employee.nom}</TableCell>
+              <TableCell>{employee.prenom}</TableCell>
+              <TableCell>{employee.poste || "-"}</TableCell>
+              <TableCell>
+                <Badge variant={getRoleBadgeVariant(employee.role)}>
+                  {getRoleLabel(employee.role)}
+                </Badge>
+              </TableCell>
+              <TableCell className="text-right">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={() => handleEdit(employee.id)}
+                >
+                  <Pencil className="h-4 w-4" />
+                </Button>
+              </TableCell>
+            </TableRow>
+          ))}
+        </TableBody>
+      </Table>
+
+      {selectedEmployeeId && (
+        <EditEmployeeDialog
+          open={editDialogOpen}
+          onOpenChange={setEditDialogOpen}
+          employeeId={selectedEmployeeId}
+          onEmployeeUpdated={fetchEmployees}
+        />
+      )}
+    </>
   );
 };
