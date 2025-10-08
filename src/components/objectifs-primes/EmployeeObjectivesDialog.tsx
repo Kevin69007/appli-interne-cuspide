@@ -29,10 +29,8 @@ export const EmployeeObjectivesDialog = () => {
   const [objectives, setObjectives] = useState<Objective[]>([]);
   const [loading, setLoading] = useState(false);
   
-  const [period, setPeriod] = useState({
-    mois: new Date().getMonth() + 1,
-    annee: new Date().getFullYear()
-  });
+  const [selectedMonths, setSelectedMonths] = useState<number[]>([new Date().getMonth() + 1]);
+  const [selectedYears, setSelectedYears] = useState<number[]>([new Date().getFullYear()]);
 
   useEffect(() => {
     if (open) {
@@ -59,6 +57,22 @@ export const EmployeeObjectivesDialog = () => {
     );
   };
 
+  const handleMonthToggle = (month: number) => {
+    setSelectedMonths(prev =>
+      prev.includes(month)
+        ? prev.filter(m => m !== month)
+        : [...prev, month]
+    );
+  };
+
+  const handleYearToggle = (year: number) => {
+    setSelectedYears(prev =>
+      prev.includes(year)
+        ? prev.filter(y => y !== year)
+        : [...prev, year]
+    );
+  };
+
   const handleAddObjective = (objective: Objective) => {
     setObjectives([...objectives, objective]);
   };
@@ -73,6 +87,14 @@ export const EmployeeObjectivesDialog = () => {
       toast.error("Veuillez sélectionner au moins un employé");
       return;
     }
+    if (selectedMonths.length === 0) {
+      toast.error("Veuillez sélectionner au moins un mois");
+      return;
+    }
+    if (selectedYears.length === 0) {
+      toast.error("Veuillez sélectionner au moins une année");
+      return;
+    }
     if (objectives.length === 0) {
       toast.error("Veuillez créer au moins un objectif");
       return;
@@ -81,13 +103,21 @@ export const EmployeeObjectivesDialog = () => {
     setLoading(true);
 
     try {
-      const entries = selectedEmployees.map(employeeId => ({
-        employee_id: employeeId,
-        date: new Date(period.annee, period.mois - 1, 1).toISOString().split('T')[0],
-        categorie: 'objectifs' as const,
-        detail: JSON.stringify(objectives),
-        statut_validation: 'en_attente' as const
-      }));
+      // Créer une entrée pour chaque combinaison employé/mois/année
+      const entries = [];
+      for (const employeeId of selectedEmployees) {
+        for (const year of selectedYears) {
+          for (const month of selectedMonths) {
+            entries.push({
+              employee_id: employeeId,
+              date: new Date(year, month - 1, 1).toISOString().split('T')[0],
+              categorie: 'objectifs' as const,
+              detail: JSON.stringify(objectives),
+              statut_validation: 'en_attente' as const
+            });
+          }
+        }
+      }
 
       const { error } = await supabase
         .from("agenda_entries")
@@ -95,9 +125,12 @@ export const EmployeeObjectivesDialog = () => {
 
       if (error) throw error;
 
-      toast.success(`Les objectifs ont été définis pour ${selectedEmployees.length} employé(s).`);
+      const totalEntries = selectedEmployees.length * selectedMonths.length * selectedYears.length;
+      toast.success(`Les objectifs ont été définis pour ${totalEntries} période(s).`);
 
       setSelectedEmployees([]);
+      setSelectedMonths([new Date().getMonth() + 1]);
+      setSelectedYears([new Date().getFullYear()]);
       setObjectives([]);
       setOpen(false);
     } catch (error) {
@@ -123,31 +156,44 @@ export const EmployeeObjectivesDialog = () => {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label htmlFor="mois">Mois</Label>
-              <Select 
-                value={period.mois.toString()} 
-                onValueChange={(v) => setPeriod({ ...period, mois: parseInt(v) })}
-              >
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {Array.from({ length: 12 }, (_, i) => (
-                    <SelectItem key={i + 1} value={(i + 1).toString()}>
-                      {new Date(2024, i).toLocaleDateString('fr-FR', { month: 'long' })}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+              <Label>Mois (sélection multiple)</Label>
+              <div className="border rounded-md p-4 max-h-48 overflow-y-auto space-y-2">
+                {Array.from({ length: 12 }, (_, i) => {
+                  const monthNum = i + 1;
+                  return (
+                    <div key={monthNum} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`month-${monthNum}`}
+                        checked={selectedMonths.includes(monthNum)}
+                        onCheckedChange={() => handleMonthToggle(monthNum)}
+                      />
+                      <Label htmlFor={`month-${monthNum}`} className="cursor-pointer font-normal">
+                        {new Date(2024, i).toLocaleDateString('fr-FR', { month: 'long' })}
+                      </Label>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
             <div>
-              <Label htmlFor="annee">Année</Label>
-              <Input
-                id="annee"
-                type="number"
-                value={period.annee}
-                onChange={(e) => setPeriod({ ...period, annee: parseInt(e.target.value) })}
-              />
+              <Label>Années (sélection multiple)</Label>
+              <div className="border rounded-md p-4 max-h-48 overflow-y-auto space-y-2">
+                {Array.from({ length: 5 }, (_, i) => {
+                  const year = new Date().getFullYear() + i;
+                  return (
+                    <div key={year} className="flex items-center space-x-2">
+                      <Checkbox
+                        id={`year-${year}`}
+                        checked={selectedYears.includes(year)}
+                        onCheckedChange={() => handleYearToggle(year)}
+                      />
+                      <Label htmlFor={`year-${year}`} className="cursor-pointer font-normal">
+                        {year}
+                      </Label>
+                    </div>
+                  );
+                })}
+              </div>
             </div>
           </div>
 
@@ -209,7 +255,7 @@ export const EmployeeObjectivesDialog = () => {
             </Button>
             <Button 
               type="submit" 
-              disabled={loading || selectedEmployees.length === 0 || objectives.length === 0}
+              disabled={loading || selectedEmployees.length === 0 || selectedMonths.length === 0 || selectedYears.length === 0 || objectives.length === 0}
             >
               {loading ? "Enregistrement..." : "Enregistrer"}
             </Button>
