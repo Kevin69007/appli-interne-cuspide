@@ -15,8 +15,9 @@ export const AddEmployeeDialog = ({ onEmployeeAdded }: { onEmployeeAdded?: () =>
     nom: "",
     prenom: "",
     poste: "",
-    atelier: "",
-    equipe: ""
+    email: "",
+    password: "",
+    role: "prothesiste" as "admin" | "manager" | "prothesiste"
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -24,20 +25,53 @@ export const AddEmployeeDialog = ({ onEmployeeAdded }: { onEmployeeAdded?: () =>
     setLoading(true);
 
     try {
-      const { error } = await supabase
-        .from("employees")
-        .insert([formData]);
+      // Create auth user
+      const { data: authData, error: authError } = await supabase.auth.signUp({
+        email: formData.email,
+        password: formData.password,
+        options: {
+          emailRedirectTo: `${window.location.origin}/`,
+          data: {
+            full_name: `${formData.prenom} ${formData.nom}`
+          }
+        }
+      });
 
-      if (error) throw error;
+      if (authError) throw authError;
+      if (!authData.user) throw new Error("Aucun utilisateur créé");
+
+      // Insert employee record
+      const { error: employeeError } = await supabase
+        .from("employees")
+        .insert([{
+          nom: formData.nom,
+          prenom: formData.prenom,
+          poste: formData.poste,
+          user_id: authData.user.id
+        }]);
+
+      if (employeeError) throw employeeError;
+
+      // Assign role (only if admin role and user is admin)
+      if (formData.role === "admin" || formData.role === "manager") {
+        const { error: roleError } = await supabase
+          .from("user_roles")
+          .insert([{
+            user_id: authData.user.id,
+            role: formData.role
+          }]);
+
+        if (roleError) throw roleError;
+      }
 
       toast.success(`${formData.prenom} ${formData.nom} a été ajouté avec succès.`);
 
-      setFormData({ nom: "", prenom: "", poste: "", atelier: "", equipe: "" });
+      setFormData({ nom: "", prenom: "", poste: "", email: "", password: "", role: "prothesiste" });
       setOpen(false);
       onEmployeeAdded?.();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error adding employee:", error);
-      toast.error("Impossible d'ajouter l'employé.");
+      toast.error(error.message || "Impossible d'ajouter l'employé.");
     } finally {
       setLoading(false);
     }
@@ -80,20 +114,43 @@ export const AddEmployeeDialog = ({ onEmployeeAdded }: { onEmployeeAdded?: () =>
             />
           </div>
           <div>
-            <Label htmlFor="atelier">Atelier</Label>
+            <Label htmlFor="email">Email</Label>
             <Input
-              id="atelier"
-              value={formData.atelier}
-              onChange={(e) => setFormData({ ...formData, atelier: e.target.value })}
+              id="email"
+              type="email"
+              value={formData.email}
+              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+              required
             />
           </div>
           <div>
-            <Label htmlFor="equipe">Équipe</Label>
+            <Label htmlFor="password">Mot de passe</Label>
             <Input
-              id="equipe"
-              value={formData.equipe}
-              onChange={(e) => setFormData({ ...formData, equipe: e.target.value })}
+              id="password"
+              type="password"
+              value={formData.password}
+              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+              required
+              minLength={6}
             />
+          </div>
+          <div>
+            <Label htmlFor="role">Rôle</Label>
+            <Select
+              value={formData.role}
+              onValueChange={(value: "admin" | "manager" | "prothesiste") => 
+                setFormData({ ...formData, role: value })
+              }
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="prothesiste">Prothésiste</SelectItem>
+                <SelectItem value="manager">Manager</SelectItem>
+                <SelectItem value="admin">Admin</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
