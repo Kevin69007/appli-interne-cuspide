@@ -33,7 +33,9 @@ export const AddEventDialog = ({ open, onOpenChange, selectedDate, onEventAdded 
     type_absence: "",
     gravite: "",
     detail: "",
-    points: 0
+    points: 0,
+    date_debut: "",
+    date_fin: ""
   });
 
   useEffect(() => {
@@ -56,17 +58,55 @@ export const AddEventDialog = ({ open, onOpenChange, selectedDate, onEventAdded 
     setLoading(true);
 
     try {
+      // Calculate duration in minutes for leave requests
+      let dureeMinutes = null;
+      let detailText = formData.detail;
+
+      if (formData.categorie === 'absence' && formData.type_absence === 'demande_conges') {
+        if (!formData.date_debut || !formData.date_fin) {
+          toast.error("Veuillez sélectionner les dates de début et de fin.");
+          setLoading(false);
+          return;
+        }
+
+        const dateDebut = new Date(formData.date_debut);
+        const dateFin = new Date(formData.date_fin);
+        
+        if (dateFin < dateDebut) {
+          toast.error("La date de fin doit être après la date de début.");
+          setLoading(false);
+          return;
+        }
+
+        // Calculate work days (excluding weekends)
+        let workDays = 0;
+        const currentDate = new Date(dateDebut);
+        while (currentDate <= dateFin) {
+          const dayOfWeek = currentDate.getDay();
+          if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+            workDays++;
+          }
+          currentDate.setDate(currentDate.getDate() + 1);
+        }
+
+        dureeMinutes = workDays * 8 * 60; // 8 hours per work day
+        detailText = `Du ${dateDebut.toLocaleDateString('fr-FR')} au ${dateFin.toLocaleDateString('fr-FR')}${formData.detail ? ' - ' + formData.detail : ''}`;
+      }
+
       const { error } = await supabase
         .from("agenda_entries")
         .insert([{
           employee_id: formData.employee_id,
-          date: selectedDate.toISOString().split('T')[0],
+          date: formData.categorie === 'absence' && formData.type_absence === 'demande_conges' 
+            ? formData.date_debut 
+            : selectedDate.toISOString().split('T')[0],
           categorie: formData.categorie as any,
           type_incident: formData.type_incident as any || null,
           type_absence: formData.type_absence as any || null,
           gravite: formData.gravite as any || null,
-          detail: formData.detail,
+          detail: detailText,
           points: formData.points,
+          duree_minutes: dureeMinutes,
           statut_validation: formData.categorie === 'absence' && formData.type_absence === 'demande_conges' ? 'en_attente' : 'valide'
         }]);
 
@@ -74,7 +114,7 @@ export const AddEventDialog = ({ open, onOpenChange, selectedDate, onEventAdded 
 
       toast.success("L'événement a été ajouté avec succès.");
 
-      setFormData({ employee_id: "", categorie: "", type_incident: "", type_absence: "", gravite: "", detail: "", points: 0 });
+      setFormData({ employee_id: "", categorie: "", type_incident: "", type_absence: "", gravite: "", detail: "", points: 0, date_debut: "", date_fin: "" });
       onOpenChange(false);
       onEventAdded?.();
     } catch (error) {
@@ -158,34 +198,75 @@ export const AddEventDialog = ({ open, onOpenChange, selectedDate, onEventAdded 
           )}
 
           {formData.categorie === "absence" && (
+            <>
+              <div>
+                <Label htmlFor="type_absence">Type d'absence</Label>
+                <Select value={formData.type_absence} onValueChange={(v) => setFormData({ ...formData, type_absence: v })}>
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sélectionner" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="demande_conges">Demande de congés</SelectItem>
+                    {(isAdmin || isManager) && (
+                      <>
+                        <SelectItem value="arret_maladie">Arrêt maladie</SelectItem>
+                        <SelectItem value="injustifie">Injustifié</SelectItem>
+                      </>
+                    )}
+                  </SelectContent>
+                </Select>
+              </div>
+
+              {formData.type_absence === "demande_conges" && (
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <Label htmlFor="date_debut">Date de début</Label>
+                    <Input
+                      id="date_debut"
+                      type="date"
+                      value={formData.date_debut}
+                      onChange={(e) => setFormData({ ...formData, date_debut: e.target.value })}
+                      required
+                    />
+                  </div>
+                  <div>
+                    <Label htmlFor="date_fin">Date de fin</Label>
+                    <Input
+                      id="date_fin"
+                      type="date"
+                      value={formData.date_fin}
+                      onChange={(e) => setFormData({ ...formData, date_fin: e.target.value })}
+                      required
+                    />
+                  </div>
+                </div>
+              )}
+            </>
+          )}
+
+          {formData.type_absence !== "demande_conges" && (
             <div>
-              <Label htmlFor="type_absence">Type d'absence</Label>
-              <Select value={formData.type_absence} onValueChange={(v) => setFormData({ ...formData, type_absence: v })}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Sélectionner" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="demande_conges">Demande de congés</SelectItem>
-                  {(isAdmin || isManager) && (
-                    <>
-                      <SelectItem value="arret_maladie">Arrêt maladie</SelectItem>
-                      <SelectItem value="injustifie">Injustifié</SelectItem>
-                    </>
-                  )}
-                </SelectContent>
-              </Select>
+              <Label htmlFor="detail">Détails</Label>
+              <Input
+                id="detail"
+                value={formData.detail}
+                onChange={(e) => setFormData({ ...formData, detail: e.target.value })}
+                placeholder="Description de l'événement"
+              />
             </div>
           )}
 
-          <div>
-            <Label htmlFor="detail">Détails</Label>
-            <Input
-              id="detail"
-              value={formData.detail}
-              onChange={(e) => setFormData({ ...formData, detail: e.target.value })}
-              placeholder="Description de l'événement"
-            />
-          </div>
+          {formData.type_absence === "demande_conges" && (
+            <div>
+              <Label htmlFor="detail">Motif (optionnel)</Label>
+              <Input
+                id="detail"
+                value={formData.detail}
+                onChange={(e) => setFormData({ ...formData, detail: e.target.value })}
+                placeholder="Motif de la demande"
+              />
+            </div>
+          )}
 
           <div>
             <Label htmlFor="points">Points</Label>
@@ -201,7 +282,16 @@ export const AddEventDialog = ({ open, onOpenChange, selectedDate, onEventAdded 
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Annuler
             </Button>
-            <Button type="submit" disabled={loading || !formData.employee_id || !formData.categorie}>
+            <Button 
+              type="submit" 
+              disabled={
+                loading || 
+                !formData.employee_id || 
+                !formData.categorie ||
+                (formData.categorie === 'incident' && !formData.type_incident) ||
+                (formData.categorie === 'absence' && !formData.type_absence)
+              }
+            >
               {loading ? "Ajout..." : "Ajouter"}
             </Button>
           </div>
