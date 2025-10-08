@@ -120,12 +120,16 @@ export const MonthCalendar = () => {
     return events.filter(e => e.date === day);
   };
   
-  const getEventColor = (type: string) => {
+  const getEventColor = (type: string, validated?: boolean) => {
     switch (type) {
       case "objectif":
       case "objectifs": return "bg-green-500/20 text-green-700 dark:text-green-400";
       case "a_faire": return "bg-blue-500/20 text-blue-700 dark:text-blue-400";
-      case "absence": return "bg-purple-500/20 text-purple-700 dark:text-purple-400";
+      case "absence": 
+        // Différencier absence validée (violet) vs en attente (jaune)
+        return validated 
+          ? "bg-purple-500/20 text-purple-700 dark:text-purple-400 border-l-2 border-purple-500"
+          : "bg-yellow-500/20 text-yellow-700 dark:text-yellow-400 border-l-2 border-yellow-500";
       case "incident": return "bg-orange-500/20 text-orange-700 dark:text-orange-400";
       default: return "bg-muted";
     }
@@ -184,8 +188,8 @@ export const MonthCalendar = () => {
                   <div
                     key={i}
                     onClick={(e) => handleEventClick(event.id, event.source || 'agenda', e)}
-                    className={`text-[0.5rem] px-1 rounded ${getEventColor(event.type)} truncate cursor-pointer hover:opacity-80 transition-opacity`}
-                    title={event.label}
+                    className={`text-[0.5rem] px-1 rounded ${getEventColor(event.type, event.validated)} truncate cursor-pointer hover:opacity-80 transition-opacity`}
+                    title={`${event.label}${event.type === 'absence' ? (event.validated ? ' (Validé)' : ' (En attente)') : ''}`}
                   >
                     {event.label}
                   </div>
@@ -207,8 +211,12 @@ export const MonthCalendar = () => {
           <span>À faire</span>
         </div>
         <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded bg-purple-500/20" />
-          <span>Absences</span>
+          <div className="w-3 h-3 rounded bg-purple-500/20 border-l-2 border-purple-500" />
+          <span>Absences validées</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-3 h-3 rounded bg-yellow-500/20 border-l-2 border-yellow-500" />
+          <span>Absences en attente</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded bg-orange-500/20" />

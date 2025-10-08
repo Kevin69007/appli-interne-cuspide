@@ -181,27 +181,24 @@ const CongesMoodBar = () => {
           const startDate = new Date(parseInt(startYear), parseInt(startMonth) - 1, parseInt(startDay));
           const endDate = new Date(parseInt(endYear), parseInt(endMonth) - 1, parseInt(endDay));
 
-          // Create entries for all work days in the range (except the first day which already exists)
+          // Create entries for ALL days in the range (except the first day which already exists)
+          // Including weekends to show full vacation period
           const entriesToCreate = [];
           const currentDate = new Date(startDate);
           currentDate.setDate(currentDate.getDate() + 1); // Start from day 2
 
           while (currentDate <= endDate) {
-            const dayOfWeek = currentDate.getDay();
-            // Skip weekends
-            if (dayOfWeek !== 0 && dayOfWeek !== 6) {
-              entriesToCreate.push({
-                employee_id: originalRequest.employee_id,
-                date: currentDate.toISOString().split('T')[0],
-                categorie: 'absence',
-                type_absence: originalRequest.type_absence,
-                detail: originalRequest.detail,
-                statut_validation: 'valide',
-                valide_par: user?.id,
-                date_validation: new Date().toISOString(),
-                points: 0
-              });
-            }
+            entriesToCreate.push({
+              employee_id: originalRequest.employee_id,
+              date: currentDate.toISOString().split('T')[0],
+              categorie: 'absence',
+              type_absence: originalRequest.type_absence,
+              detail: originalRequest.detail,
+              statut_validation: 'valide',
+              valide_par: user?.id,
+              date_validation: new Date().toISOString(),
+              points: 0
+            });
             currentDate.setDate(currentDate.getDate() + 1);
           }
 
