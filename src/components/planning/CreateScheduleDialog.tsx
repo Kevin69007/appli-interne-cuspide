@@ -80,10 +80,17 @@ export const CreateScheduleDialog = ({
     try {
       const schedules = [];
       const scheduleGroupId = crypto.randomUUID(); // ID unique pour cette série
-      const debut = startOfDay(new Date(dateDebut));
+      
+      // Créer les dates en forçant le fuseau horaire local pour éviter les décalages UTC
+      const [yearDebut, monthDebut, dayDebut] = dateDebut.split('-').map(Number);
+      const debut = startOfDay(new Date(yearDebut, monthDebut - 1, dayDebut));
+      
       // Si pas de date de fin, on prend 4 semaines par défaut pour couvrir tous les jours sélectionnés
       const fin = hasDateFin && dateFin 
-        ? startOfDay(new Date(dateFin)) 
+        ? (() => {
+            const [yearFin, monthFin, dayFin] = dateFin.split('-').map(Number);
+            return startOfDay(new Date(yearFin, monthFin - 1, dayFin));
+          })()
         : addDays(debut, 27); // 4 semaines
 
       // Générer toutes les dates entre début et fin
