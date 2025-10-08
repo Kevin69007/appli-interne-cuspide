@@ -8,8 +8,10 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { format } from "date-fns";
 import { toast } from "sonner";
+import { ArrowLeft } from "lucide-react";
 
 interface AuditLog {
   id: string;
@@ -40,7 +42,6 @@ export default function Logs() {
   const [dateDebut, setDateDebut] = useState("");
   const [dateFin, setDateFin] = useState("");
   const [selectedUser, setSelectedUser] = useState<string>("all");
-  const [selectedTable, setSelectedTable] = useState<string>("all");
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
@@ -59,7 +60,7 @@ export default function Logs() {
 
   useEffect(() => {
     applyFilters();
-  }, [logs, dateDebut, dateFin, selectedUser, selectedTable]);
+  }, [logs, dateDebut, dateFin, selectedUser]);
 
   const fetchEmployees = async () => {
     const { data, error } = await supabase
@@ -150,11 +151,6 @@ export default function Logs() {
       filtered = filtered.filter((log) => log.user_id === selectedUser);
     }
 
-    // Filtre par table
-    if (selectedTable !== "all") {
-      filtered = filtered.filter((log) => log.table_name === selectedTable);
-    }
-
     setFilteredLogs(filtered);
   };
 
@@ -171,11 +167,6 @@ export default function Logs() {
     }
   };
 
-  const getUniqueTables = () => {
-    const tables = [...new Set(logs.map((log) => log.table_name))];
-    return tables.sort();
-  };
-
   if (loading || !isAdmin) {
     return null;
   }
@@ -184,11 +175,20 @@ export default function Logs() {
     <div className="container mx-auto p-6 space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>Journal d'audit - Traçabilité des actions</CardTitle>
+          <div className="flex items-center gap-4">
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={() => navigate("/")}
+            >
+              <ArrowLeft className="h-4 w-4" />
+            </Button>
+            <CardTitle>Journal d'audit - Traçabilité des actions</CardTitle>
+          </div>
         </CardHeader>
         <CardContent className="space-y-6">
           {/* Filtres */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="space-y-2">
               <Label htmlFor="dateDebut">Date de début</Label>
               <Input
@@ -220,23 +220,6 @@ export default function Logs() {
                   {employees.map((emp) => (
                     <SelectItem key={emp.id} value={emp.user_id || emp.id}>
                       {emp.prenom} {emp.nom}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="space-y-2">
-              <Label htmlFor="table">Table</Label>
-              <Select value={selectedTable} onValueChange={setSelectedTable}>
-                <SelectTrigger>
-                  <SelectValue placeholder="Toutes les tables" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">Toutes les tables</SelectItem>
-                  {getUniqueTables().map((table) => (
-                    <SelectItem key={table} value={table}>
-                      {table}
                     </SelectItem>
                   ))}
                 </SelectContent>
