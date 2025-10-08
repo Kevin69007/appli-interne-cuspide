@@ -17,7 +17,7 @@ export const AddEmployeeDialog = ({ onEmployeeAdded }: { onEmployeeAdded?: () =>
     poste: "",
     email: "",
     password: "",
-    role: "collaborateur" as "admin" | "manager" | "collaborateur"
+    role: "user" as "admin" | "manager" | "user"
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -52,21 +52,21 @@ export const AddEmployeeDialog = ({ onEmployeeAdded }: { onEmployeeAdded?: () =>
 
       if (employeeError) throw employeeError;
 
-      // Assign role (only if admin role and user is admin)
+      // Assign role for all users (the trigger already creates a 'user' role, so update if needed)
       if (formData.role === "admin" || formData.role === "manager") {
+        // Update the default 'user' role to the selected role
         const { error: roleError } = await supabase
           .from("user_roles")
-          .insert([{
-            user_id: authData.user.id,
-            role: formData.role
-          }]);
+          .update({ role: formData.role })
+          .eq("user_id", authData.user.id);
 
         if (roleError) throw roleError;
       }
+      // If role is 'user', the trigger already handles it
 
       toast.success(`${formData.prenom} ${formData.nom} a été ajouté avec succès.`);
 
-      setFormData({ nom: "", prenom: "", poste: "", email: "", password: "", role: "collaborateur" });
+      setFormData({ nom: "", prenom: "", poste: "", email: "", password: "", role: "user" });
       setOpen(false);
       onEmployeeAdded?.();
     } catch (error: any) {
@@ -138,7 +138,7 @@ export const AddEmployeeDialog = ({ onEmployeeAdded }: { onEmployeeAdded?: () =>
             <Label htmlFor="role">Rôle</Label>
             <Select
               value={formData.role}
-              onValueChange={(value: "admin" | "manager" | "collaborateur") => 
+              onValueChange={(value: "admin" | "manager" | "user") => 
                 setFormData({ ...formData, role: value })
               }
             >
@@ -146,7 +146,7 @@ export const AddEmployeeDialog = ({ onEmployeeAdded }: { onEmployeeAdded?: () =>
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="collaborateur">Collaborateur</SelectItem>
+                <SelectItem value="user">Collaborateur</SelectItem>
                 <SelectItem value="manager">Manager</SelectItem>
                 <SelectItem value="admin">Admin</SelectItem>
               </SelectContent>

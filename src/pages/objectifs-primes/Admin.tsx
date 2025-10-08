@@ -8,8 +8,10 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Settings, Users, Trophy, FileText, Shield, ChevronLeft } from "lucide-react";
 import { AddEmployeeDialog } from "@/components/objectifs-primes/AddEmployeeDialog";
 import { EmployeeObjectivesDialog } from "@/components/objectifs-primes/EmployeeObjectivesDialog";
+import { EmployeesList } from "@/components/objectifs-primes/EmployeesList";
 
 const Admin = () => {
+  const [refreshKey, setRefreshKey] = useState(0);
   const navigate = useNavigate();
   const { user } = useAuth();
   const { isAdmin } = useUserRole();
@@ -145,13 +147,10 @@ const Admin = () => {
                 <h3 className="text-lg font-semibold">Gestion des employés</h3>
                 <div className="flex gap-2">
                   <EmployeeObjectivesDialog />
-                  <AddEmployeeDialog />
+                  <AddEmployeeDialog onEmployeeAdded={() => setRefreshKey(prev => prev + 1)} />
                 </div>
               </div>
-              <div className="text-center py-12 text-muted-foreground">
-                <Users className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>Liste des employés à venir</p>
-              </div>
+              <EmployeesList key={refreshKey} />
             </Card>
           </TabsContent>
 
