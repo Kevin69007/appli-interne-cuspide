@@ -93,10 +93,19 @@ export const CreateScheduleDialog = ({
           })()
         : addDays(debut, 27); // 4 semaines
 
+      console.log("=== CRÉATION DE PLANNING ===");
+      console.log("Date de début string:", dateDebut);
+      console.log("Date de début objet:", debut);
+      console.log("Date de début jour de semaine:", debut.getDay(), "- Jour:", format(debut, "EEEE dd/MM/yyyy"));
+      console.log("Date de fin:", fin);
+      console.log("Jours sélectionnés:", selectedJours);
+
       // Générer toutes les dates entre début et fin
       let currentDate = debut;
       while (isBefore(currentDate, fin) || currentDate.getTime() === fin.getTime()) {
         const dayOfWeek = currentDate.getDay();
+        
+        console.log(`Checking date: ${format(currentDate, "EEEE dd/MM/yyyy")} (day ${dayOfWeek}) - Included: ${selectedJours.includes(dayOfWeek)}`);
         
         // Si ce jour est sélectionné
         if (selectedJours.includes(dayOfWeek)) {
@@ -117,6 +126,10 @@ export const CreateScheduleDialog = ({
         
         currentDate = addDays(currentDate, 1);
       }
+
+      console.log("Total schedules créés:", schedules.length);
+      console.log("Premier horaire:", schedules[0]?.date);
+      console.log("Dernier horaire:", schedules[schedules.length - 1]?.date);
 
       if (schedules.length === 0) {
         toast.error("Aucun planning à créer avec les jours sélectionnés");
