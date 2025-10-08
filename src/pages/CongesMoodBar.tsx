@@ -20,6 +20,19 @@ interface LeaveRequest {
   employees: { nom: string; prenom: string; equipe: string };
 }
 
+interface Absence {
+  id: string;
+  employee_id: string;
+  date: string;
+  type_absence: string;
+  detail: string;
+  statut_validation: string;
+  valide_par: string | null;
+  date_validation: string | null;
+  employees: { nom: string; prenom: string; equipe: string };
+  validator?: { email: string } | null;
+}
+
 interface MoodEntry {
   id: string;
   employee_id: string;
@@ -34,7 +47,7 @@ const CongesMoodBar = () => {
   const { user } = useAuth();
   const { isAdmin, isManager, loading: roleLoading } = useUserRole();
   const [leaveRequests, setLeaveRequests] = useState<LeaveRequest[]>([]);
-  const [allAbsences, setAllAbsences] = useState<any[]>([]);
+  const [allAbsences, setAllAbsences] = useState<Absence[]>([]);
   const [moodEntries, setMoodEntries] = useState<MoodEntry[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -69,14 +82,39 @@ const CongesMoodBar = () => {
 
       if (leavesError) throw leavesError;
 
-      // Toutes les absences
+      // Toutes les absences avec info validation
       const { data: absences, error: absencesError } = await supabase
         .from("agenda_entries")
-        .select("id, employee_id, date, type_absence, detail, statut_validation, employees(nom, prenom, equipe)")
+        .select(`
+          id, employee_id, date, type_absence, detail, statut_validation,
+          valide_par, date_validation,
+          employees(nom, prenom, equipe)
+        `)
         .eq("categorie", "absence")
         .order("date", { ascending: false });
 
       if (absencesError) throw absencesError;
+
+      // Récupérer les emails des validateurs
+      const validatorIds = [...new Set(absences?.map(a => a.valide_par).filter(Boolean) as string[])];
+      let validatorEmails: Record<string, string> = {};
+      
+      if (validatorIds.length > 0) {
+        const { data: profiles } = await supabase
+          .from("profiles")
+          .select("user_id, email")
+          .in("user_id", validatorIds);
+        
+        if (profiles) {
+          validatorEmails = profiles.reduce((acc, p) => ({ ...acc, [p.user_id]: p.email }), {});
+        }
+      }
+
+      // Ajouter les emails aux absences
+      const absencesWithValidators = absences?.map(absence => ({
+        ...absence,
+        validator: absence.valide_par ? { email: validatorEmails[absence.valide_par] || "N/A" } : null
+      })) || [];
 
       // Mood bar (quiz responses avec mood)
       const { data: moods, error: moodsError } = await supabase
@@ -89,7 +127,7 @@ const CongesMoodBar = () => {
       if (moodsError) throw moodsError;
 
       setLeaveRequests(pendingLeaves || []);
-      setAllAbsences(absences || []);
+      setAllAbsences(absencesWithValidators);
       setMoodEntries(moods || []);
     } catch (error) {
       console.error("Error fetching data:", error);
@@ -113,10 +151,14 @@ const CongesMoodBar = () => {
         return;
       }
 
-      // Update the original request status
+      // Update the original request status with validation info
       const { error: updateError } = await supabase
         .from("agenda_entries")
-        .update({ statut_validation: approved ? "valide" : "refuse" })
+        .update({ 
+          statut_validation: approved ? "valide" : "refuse",
+          valide_par: user?.id,
+          date_validation: new Date().toISOString()
+        })
         .eq("id", leaveId);
 
       if (updateError) {
@@ -155,6 +197,8 @@ const CongesMoodBar = () => {
                 type_absence: originalRequest.type_absence,
                 detail: originalRequest.detail,
                 statut_validation: 'valide',
+                valide_par: user?.id,
+                date_validation: new Date().toISOString(),
                 points: 0
               });
             }
@@ -297,6 +341,18 @@ const CongesMoodBar = () => {
                       </div>
                       {absence.detail && (
                         <div className="text-sm text-muted-foreground mt-1">{absence.detail}</div>
+                      )}
+                      {absence.statut_validation === "valide" && absence.date_validation && (
+                        <div className="text-xs text-muted-foreground mt-2">
+                          Validé par {absence.validator?.email || "N/A"} le{" "}
+                          {new Date(absence.date_validation).toLocaleString("fr-FR", {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          })}
+                        </div>
                       )}
                     </div>
                     <div className="flex items-center gap-2">

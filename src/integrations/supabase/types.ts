@@ -21,6 +21,7 @@ export type Database = {
           commentaire_validation: string | null
           created_at: string
           date: string
+          date_validation: string | null
           detail: string | null
           duree_minutes: number | null
           employee_id: string
@@ -39,6 +40,7 @@ export type Database = {
             | Database["public"]["Enums"]["type_incident_materiel"]
             | null
           updated_at: string
+          valide_par: string | null
         }
         Insert: {
           auteur_id?: string | null
@@ -46,6 +48,7 @@ export type Database = {
           commentaire_validation?: string | null
           created_at?: string
           date: string
+          date_validation?: string | null
           detail?: string | null
           duree_minutes?: number | null
           employee_id: string
@@ -66,6 +69,7 @@ export type Database = {
             | Database["public"]["Enums"]["type_incident_materiel"]
             | null
           updated_at?: string
+          valide_par?: string | null
         }
         Update: {
           auteur_id?: string | null
@@ -73,6 +77,7 @@ export type Database = {
           commentaire_validation?: string | null
           created_at?: string
           date?: string
+          date_validation?: string | null
           detail?: string | null
           duree_minutes?: number | null
           employee_id?: string
@@ -93,6 +98,7 @@ export type Database = {
             | Database["public"]["Enums"]["type_incident_materiel"]
             | null
           updated_at?: string
+          valide_par?: string | null
         }
         Relationships: [
           {
