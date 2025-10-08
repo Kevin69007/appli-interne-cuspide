@@ -56,20 +56,29 @@ const Taches = () => {
   }, [currentEmployeeId]);
 
   const fetchCurrentEmployee = async () => {
+    console.log("Fetching employee for user_id:", user?.id);
     const { data, error } = await supabase
       .from("employees")
-      .select("id")
+      .select("id, nom, prenom, user_id")
       .eq("user_id", user?.id)
       .single();
 
+    console.log("Employee data:", data, "Error:", error);
     if (!error && data) {
       setCurrentEmployeeId(data.id);
+      console.log("Current employee ID set to:", data.id);
+    } else {
+      console.error("Failed to fetch employee:", error);
     }
   };
 
   const fetchTasks = async () => {
-    if (!currentEmployeeId) return;
+    if (!currentEmployeeId) {
+      console.log("No currentEmployeeId, skipping task fetch");
+      return;
+    }
 
+    console.log("Fetching tasks for employee ID:", currentEmployeeId);
     setLoading(true);
     try {
       // Mes tâches
@@ -85,6 +94,7 @@ const Taches = () => {
         .neq("statut", "annulee")
         .order("date_echeance");
 
+      console.log("My tasks query result:", myTasks, "Error:", myError);
       if (myError) throw myError;
 
       // Tâches où je suis en dépendance
