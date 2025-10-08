@@ -247,7 +247,7 @@ export const PlanningCalendar = () => {
                               {schedule.employees.prenom} {schedule.employees.nom}
                             </div>
                             <div className="text-muted-foreground">
-                              {schedule.heure_debut} - {schedule.heure_fin}
+                              {schedule.heure_debut.slice(0, 5)} - {schedule.heure_fin.slice(0, 5)}
                             </div>
                           </div>
                           {canManage && (
