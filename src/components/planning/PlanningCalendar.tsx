@@ -93,12 +93,19 @@ export const PlanningCalendar = () => {
     const firstDay = new Date(year, month, 1);
     const lastDay = new Date(year, month + 1, 0);
     const daysInMonth = lastDay.getDate();
-    const startingDayOfWeek = firstDay.getDay();
+    
+    // getDay() retourne 0 pour dimanche, 1 pour lundi, etc.
+    // On veut que notre calendrier commence par lundi (1), donc on ajuste
+    let startingDayOfWeek = firstDay.getDay();
+    // Convertir pour que lundi = 0, mardi = 1, ..., dimanche = 6
+    startingDayOfWeek = startingDayOfWeek === 0 ? 6 : startingDayOfWeek - 1;
 
     const days = [];
+    // Ajouter les cases vides pour les jours avant le début du mois
     for (let i = 0; i < startingDayOfWeek; i++) {
       days.push(null);
     }
+    // Ajouter tous les jours du mois
     for (let i = 1; i <= daysInMonth; i++) {
       days.push(new Date(year, month, i));
     }
