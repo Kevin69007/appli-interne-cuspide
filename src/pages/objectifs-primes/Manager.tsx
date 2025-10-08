@@ -5,6 +5,7 @@ import { useUserRole } from "@/hooks/useUserRole";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Calendar, Users, Target, Award, ChevronLeft } from "lucide-react";
+import { MonthCalendar } from "@/components/objectifs-primes/MonthCalendar";
 
 const Manager = () => {
   const navigate = useNavigate();
@@ -102,13 +103,7 @@ const Manager = () => {
             </p>
           </div>
           
-          <div className="h-[600px] flex items-center justify-center border-2 border-dashed rounded-lg">
-            <div className="text-center text-muted-foreground">
-              <Calendar className="h-12 w-12 mx-auto mb-4 opacity-50" />
-              <p className="font-medium">Calendrier interactif</p>
-              <p className="text-sm">Fonctionnalité en développement</p>
-            </div>
-          </div>
+          <MonthCalendar />
         </Card>
       </main>
     </div>
