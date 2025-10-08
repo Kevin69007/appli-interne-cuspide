@@ -83,6 +83,7 @@ const Index = () => {
               { title: "Entretiens Locaux", icon: "🧼" },
               { title: "Info Pointage", icon: "⏱️" },
               { title: "Dashboard", icon: "📊" },
+              { title: "Journal d'audit", icon: "📜", path: "/logs", restricted: true },
             ].filter(item => !item.restricted || isAdmin || isManager).map((item, index) => (
               <div
                 key={index}
