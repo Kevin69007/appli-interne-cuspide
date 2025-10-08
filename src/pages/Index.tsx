@@ -3,6 +3,9 @@ import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole } from "@/hooks/useUserRole";
 import { Sparkles } from "lucide-react";
+import { AgendaWidget } from "@/components/employe/AgendaWidget";
+import { TachesWidget } from "@/components/employe/TachesWidget";
+import { InfosImportantesWidget } from "@/components/employe/InfosImportantesWidget";
 
 const Index = () => {
   const { user, loading } = useAuth();
@@ -56,6 +59,13 @@ const Index = () => {
             <p className="text-muted-foreground text-lg">
               Votre portail interne pour le laboratoire de prothèse dentaire
             </p>
+          </div>
+
+          {/* Widgets rapides pour tous les utilisateurs */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            <AgendaWidget />
+            <TachesWidget />
+            <InfosImportantesWidget />
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
