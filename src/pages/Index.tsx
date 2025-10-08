@@ -65,6 +65,7 @@ const Index = () => {
               { title: "Protocoles", icon: "📝", path: "/protocoles" },
               { title: "Quiz", icon: "🧠", path: "/quiz" },
               { title: "Tâches", icon: "✅", path: "/taches" },
+              { title: "Communication Générale", icon: "📢", path: "/communication-generale", restricted: true },
               { title: "Congés & Mood Bar", icon: "🌴", path: "/conges-mood-bar", restricted: true },
               { title: "Commandes", icon: "🛒" },
               { title: "Enquêtes & Idées", icon: "💡" },

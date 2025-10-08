@@ -5,6 +5,9 @@ import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Trophy, Target, Clock, AlertCircle, ChevronLeft, Star } from "lucide-react";
 import { MonthCalendar } from "@/components/objectifs-primes/MonthCalendar";
+import { AgendaWidget } from "@/components/employe/AgendaWidget";
+import { TachesWidget } from "@/components/employe/TachesWidget";
+import { InfosImportantesWidget } from "@/components/employe/InfosImportantesWidget";
 
 const Employe = () => {
   const navigate = useNavigate();
@@ -38,6 +41,13 @@ const Employe = () => {
       </header>
 
       <main className="container mx-auto px-4 py-8">
+        {/* Widgets rapides */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+          <AgendaWidget />
+          <TachesWidget />
+          <InfosImportantesWidget />
+        </div>
+
         {/* Score global */}
         <Card className="p-8 mb-8 bg-gradient-to-br from-primary/10 via-background to-background">
           <div className="text-center mb-6">

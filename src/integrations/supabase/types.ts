@@ -267,6 +267,90 @@ export type Database = {
         }
         Relationships: []
       }
+      communication_lectures: {
+        Row: {
+          communication_id: string
+          employee_id: string
+          id: string
+          lu_at: string
+        }
+        Insert: {
+          communication_id: string
+          employee_id: string
+          id?: string
+          lu_at?: string
+        }
+        Update: {
+          communication_id?: string
+          employee_id?: string
+          id?: string
+          lu_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "communication_lectures_communication_id_fkey"
+            columns: ["communication_id"]
+            isOneToOne: false
+            referencedRelation: "communications"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "communication_lectures_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      communications: {
+        Row: {
+          contenu: string
+          created_at: string
+          created_by: string
+          date_expiration: string | null
+          equipes: string[] | null
+          groupes: string[] | null
+          id: string
+          is_active: boolean | null
+          require_confirmation: boolean | null
+          show_in_calendar: boolean | null
+          titre: string
+          type_destinataire: Database["public"]["Enums"]["destinataire_type"]
+          updated_at: string
+        }
+        Insert: {
+          contenu: string
+          created_at?: string
+          created_by: string
+          date_expiration?: string | null
+          equipes?: string[] | null
+          groupes?: string[] | null
+          id?: string
+          is_active?: boolean | null
+          require_confirmation?: boolean | null
+          show_in_calendar?: boolean | null
+          titre: string
+          type_destinataire?: Database["public"]["Enums"]["destinataire_type"]
+          updated_at?: string
+        }
+        Update: {
+          contenu?: string
+          created_at?: string
+          created_by?: string
+          date_expiration?: string | null
+          equipes?: string[] | null
+          groupes?: string[] | null
+          id?: string
+          is_active?: boolean | null
+          require_confirmation?: boolean | null
+          show_in_calendar?: boolean | null
+          titre?: string
+          type_destinataire?: Database["public"]["Enums"]["destinataire_type"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       conditional_blocks: {
         Row: {
           bloc_id: string
@@ -1637,6 +1721,7 @@ export type Database = {
         | "absence"
         | "incident"
         | "a_faire"
+      destinataire_type: "tout_le_monde" | "selection_equipe" | "groupe"
       gravite_erreur: "mineure" | "moyenne" | "majeure" | "critique"
       job_category: "Admin" | "Prothèse"
       statut_objectif: "atteint" | "en_cours" | "non_atteint"
@@ -1787,6 +1872,7 @@ export const Constants = {
         "incident",
         "a_faire",
       ],
+      destinataire_type: ["tout_le_monde", "selection_equipe", "groupe"],
       gravite_erreur: ["mineure", "moyenne", "majeure", "critique"],
       job_category: ["Admin", "Prothèse"],
       statut_objectif: ["atteint", "en_cours", "non_atteint"],
