@@ -47,6 +47,7 @@ export const AddEmployeeDialog = ({ onEmployeeAdded }: { onEmployeeAdded?: () =>
           nom: formData.nom,
           prenom: formData.prenom,
           poste: formData.poste,
+          email: formData.email,
           user_id: authData.user.id
         }]);
 

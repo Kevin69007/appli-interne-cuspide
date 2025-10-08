@@ -35,7 +35,7 @@ export const EditEmployeeDialog = ({ open, onOpenChange, employeeId, onEmployeeU
 
   const fetchEmployeeData = async () => {
     try {
-      // Fetch employee data
+      // Fetch employee data including email
       const { data: empData, error: empError } = await supabase
         .from("employees")
         .select("*, user_id")
@@ -44,36 +44,31 @@ export const EditEmployeeDialog = ({ open, onOpenChange, employeeId, onEmployeeU
 
       if (empError) throw empError;
 
-      // Fetch user email
+      // Fetch user role
+      let role = "user";
       if (empData.user_id) {
-        const { data: { user }, error: userError } = await supabase.auth.admin.getUserById(empData.user_id);
-        
-        if (!userError && user) {
-          // Fetch role
-          const { data: roleData } = await supabase
-            .from("user_roles")
-            .select("role")
-            .eq("user_id", empData.user_id);
+        const { data: roleData } = await supabase
+          .from("user_roles")
+          .select("role")
+          .eq("user_id", empData.user_id);
 
-          let role = "user";
-          if (roleData && roleData.length > 0) {
-            const roles = roleData.map(r => r.role);
-            if (roles.includes("admin")) {
-              role = "admin";
-            } else if (roles.includes("manager")) {
-              role = "manager";
-            }
+        if (roleData && roleData.length > 0) {
+          const roles = roleData.map(r => r.role);
+          if (roles.includes("admin")) {
+            role = "admin";
+          } else if (roles.includes("manager")) {
+            role = "manager";
           }
-
-          setFormData({
-            nom: empData.nom,
-            prenom: empData.prenom,
-            poste: empData.poste || "",
-            email: user.email || "",
-            role: role as "user" | "manager" | "admin"
-          });
         }
       }
+
+      setFormData({
+        nom: empData.nom,
+        prenom: empData.prenom,
+        poste: empData.poste || "",
+        email: empData.email || "",
+        role: role as "user" | "manager" | "admin"
+      });
     } catch (error) {
       console.error("Error fetching employee:", error);
       toast.error("Erreur lors du chargement des données");

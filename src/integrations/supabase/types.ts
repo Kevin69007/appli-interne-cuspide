@@ -495,6 +495,7 @@ export type Database = {
         Row: {
           atelier: string | null
           created_at: string
+          email: string | null
           equipe: string | null
           id: string
           nom: string
@@ -507,6 +508,7 @@ export type Database = {
         Insert: {
           atelier?: string | null
           created_at?: string
+          email?: string | null
           equipe?: string | null
           id?: string
           nom: string
@@ -519,6 +521,7 @@ export type Database = {
         Update: {
           atelier?: string | null
           created_at?: string
+          email?: string | null
           equipe?: string | null
           id?: string
           nom?: string
