@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
+import { addDays, startOfDay, isBefore, isAfter, format } from "date-fns";
 
 interface Employee {
   id: string;
@@ -19,19 +20,31 @@ interface Employee {
 interface CreateScheduleDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  selectedDate: Date | null;
   onScheduleCreated?: () => void;
 }
+
+const JOURS_SEMAINE = [
+  { value: 1, label: "Lundi" },
+  { value: 2, label: "Mardi" },
+  { value: 3, label: "Mercredi" },
+  { value: 4, label: "Jeudi" },
+  { value: 5, label: "Vendredi" },
+  { value: 6, label: "Samedi" },
+  { value: 0, label: "Dimanche" },
+];
 
 export const CreateScheduleDialog = ({
   open,
   onOpenChange,
-  selectedDate,
   onScheduleCreated,
 }: CreateScheduleDialogProps) => {
   const { user } = useAuth();
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [selectedEmployees, setSelectedEmployees] = useState<string[]>([]);
+  const [selectedJours, setSelectedJours] = useState<number[]>([1, 2, 3, 4, 5]); // Lun-Ven par défaut
+  const [dateDebut, setDateDebut] = useState(format(new Date(), "yyyy-MM-dd"));
+  const [hasDateFin, setHasDateFin] = useState(false);
+  const [dateFin, setDateFin] = useState("");
   const [heureDebut, setHeureDebut] = useState("09:00");
   const [heureFin, setHeureFin] = useState("17:00");
   const [pauseMinutes, setPauseMinutes] = useState(60);
@@ -57,29 +70,52 @@ export const CreateScheduleDialog = ({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedDate || selectedEmployees.length === 0 || !user) {
-      toast.error("Veuillez sélectionner au moins un employé");
+    if (selectedEmployees.length === 0 || selectedJours.length === 0 || !user) {
+      toast.error("Veuillez sélectionner au moins un employé et un jour");
       return;
     }
 
     setLoading(true);
 
     try {
-      const schedules = selectedEmployees.map((employeeId) => ({
-        employee_id: employeeId,
-        date: selectedDate.toISOString().split("T")[0],
-        heure_debut: heureDebut,
-        heure_fin: heureFin,
-        pause_minutes: pauseMinutes,
-        commentaire: commentaire || null,
-        created_by: user.id,
-      }));
+      const schedules = [];
+      const debut = startOfDay(new Date(dateDebut));
+      const fin = hasDateFin && dateFin ? startOfDay(new Date(dateFin)) : debut;
+
+      // Générer toutes les dates entre début et fin
+      let currentDate = debut;
+      while (!isAfter(currentDate, fin)) {
+        const dayOfWeek = currentDate.getDay();
+        
+        // Si ce jour est sélectionné
+        if (selectedJours.includes(dayOfWeek)) {
+          // Créer un horaire pour chaque employé sélectionné
+          selectedEmployees.forEach((employeeId) => {
+            schedules.push({
+              employee_id: employeeId,
+              date: format(currentDate, "yyyy-MM-dd"),
+              heure_debut: heureDebut,
+              heure_fin: heureFin,
+              pause_minutes: pauseMinutes,
+              commentaire: commentaire || null,
+              created_by: user.id,
+            });
+          });
+        }
+        
+        currentDate = addDays(currentDate, 1);
+      }
+
+      if (schedules.length === 0) {
+        toast.error("Aucun planning à créer avec les jours sélectionnés");
+        return;
+      }
 
       const { error } = await supabase.from("work_schedules").insert(schedules);
 
       if (error) throw error;
 
-      toast.success(`Planning créé pour ${selectedEmployees.length} employé(s)`);
+      toast.success(`${schedules.length} horaire(s) créé(s) pour ${selectedEmployees.length} employé(s)`);
       onScheduleCreated?.();
       onOpenChange(false);
       resetForm();
@@ -93,6 +129,10 @@ export const CreateScheduleDialog = ({
 
   const resetForm = () => {
     setSelectedEmployees([]);
+    setSelectedJours([1, 2, 3, 4, 5]);
+    setDateDebut(format(new Date(), "yyyy-MM-dd"));
+    setHasDateFin(false);
+    setDateFin("");
     setHeureDebut("09:00");
     setHeureFin("17:00");
     setPauseMinutes(60);
@@ -107,6 +147,14 @@ export const CreateScheduleDialog = ({
     );
   };
 
+  const handleJourToggle = (jour: number) => {
+    setSelectedJours((prev) =>
+      prev.includes(jour)
+        ? prev.filter((j) => j !== jour)
+        : [...prev, jour]
+    );
+  };
+
   const groupedEmployees = employees.reduce((acc, emp) => {
     const team = emp.equipe || "Sans équipe";
     if (!acc[team]) acc[team] = [];
@@ -118,10 +166,7 @@ export const CreateScheduleDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>
-            Créer un planning
-            {selectedDate && ` - ${selectedDate.toLocaleDateString("fr-FR")}`}
-          </DialogTitle>
+          <DialogTitle>Créer un planning</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-6">
@@ -148,6 +193,62 @@ export const CreateScheduleDialog = ({
                   ))}
                 </div>
               ))}
+            </div>
+          </div>
+
+          <div className="space-y-4">
+            <Label>Jours de la semaine ({selectedJours.length})</Label>
+            <div className="flex flex-wrap gap-2">
+              {JOURS_SEMAINE.map((jour) => (
+                <div key={jour.value} className="flex items-center space-x-2">
+                  <Checkbox
+                    id={`jour-${jour.value}`}
+                    checked={selectedJours.includes(jour.value)}
+                    onCheckedChange={() => handleJourToggle(jour.value)}
+                  />
+                  <label
+                    htmlFor={`jour-${jour.value}`}
+                    className="text-sm cursor-pointer"
+                  >
+                    {jour.label}
+                  </label>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label htmlFor="dateDebut">Date de début</Label>
+              <Input
+                id="dateDebut"
+                type="date"
+                value={dateDebut}
+                onChange={(e) => setDateDebut(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="space-y-2">
+              <div className="flex items-center space-x-2 mb-2">
+                <Checkbox
+                  id="hasDateFin"
+                  checked={hasDateFin}
+                  onCheckedChange={(checked) => setHasDateFin(checked === true)}
+                />
+                <Label htmlFor="hasDateFin" className="cursor-pointer">
+                  Date de fin
+                </Label>
+              </div>
+              {hasDateFin && (
+                <Input
+                  id="dateFin"
+                  type="date"
+                  value={dateFin}
+                  onChange={(e) => setDateFin(e.target.value)}
+                  min={dateDebut}
+                />
+              )}
             </div>
           </div>
 
@@ -200,7 +301,7 @@ export const CreateScheduleDialog = ({
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
               Annuler
             </Button>
-            <Button type="submit" disabled={loading || selectedEmployees.length === 0}>
+            <Button type="submit" disabled={loading || selectedEmployees.length === 0 || selectedJours.length === 0}>
               {loading ? "Création..." : "Créer le planning"}
             </Button>
           </div>

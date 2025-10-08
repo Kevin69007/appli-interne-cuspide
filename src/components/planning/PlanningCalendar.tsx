@@ -145,6 +145,13 @@ export const PlanningCalendar = () => {
             </SelectContent>
           </Select>
         </div>
+
+        {canManage && (
+          <Button onClick={() => setShowCreateDialog(true)}>
+            <Plus className="h-4 w-4 mr-2" />
+            Ajouter un planning
+          </Button>
+        )}
       </div>
 
       <div className="grid grid-cols-7 gap-2">
@@ -200,7 +207,6 @@ export const PlanningCalendar = () => {
         <CreateScheduleDialog
           open={showCreateDialog}
           onOpenChange={setShowCreateDialog}
-          selectedDate={selectedDate}
           onScheduleCreated={fetchSchedules}
         />
       )}
