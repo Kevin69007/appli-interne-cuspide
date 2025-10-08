@@ -28,7 +28,7 @@ export interface Communication {
 const CommunicationGenerale = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { isAdmin, isManager } = useUserRole();
+  const { isAdmin, isManager, loading: roleLoading } = useUserRole();
   const [communications, setCommunications] = useState<Communication[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
@@ -39,13 +39,16 @@ const CommunicationGenerale = () => {
       return;
     }
 
+    // Wait for role to load before checking permissions
+    if (roleLoading) return;
+
     if (!isAdmin && !isManager) {
       navigate("/");
       return;
     }
 
     fetchCommunications();
-  }, [user, isAdmin, isManager, navigate]);
+  }, [user, isAdmin, isManager, roleLoading, navigate]);
 
   const fetchCommunications = async () => {
     try {
@@ -62,7 +65,7 @@ const CommunicationGenerale = () => {
     }
   };
 
-  if (!user || (!isAdmin && !isManager)) return null;
+  if (!user || roleLoading || (!isAdmin && !isManager)) return null;
 
   return (
     <div className="min-h-screen bg-background">
