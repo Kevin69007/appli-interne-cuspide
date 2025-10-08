@@ -10,6 +10,32 @@ import { toast } from "sonner";
 import { Target, X } from "lucide-react";
 import { CreateObjectiveDialog } from "./CreateObjectiveDialog";
 
+// Fonction helper pour générer les dates selon la récurrence
+const generateRecurringDates = (year: number, month: number, recurrence: "jour" | "semaine" | "mois"): string[] => {
+  const dates: string[] = [];
+  const daysInMonth = new Date(year, month, 0).getDate();
+  
+  if (recurrence === "jour") {
+    // Chaque jour du mois
+    for (let day = 1; day <= daysInMonth; day++) {
+      dates.push(new Date(year, month - 1, day).toISOString().split('T')[0]);
+    }
+  } else if (recurrence === "semaine") {
+    // Chaque vendredi du mois (jour 5 de la semaine, 0 = dimanche)
+    for (let day = 1; day <= daysInMonth; day++) {
+      const date = new Date(year, month - 1, day);
+      if (date.getDay() === 5) { // Vendredi
+        dates.push(date.toISOString().split('T')[0]);
+      }
+    }
+  } else if (recurrence === "mois") {
+    // Dernier jour du mois
+    dates.push(new Date(year, month - 1, daysInMonth).toISOString().split('T')[0]);
+  }
+  
+  return dates;
+};
+
 interface Employee {
   id: string;
   nom: string;
@@ -20,6 +46,7 @@ interface Objective {
   nom: string;
   valeur_cible: number;
   indicateur: string;
+  recurrence: "jour" | "semaine" | "mois";
 }
 
 export const EmployeeObjectivesDialog = () => {
@@ -103,18 +130,25 @@ export const EmployeeObjectivesDialog = () => {
     setLoading(true);
 
     try {
-      // Créer une entrée pour chaque combinaison employé/mois/année
+      // Générer les dates selon la récurrence de chaque objectif
       const entries = [];
+      
       for (const employeeId of selectedEmployees) {
         for (const year of selectedYears) {
           for (const month of selectedMonths) {
-            entries.push({
-              employee_id: employeeId,
-              date: new Date(year, month - 1, 1).toISOString().split('T')[0],
-              categorie: 'objectifs' as const,
-              detail: JSON.stringify(objectives),
-              statut_validation: 'en_attente' as const
-            });
+            for (const objective of objectives) {
+              const dates = generateRecurringDates(year, month, objective.recurrence);
+              
+              for (const date of dates) {
+                entries.push({
+                  employee_id: employeeId,
+                  date: date,
+                  categorie: 'objectifs' as const,
+                  detail: JSON.stringify([objective]),
+                  statut_validation: 'en_attente' as const
+                });
+              }
+            }
           }
         }
       }
@@ -125,8 +159,7 @@ export const EmployeeObjectivesDialog = () => {
 
       if (error) throw error;
 
-      const totalEntries = selectedEmployees.length * selectedMonths.length * selectedYears.length;
-      toast.success(`Les objectifs ont été définis pour ${totalEntries} période(s).`);
+      toast.success(`${entries.length} objectif(s) ont été créés avec succès.`);
 
       setSelectedEmployees([]);
       setSelectedMonths([new Date().getMonth() + 1]);
@@ -233,6 +266,9 @@ export const EmployeeObjectivesDialog = () => {
                       <p className="font-medium">{obj.nom}</p>
                       <p className="text-sm text-muted-foreground">
                         Cible: {obj.valeur_cible} {obj.indicateur}
+                      </p>
+                      <p className="text-xs text-muted-foreground">
+                        Récurrence: {obj.recurrence === "jour" ? "Quotidien" : obj.recurrence === "semaine" ? "Hebdomadaire (vendredi)" : "Mensuel"}
                       </p>
                     </div>
                     <Button

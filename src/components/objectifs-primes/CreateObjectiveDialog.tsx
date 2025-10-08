@@ -3,12 +3,14 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from 
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Plus } from "lucide-react";
 
 interface Objective {
   nom: string;
   valeur_cible: number;
   indicateur: string;
+  recurrence: "jour" | "semaine" | "mois";
 }
 
 interface CreateObjectiveDialogProps {
@@ -20,13 +22,14 @@ export const CreateObjectiveDialog = ({ onObjectiveCreated }: CreateObjectiveDia
   const [formData, setFormData] = useState({
     nom: "",
     valeur_cible: 0,
-    indicateur: ""
+    indicateur: "",
+    recurrence: "mois" as "jour" | "semaine" | "mois"
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     onObjectiveCreated(formData);
-    setFormData({ nom: "", valeur_cible: 0, indicateur: "" });
+    setFormData({ nom: "", valeur_cible: 0, indicateur: "", recurrence: "mois" });
     setOpen(false);
   };
 
@@ -75,6 +78,20 @@ export const CreateObjectiveDialog = ({ onObjectiveCreated }: CreateObjectiveDia
               placeholder="Ex: pièces, %, heures..."
               required
             />
+          </div>
+
+          <div>
+            <Label htmlFor="recurrence">Récurrence</Label>
+            <Select value={formData.recurrence} onValueChange={(v: any) => setFormData({ ...formData, recurrence: v })}>
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="jour">Quotidien (chaque jour)</SelectItem>
+                <SelectItem value="semaine">Hebdomadaire (chaque vendredi)</SelectItem>
+                <SelectItem value="mois">Mensuel (dernier jour du mois)</SelectItem>
+              </SelectContent>
+            </Select>
           </div>
 
           <div className="flex justify-end gap-2">

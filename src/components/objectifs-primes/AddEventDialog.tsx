@@ -115,7 +115,6 @@ export const AddEventDialog = ({ open, onOpenChange, selectedDate, onEventAdded 
               <SelectContent>
                 <SelectItem value="incident">Incident</SelectItem>
                 <SelectItem value="absence">Absence</SelectItem>
-                <SelectItem value="objectif">Objectif</SelectItem>
                 <SelectItem value="formation">Formation</SelectItem>
               </SelectContent>
             </Select>
