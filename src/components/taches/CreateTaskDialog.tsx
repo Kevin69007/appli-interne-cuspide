@@ -258,14 +258,14 @@ export const CreateTaskDialog = ({
             <div>
               <Label htmlFor="depend_de">Dépendance (optionnel)</Label>
               <Select
-                value={formData.depend_de || ""}
-                onValueChange={(v) => setFormData({ ...formData, depend_de: v || null })}
+                value={formData.depend_de || "none"}
+                onValueChange={(v) => setFormData({ ...formData, depend_de: v === "none" ? null : v })}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="Aucune dépendance" />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="">Aucune</SelectItem>
+                  <SelectItem value="none">Aucune</SelectItem>
                   {employees
                     .filter((e) => e.id !== formData.assigned_to)
                     .map((emp) => (
