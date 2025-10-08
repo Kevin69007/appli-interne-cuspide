@@ -1,10 +1,12 @@
 import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUserRole } from "@/hooks/useUserRole";
 import { Sparkles } from "lucide-react";
 
 const Index = () => {
   const { user, loading } = useAuth();
+  const { isAdmin, isManager } = useUserRole();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -62,14 +64,15 @@ const Index = () => {
               { title: "Objectifs & Primes", icon: "🎯", path: "/objectifs-primes" },
               { title: "Protocoles", icon: "📝", path: "/protocoles" },
               { title: "Quiz", icon: "🧠", path: "/quiz" },
+              { title: "Tâches", icon: "✅", path: "/taches" },
+              { title: "Congés & Mood Bar", icon: "🌴", path: "/conges-mood-bar", restricted: true },
               { title: "Commandes", icon: "🛒" },
-              { title: "Congés & Mood Bar", icon: "🌴" },
               { title: "Enquêtes & Idées", icon: "💡" },
               { title: "Planning", icon: "📅" },
               { title: "Entretiens Locaux", icon: "🧼" },
               { title: "Info Pointage", icon: "⏱️" },
               { title: "Dashboard", icon: "📊" },
-            ].map((item, index) => (
+            ].filter(item => !item.restricted || isAdmin || isManager).map((item, index) => (
               <div
                 key={index}
                 onClick={() => item.path && navigate(item.path)}

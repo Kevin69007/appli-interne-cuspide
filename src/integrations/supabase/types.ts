@@ -1229,6 +1229,89 @@ export type Database = {
         }
         Relationships: []
       }
+      tasks: {
+        Row: {
+          assigned_to: string
+          commentaires: Json | null
+          created_at: string
+          created_by: string
+          date_echeance: string
+          depend_de: string | null
+          description: string | null
+          id: string
+          parent_task_id: string | null
+          priorite: string | null
+          rappels: Json | null
+          recurrence: Json | null
+          statut: string | null
+          titre: string
+          updated_at: string
+        }
+        Insert: {
+          assigned_to: string
+          commentaires?: Json | null
+          created_at?: string
+          created_by: string
+          date_echeance: string
+          depend_de?: string | null
+          description?: string | null
+          id?: string
+          parent_task_id?: string | null
+          priorite?: string | null
+          rappels?: Json | null
+          recurrence?: Json | null
+          statut?: string | null
+          titre: string
+          updated_at?: string
+        }
+        Update: {
+          assigned_to?: string
+          commentaires?: Json | null
+          created_at?: string
+          created_by?: string
+          date_echeance?: string
+          depend_de?: string | null
+          description?: string | null
+          id?: string
+          parent_task_id?: string | null
+          priorite?: string | null
+          rappels?: Json | null
+          recurrence?: Json | null
+          statut?: string | null
+          titre?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tasks_assigned_to_fkey"
+            columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_depend_de_fkey"
+            columns: ["depend_de"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_parent_task_id_fkey"
+            columns: ["parent_task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       test_results: {
         Row: {
           candidate_email: string | null
@@ -1544,17 +1627,20 @@ export type Database = {
         | "objectifs"
         | "horaires"
         | "materiel"
-        | "challenges"
+        | "attitude"
+        | "absence"
+        | "incident"
+        | "a_faire"
       gravite_erreur: "mineur" | "majeur" | "critique"
       job_category: "Admin" | "Prothèse"
       statut_objectif: "atteint" | "en_cours" | "non_atteint"
       statut_score_mensuel: "ouvert" | "cloture" | "publie"
       statut_validation: "en_attente" | "valide" | "refuse"
-      type_absence: "retard" | "absence"
+      type_absence: "demande_conges" | "arret_maladie" | "injustifie"
       type_incident_materiel:
-        | "poste_sale"
-        | "machine_non_eteinte"
-        | "entretien_non_fait"
+        | "retard"
+        | "negligence"
+        | "erreur_protocole"
         | "autre"
       type_quiz: "technique" | "collegue" | "mood"
     }
@@ -1690,18 +1776,21 @@ export const Constants = {
         "objectifs",
         "horaires",
         "materiel",
-        "challenges",
+        "attitude",
+        "absence",
+        "incident",
+        "a_faire",
       ],
       gravite_erreur: ["mineur", "majeur", "critique"],
       job_category: ["Admin", "Prothèse"],
       statut_objectif: ["atteint", "en_cours", "non_atteint"],
       statut_score_mensuel: ["ouvert", "cloture", "publie"],
       statut_validation: ["en_attente", "valide", "refuse"],
-      type_absence: ["retard", "absence"],
+      type_absence: ["demande_conges", "arret_maladie", "injustifie"],
       type_incident_materiel: [
-        "poste_sale",
-        "machine_non_eteinte",
-        "entretien_non_fait",
+        "retard",
+        "negligence",
+        "erreur_protocole",
         "autre",
       ],
       type_quiz: ["technique", "collegue", "mood"],

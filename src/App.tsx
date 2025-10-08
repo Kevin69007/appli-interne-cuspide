@@ -13,6 +13,8 @@ import ObjectifsPrimes from "./pages/ObjectifsPrimes";
 import ObjectifsPrimesManager from "./pages/objectifs-primes/Manager";
 import ObjectifsPrimesEmploye from "./pages/objectifs-primes/Employe";
 import ObjectifsPrimesAdmin from "./pages/objectifs-primes/Admin";
+import Taches from "./pages/Taches";
+import CongesMoodBar from "./pages/CongesMoodBar";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -45,6 +47,8 @@ const App = () => (
             <Route path="/objectifs-primes/manager" element={<ObjectifsPrimesManager />} />
             <Route path="/objectifs-primes/employe" element={<ObjectifsPrimesEmploye />} />
             <Route path="/objectifs-primes/admin" element={<ObjectifsPrimesAdmin />} />
+            <Route path="/taches" element={<Taches />} />
+            <Route path="/conges-mood-bar" element={<CongesMoodBar />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
