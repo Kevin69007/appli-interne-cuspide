@@ -80,11 +80,14 @@ export const CreateScheduleDialog = ({
     try {
       const schedules = [];
       const debut = startOfDay(new Date(dateDebut));
-      const fin = hasDateFin && dateFin ? startOfDay(new Date(dateFin)) : debut;
+      // Si pas de date de fin, on prend 4 semaines par défaut pour couvrir tous les jours sélectionnés
+      const fin = hasDateFin && dateFin 
+        ? startOfDay(new Date(dateFin)) 
+        : addDays(debut, 27); // 4 semaines
 
       // Générer toutes les dates entre début et fin
       let currentDate = debut;
-      while (!isAfter(currentDate, fin)) {
+      while (isBefore(currentDate, fin) || currentDate.getTime() === fin.getTime()) {
         const dayOfWeek = currentDate.getDay();
         
         // Si ce jour est sélectionné
