@@ -5,7 +5,7 @@ import { useUserRole } from "@/hooks/useUserRole";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Settings, Users, Trophy, FileText, Shield, ChevronLeft } from "lucide-react";
+import { Settings, Users, Trophy, FileText, Shield, ChevronLeft, Calendar, Target, Award } from "lucide-react";
 import { AddEmployeeDialog } from "@/components/objectifs-primes/AddEmployeeDialog";
 import { EmployeeObjectivesDialog } from "@/components/objectifs-primes/EmployeeObjectivesDialog";
 import { EmployeesList } from "@/components/objectifs-primes/EmployeesList";
@@ -14,9 +14,9 @@ const Admin = () => {
   const [refreshKey, setRefreshKey] = useState(0);
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { isAdmin } = useUserRole();
+  const { isAdmin, isManager } = useUserRole();
 
-  if (!user || !isAdmin) {
+  if (!user || (!isAdmin && !isManager)) {
     navigate("/auth");
     return null;
   }
@@ -36,7 +36,9 @@ const Admin = () => {
               </Button>
               <div>
                 <h1 className="text-2xl font-bold">Administration</h1>
-                <p className="text-sm text-muted-foreground">Objectifs & Primes</p>
+                <p className="text-sm text-muted-foreground">
+                  Objectifs & Primes - {isAdmin ? "Administrateur" : "Manager"}
+                </p>
               </div>
             </div>
           </div>
@@ -44,6 +46,56 @@ const Admin = () => {
       </header>
 
       <main className="container mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+          <Card className="p-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-primary/10 rounded-lg">
+                <Users className="h-6 w-6 text-primary" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Employés actifs</p>
+                <p className="text-2xl font-bold">12</p>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-green-500/10 rounded-lg">
+                <Target className="h-6 w-6 text-green-600" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Objectifs atteints</p>
+                <p className="text-2xl font-bold">85%</p>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-orange-500/10 rounded-lg">
+                <Calendar className="h-6 w-6 text-orange-600" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">En attente</p>
+                <p className="text-2xl font-bold">5</p>
+              </div>
+            </div>
+          </Card>
+
+          <Card className="p-6">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-purple-500/10 rounded-lg">
+                <Award className="h-6 w-6 text-purple-600" />
+              </div>
+              <div>
+                <p className="text-sm text-muted-foreground">Score moyen</p>
+                <p className="text-2xl font-bold">82/100</p>
+              </div>
+            </div>
+          </Card>
+        </div>
+
         <Tabs defaultValue="config" className="space-y-6">
           <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="config">

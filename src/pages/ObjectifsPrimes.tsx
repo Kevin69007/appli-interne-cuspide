@@ -16,10 +16,8 @@ const ObjectifsPrimes = () => {
     }
 
     if (!roleLoading && role) {
-      if (role === "admin") {
+      if (role === "admin" || role === "manager") {
         navigate("/objectifs-primes/admin");
-      } else if (role === "manager") {
-        navigate("/objectifs-primes/manager");
       } else {
         navigate("/objectifs-primes/employe");
       }

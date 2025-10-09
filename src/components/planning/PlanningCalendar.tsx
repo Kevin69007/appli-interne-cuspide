@@ -3,6 +3,7 @@ import { ChevronLeft, ChevronRight, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { CreateScheduleDialog } from "./CreateScheduleDialog";
+import { AddEventDialog } from "@/components/objectifs-primes/AddEventDialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useUserRole } from "@/hooks/useUserRole";
 import { toast } from "sonner";
@@ -41,6 +42,7 @@ export const PlanningCalendar = () => {
   const [schedules, setSchedules] = useState<WorkSchedule[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [showEventDialog, setShowEventDialog] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState<string>("all");
   const [teams, setTeams] = useState<string[]>([]);
   const [scheduleToDelete, setScheduleToDelete] = useState<WorkSchedule | null>(null);
@@ -122,10 +124,14 @@ export const PlanningCalendar = () => {
     return schedules.filter((s) => s.date === dateStr);
   };
 
-  const handleDayClick = (date: Date) => {
+  const handleDayClick = (date: Date, isShiftKey: boolean) => {
     if (canManage) {
       setSelectedDate(date);
-      setShowCreateDialog(true);
+      if (isShiftKey) {
+        setShowEventDialog(true);
+      } else {
+        setShowCreateDialog(true);
+      }
     }
   };
 
@@ -201,10 +207,19 @@ export const PlanningCalendar = () => {
         </div>
 
         {canManage && (
-          <Button onClick={() => setShowCreateDialog(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Ajouter un planning
-          </Button>
+          <div className="flex gap-2">
+            <Button onClick={() => setShowCreateDialog(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Ajouter un planning
+            </Button>
+            <Button onClick={() => {
+              setSelectedDate(new Date());
+              setShowEventDialog(true);
+            }} variant="outline">
+              <Plus className="h-4 w-4 mr-2" />
+              Ajouter un événement
+            </Button>
+          </div>
         )}
       </div>
 
@@ -222,7 +237,7 @@ export const PlanningCalendar = () => {
           return (
             <div
               key={index}
-              onClick={() => date && handleDayClick(date)}
+              onClick={(e) => date && handleDayClick(date, e.shiftKey)}
               className={`min-h-[120px] border rounded-lg p-2 ${
                 date
                   ? canManage
@@ -230,6 +245,7 @@ export const PlanningCalendar = () => {
                     : "cursor-default"
                   : "bg-muted/30"
               } ${isToday ? "ring-2 ring-primary" : ""}`}
+              title={canManage && date ? "Cliquez pour ajouter un planning, Shift+Clic pour ajouter un événement" : ""}
             >
               {date && (
                 <>
@@ -275,11 +291,21 @@ export const PlanningCalendar = () => {
       </div>
 
       {canManage && (
-        <CreateScheduleDialog
-          open={showCreateDialog}
-          onOpenChange={setShowCreateDialog}
-          onScheduleCreated={fetchSchedules}
-        />
+        <>
+          <CreateScheduleDialog
+            open={showCreateDialog}
+            onOpenChange={setShowCreateDialog}
+            onScheduleCreated={fetchSchedules}
+          />
+          {selectedDate && (
+            <AddEventDialog
+              open={showEventDialog}
+              onOpenChange={setShowEventDialog}
+              selectedDate={selectedDate}
+              onEventAdded={fetchSchedules}
+            />
+          )}
+        </>
       )}
 
       <AlertDialog open={!!scheduleToDelete} onOpenChange={() => {

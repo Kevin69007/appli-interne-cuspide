@@ -10,7 +10,6 @@ import JobDocuments from "./pages/JobDocuments";
 import Protocols from "./pages/Protocols";
 import Quiz from "./pages/Quiz";
 import ObjectifsPrimes from "./pages/ObjectifsPrimes";
-import ObjectifsPrimesManager from "./pages/objectifs-primes/Manager";
 import ObjectifsPrimesEmploye from "./pages/objectifs-primes/Employe";
 import ObjectifsPrimesAdmin from "./pages/objectifs-primes/Admin";
 import CommunicationGenerale from "./pages/CommunicationGenerale";
@@ -49,7 +48,6 @@ const App = () => (
             <Route path="/protocoles" element={<Protocols />} />
             <Route path="/quiz" element={<Quiz />} />
             <Route path="/objectifs-primes" element={<ObjectifsPrimes />} />
-            <Route path="/objectifs-primes/manager" element={<ObjectifsPrimesManager />} />
             <Route path="/objectifs-primes/employe" element={<ObjectifsPrimesEmploye />} />
             <Route path="/objectifs-primes/admin" element={<ObjectifsPrimesAdmin />} />
             <Route path="/communication-generale" element={<CommunicationGenerale />} />
