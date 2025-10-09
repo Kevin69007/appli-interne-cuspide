@@ -175,7 +175,7 @@ const EntretiensMachines = () => {
         onOpenChange={setShowCreateDialog}
         currentEmployeeId={currentEmployeeId}
         onTaskCreated={fetchMaintenanceTasks}
-        canAssignOthers={isAdmin || isManager}
+        canAssignOthers={true}
         isMaintenance
       />
 

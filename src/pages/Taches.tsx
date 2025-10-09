@@ -191,7 +191,7 @@ const Taches = () => {
         onOpenChange={setShowCreateDialog}
         currentEmployeeId={currentEmployeeId}
         onTaskCreated={fetchTasks}
-        canAssignOthers={isAdmin || isManager}
+        canAssignOthers={true}
       />
     </div>
   );

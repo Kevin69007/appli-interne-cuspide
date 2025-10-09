@@ -62,11 +62,25 @@ export const CreateTaskDialog = ({
   const fetchEmployees = async () => {
     const { data, error } = await supabase
       .from("employees")
-      .select("id, nom, prenom")
+      .select(`
+        id, 
+        nom, 
+        prenom,
+        user_id
+      `)
       .order("nom");
 
     if (!error && data) {
-      setEmployees(data);
+      // Filtrer les admins
+      const { data: adminUsers } = await supabase
+        .from("user_roles")
+        .select("user_id")
+        .eq("role", "admin");
+
+      const adminIds = new Set(adminUsers?.map(u => u.user_id) || []);
+      const nonAdminEmployees = data.filter(emp => !adminIds.has(emp.user_id));
+      
+      setEmployees(nonAdminEmployees);
     }
   };
 
