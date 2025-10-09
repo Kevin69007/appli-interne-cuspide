@@ -47,6 +47,7 @@ export const PlanningCalendar = () => {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showEventDialog, setShowEventDialog] = useState(false);
   const [showMaintenanceDialog, setShowMaintenanceDialog] = useState(false);
+  const [showChoiceDialog, setShowChoiceDialog] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState<string>("all");
   const [teams, setTeams] = useState<string[]>([]);
   const [scheduleToDelete, setScheduleToDelete] = useState<WorkSchedule | null>(null);
@@ -145,14 +146,10 @@ export const PlanningCalendar = () => {
     return schedules.filter((s) => s.date === dateStr);
   };
 
-  const handleDayClick = (date: Date, isShiftKey: boolean) => {
+  const handleDayClick = (date: Date) => {
     if (canManage) {
       setSelectedDate(date);
-      if (isShiftKey) {
-        setShowEventDialog(true);
-      } else {
-        setShowCreateDialog(true);
-      }
+      setShowChoiceDialog(true);
     }
   };
 
@@ -262,7 +259,7 @@ export const PlanningCalendar = () => {
           return (
             <div
               key={index}
-              onClick={(e) => date && handleDayClick(date, e.shiftKey)}
+              onClick={() => date && handleDayClick(date)}
               className={`min-h-[120px] border rounded-lg p-2 ${
                 date
                   ? canManage
@@ -270,7 +267,7 @@ export const PlanningCalendar = () => {
                     : "cursor-default"
                   : "bg-muted/30"
               } ${isToday ? "ring-2 ring-primary" : ""}`}
-              title={canManage && date ? "Cliquez pour ajouter un planning, Shift+Clic pour ajouter un événement" : ""}
+              title={canManage && date ? "Cliquez pour ajouter un planning, événement ou tâche d'entretien" : ""}
             >
               {date && (
                 <>
@@ -338,6 +335,54 @@ export const PlanningCalendar = () => {
             canAssignOthers={true}
             isMaintenance={true}
           />
+
+          <AlertDialog open={showChoiceDialog} onOpenChange={setShowChoiceDialog}>
+            <AlertDialogContent>
+              <AlertDialogHeader>
+                <AlertDialogTitle>Que souhaitez-vous ajouter ?</AlertDialogTitle>
+                <AlertDialogDescription>
+                  Choisissez le type d'élément à ajouter pour cette date.
+                </AlertDialogDescription>
+              </AlertDialogHeader>
+              <div className="flex flex-col gap-2 my-4">
+                <Button
+                  onClick={() => {
+                    setShowChoiceDialog(false);
+                    setShowCreateDialog(true);
+                  }}
+                  className="w-full"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Ajouter un planning
+                </Button>
+                <Button
+                  onClick={() => {
+                    setShowChoiceDialog(false);
+                    setShowEventDialog(true);
+                  }}
+                  className="w-full"
+                  variant="outline"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Ajouter un événement
+                </Button>
+                <Button
+                  onClick={() => {
+                    setShowChoiceDialog(false);
+                    setShowMaintenanceDialog(true);
+                  }}
+                  className="w-full"
+                  variant="outline"
+                >
+                  <Plus className="h-4 w-4 mr-2" />
+                  Nouvelle tâche d'entretien
+                </Button>
+              </div>
+              <AlertDialogFooter>
+                <AlertDialogCancel>Annuler</AlertDialogCancel>
+              </AlertDialogFooter>
+            </AlertDialogContent>
+          </AlertDialog>
         </>
       )}
 
