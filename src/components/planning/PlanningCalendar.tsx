@@ -4,9 +4,11 @@ import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { CreateScheduleDialog } from "./CreateScheduleDialog";
 import { AddEventDialog } from "@/components/objectifs-primes/AddEventDialog";
+import { CreateTaskDialog } from "@/components/taches/CreateTaskDialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useUserRole } from "@/hooks/useUserRole";
 import { toast } from "sonner";
+import { useAuth } from "@/contexts/AuthContext";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -35,6 +37,7 @@ interface WorkSchedule {
 }
 
 export const PlanningCalendar = () => {
+  const { user } = useAuth();
   const { isAdmin, isManager } = useUserRole();
   const canManage = isAdmin || isManager;
   
@@ -43,15 +46,33 @@ export const PlanningCalendar = () => {
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showEventDialog, setShowEventDialog] = useState(false);
+  const [showMaintenanceDialog, setShowMaintenanceDialog] = useState(false);
   const [selectedTeam, setSelectedTeam] = useState<string>("all");
   const [teams, setTeams] = useState<string[]>([]);
   const [scheduleToDelete, setScheduleToDelete] = useState<WorkSchedule | null>(null);
   const [deleteMode, setDeleteMode] = useState<'single' | 'series'>('single');
+  const [currentEmployeeId, setCurrentEmployeeId] = useState<string | null>(null);
 
   useEffect(() => {
     fetchSchedules();
     fetchTeams();
-  }, [currentDate, selectedTeam]);
+    if (user) {
+      fetchCurrentEmployee();
+    }
+  }, [currentDate, selectedTeam, user]);
+
+  const fetchCurrentEmployee = async () => {
+    if (!user) return;
+    const { data } = await supabase
+      .from("employees")
+      .select("id")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    
+    if (data) {
+      setCurrentEmployeeId(data.id);
+    }
+  };
 
   const fetchTeams = async () => {
     const { data } = await supabase
@@ -219,6 +240,10 @@ export const PlanningCalendar = () => {
               <Plus className="h-4 w-4 mr-2" />
               Ajouter un événement
             </Button>
+            <Button onClick={() => setShowMaintenanceDialog(true)} variant="outline">
+              <Plus className="h-4 w-4 mr-2" />
+              Nouvelle tâche d'entretien
+            </Button>
           </div>
         )}
       </div>
@@ -305,6 +330,14 @@ export const PlanningCalendar = () => {
               onEventAdded={fetchSchedules}
             />
           )}
+          <CreateTaskDialog
+            open={showMaintenanceDialog}
+            onOpenChange={setShowMaintenanceDialog}
+            currentEmployeeId={currentEmployeeId}
+            onTaskCreated={fetchSchedules}
+            canAssignOthers={true}
+            isMaintenance={true}
+          />
         </>
       )}
 
