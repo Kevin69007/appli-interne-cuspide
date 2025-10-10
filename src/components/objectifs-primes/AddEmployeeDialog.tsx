@@ -48,7 +48,9 @@ export const AddEmployeeDialog = ({ onEmployeeAdded }: { onEmployeeAdded?: () =>
 
       if (error) {
         console.error("Function invocation error:", error);
-        throw error;
+        const errorMessage = error.message || data?.error || "Impossible d'ajouter l'employé";
+        toast.error(errorMessage);
+        return;
       }
       
       if (data?.error) {
