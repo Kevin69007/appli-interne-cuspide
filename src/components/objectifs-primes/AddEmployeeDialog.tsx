@@ -25,6 +25,19 @@ export const AddEmployeeDialog = ({ onEmployeeAdded }: { onEmployeeAdded?: () =>
     setLoading(true);
 
     try {
+      // Vérifier d'abord si un employé avec cet email existe déjà
+      const { data: existingEmployeeByEmail } = await supabase
+        .from("employees")
+        .select("id, user_id")
+        .eq("email", formData.email)
+        .maybeSingle();
+
+      if (existingEmployeeByEmail) {
+        toast.error("Un employé avec cet email existe déjà.");
+        setLoading(false);
+        return;
+      }
+
       // Create auth user
       const { data: authData, error: authError } = await supabase.auth.signUp({
         email: formData.email,
@@ -36,6 +49,16 @@ export const AddEmployeeDialog = ({ onEmployeeAdded }: { onEmployeeAdded?: () =>
           }
         }
       });
+
+      // Si l'utilisateur existe déjà dans auth mais pas dans employees
+      if (authError?.message?.includes("already registered")) {
+        toast.error(
+          "Ce compte existe déjà dans le système mais n'a pas d'enregistrement employé. " +
+          "Veuillez contacter un administrateur système pour résoudre ce problème."
+        );
+        setLoading(false);
+        return;
+      }
 
       if (authError) throw authError;
       if (!authData.user) throw new Error("Aucun utilisateur créé");
@@ -63,7 +86,6 @@ export const AddEmployeeDialog = ({ onEmployeeAdded }: { onEmployeeAdded?: () =>
 
         if (roleError) throw roleError;
       }
-      // If role is 'user', the trigger already handles it
 
       toast.success(`${formData.prenom} ${formData.nom} a été ajouté avec succès.`);
 
