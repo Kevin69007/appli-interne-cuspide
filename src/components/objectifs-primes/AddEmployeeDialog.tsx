@@ -25,79 +25,26 @@ export const AddEmployeeDialog = ({ onEmployeeAdded }: { onEmployeeAdded?: () =>
     setLoading(true);
 
     try {
-      // Vérifier d'abord si un employé avec cet email existe déjà
-      const { data: existingEmployeeByEmail } = await supabase
-        .from("employees")
-        .select("id, user_id")
-        .eq("email", formData.email)
-        .maybeSingle();
-
-      if (existingEmployeeByEmail) {
-        toast.error("Un employé avec cet email existe déjà.");
-        setLoading(false);
-        return;
-      }
-
-      // Create auth user
-      const { data: authData, error: authError } = await supabase.auth.signUp({
-        email: formData.email,
-        password: formData.password,
-        options: {
-          emailRedirectTo: `${window.location.origin}/`,
-          data: {
-            full_name: `${formData.prenom} ${formData.nom}`
-          }
-        }
-      });
-
-      // Si l'utilisateur existe déjà dans auth mais pas dans employees
-      if (authError?.message?.includes("already registered")) {
-        toast.error(
-          "Ce compte existe déjà dans le système mais n'a pas d'enregistrement employé. " +
-          "Veuillez contacter un administrateur système pour résoudre ce problème."
-        );
-        setLoading(false);
-        return;
-      }
-
-      if (authError) throw authError;
-      if (!authData.user) throw new Error("Aucun utilisateur créé");
-
-      // Insert employee record
-      console.log("Attempting to insert employee with user_id:", authData.user.id);
-      console.log("Current auth user:", (await supabase.auth.getUser()).data.user?.id);
-      
-      const { error: employeeError, data: employeeData } = await supabase
-        .from("employees")
-        .insert([{
+      // Appeler l'edge function qui utilise les droits admin
+      const { data, error } = await supabase.functions.invoke('create-employee', {
+        body: {
           nom: formData.nom,
           prenom: formData.prenom,
           poste: formData.poste,
           email: formData.email,
-          user_id: authData.user.id
-        }])
-        .select();
+          password: formData.password,
+          role: formData.role
+        }
+      });
 
-      console.log("Employee insert result:", { employeeData, employeeError });
+      if (error) throw error;
       
-      if (employeeError) {
-        console.error("Employee insert error details:", employeeError);
-        throw employeeError;
+      if (data.error) {
+        toast.error(data.error);
+        return;
       }
 
-      // Assign role for all users (the trigger already creates a 'user' role, so update if needed)
-      if (formData.role === "admin" || formData.role === "manager") {
-        // Update the default 'user' role to the selected role
-        const { error: roleError } = await supabase
-          .from("user_roles")
-          .update({ role: formData.role })
-          .eq("user_id", authData.user.id);
-
-        if (roleError) throw roleError;
-      }
-
-      toast.success(`${formData.prenom} ${formData.nom} a été ajouté avec succès.`);
-
+      toast.success(data.message);
       setFormData({ nom: "", prenom: "", poste: "", email: "", password: "", role: "user" });
       setOpen(false);
       onEmployeeAdded?.();
