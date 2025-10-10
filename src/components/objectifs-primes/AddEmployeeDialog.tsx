@@ -26,6 +26,13 @@ export const AddEmployeeDialog = ({ onEmployeeAdded }: { onEmployeeAdded?: () =>
 
     try {
       // Appeler l'edge function qui utilise les droits admin
+      console.log("Calling create-employee function with:", {
+        nom: formData.nom,
+        prenom: formData.prenom,
+        email: formData.email,
+        role: formData.role
+      });
+
       const { data, error } = await supabase.functions.invoke('create-employee', {
         body: {
           nom: formData.nom,
@@ -37,14 +44,20 @@ export const AddEmployeeDialog = ({ onEmployeeAdded }: { onEmployeeAdded?: () =>
         }
       });
 
-      if (error) throw error;
+      console.log("Function response:", { data, error });
+
+      if (error) {
+        console.error("Function invocation error:", error);
+        throw error;
+      }
       
-      if (data.error) {
+      if (data?.error) {
+        console.error("Function returned error:", data.error);
         toast.error(data.error);
         return;
       }
 
-      toast.success(data.message);
+      toast.success(data?.message || "Employé ajouté avec succès");
       setFormData({ nom: "", prenom: "", poste: "", email: "", password: "", role: "user" });
       setOpen(false);
       onEmployeeAdded?.();
