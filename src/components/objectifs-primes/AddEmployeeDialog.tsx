@@ -64,7 +64,10 @@ export const AddEmployeeDialog = ({ onEmployeeAdded }: { onEmployeeAdded?: () =>
       if (!authData.user) throw new Error("Aucun utilisateur créé");
 
       // Insert employee record
-      const { error: employeeError } = await supabase
+      console.log("Attempting to insert employee with user_id:", authData.user.id);
+      console.log("Current auth user:", (await supabase.auth.getUser()).data.user?.id);
+      
+      const { error: employeeError, data: employeeData } = await supabase
         .from("employees")
         .insert([{
           nom: formData.nom,
@@ -72,9 +75,15 @@ export const AddEmployeeDialog = ({ onEmployeeAdded }: { onEmployeeAdded?: () =>
           poste: formData.poste,
           email: formData.email,
           user_id: authData.user.id
-        }]);
+        }])
+        .select();
 
-      if (employeeError) throw employeeError;
+      console.log("Employee insert result:", { employeeData, employeeError });
+      
+      if (employeeError) {
+        console.error("Employee insert error details:", employeeError);
+        throw employeeError;
+      }
 
       // Assign role for all users (the trigger already creates a 'user' role, so update if needed)
       if (formData.role === "admin" || formData.role === "manager") {
