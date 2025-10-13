@@ -21,6 +21,7 @@ import Logs from "./pages/Logs";
 import EntretiensMachines from "./pages/EntretiensMachines";
 import CommandesStock from "./pages/CommandesStock";
 import Formation from "./pages/Formation";
+import SuiviDirection from "./pages/SuiviDirection";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -58,8 +59,9 @@ const App = () => (
             <Route path="/agenda" element={<Agenda />} />
             <Route path="/logs" element={<Logs />} />
             <Route path="/entretiens-machines" element={<EntretiensMachines />} />
-              <Route path="/commandes-stock" element={<CommandesStock />} />
-              <Route path="/formation" element={<Formation />} />
+            <Route path="/commandes-stock" element={<CommandesStock />} />
+            <Route path="/formation" element={<Formation />} />
+            <Route path="/suivi-direction" element={<SuiviDirection />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>

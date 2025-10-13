@@ -77,10 +77,7 @@ const Index = () => {
               { title: "RH", icon: "🌴", path: "/conges-mood-bar", restricted: true },
               { title: "Commandes & Stock", icon: "🛒", path: "/commandes-stock" },
               { title: "Planning", icon: "📅", path: "/agenda" },
-              { title: "Entretiens Locaux et Machines", icon: "🧼", path: "/entretiens-machines" },
-              { title: "Info Pointage", icon: "⏱️" },
-              { title: "Dashboard", icon: "📊" },
-              { title: "Journal d'audit", icon: "📜", path: "/logs", restricted: true },
+              { title: "Suivi Direction", icon: "📊", path: "/suivi-direction", restricted: true },
             ].filter(item => !item.restricted || isAdmin || isManager).map((item, index) => (
               <div
                 key={index}

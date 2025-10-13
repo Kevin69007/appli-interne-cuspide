@@ -1,0 +1,81 @@
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useUserRole } from "@/hooks/useUserRole";
+import { Button } from "@/components/ui/button";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { ChevronLeft } from "lucide-react";
+import { toast } from "sonner";
+import EntretiensMachines from "./EntretiensMachines";
+import Logs from "./Logs";
+
+const SuiviDirection = () => {
+  const navigate = useNavigate();
+  const { isAdmin, isManager, loading } = useUserRole();
+
+  useEffect(() => {
+    if (!loading && !isAdmin && !isManager) {
+      toast.error("Accès refusé - Réservé aux managers et administrateurs");
+      navigate("/");
+    }
+  }, [isAdmin, isManager, loading, navigate]);
+
+  if (loading || (!isAdmin && !isManager)) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <p className="text-muted-foreground">Chargement...</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-accent/10">
+      <div className="container mx-auto p-6">
+        <div className="flex items-center gap-4 mb-6">
+          <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
+            <ChevronLeft className="h-5 w-5" />
+          </Button>
+          <h1 className="text-3xl font-bold">Suivi Direction</h1>
+        </div>
+
+        <Tabs defaultValue="entretiens" className="w-full">
+          <TabsList className="grid w-full grid-cols-4">
+            <TabsTrigger value="entretiens">Entretiens Locaux et Machines</TabsTrigger>
+            <TabsTrigger value="pointage">Info Pointage</TabsTrigger>
+            <TabsTrigger value="audit">Journal d'audit</TabsTrigger>
+            <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="entretiens" className="mt-6">
+            <EntretiensMachines />
+          </TabsContent>
+
+          <TabsContent value="pointage" className="mt-6">
+            <div className="bg-card rounded-lg border border-border p-8 text-center">
+              <h3 className="text-xl font-semibold mb-2">Info Pointage</h3>
+              <p className="text-muted-foreground">
+                Cette section sera développée prochainement pour gérer les informations de pointage des employés.
+              </p>
+            </div>
+          </TabsContent>
+
+          <TabsContent value="audit" className="mt-6">
+            <Logs />
+          </TabsContent>
+
+          <TabsContent value="dashboard" className="mt-6">
+            <div className="bg-card rounded-lg border border-border p-8 text-center">
+              <h3 className="text-xl font-semibold mb-2">Dashboard</h3>
+              <p className="text-muted-foreground">
+                Cette section sera développée prochainement pour afficher les statistiques et indicateurs clés.
+              </p>
+            </div>
+          </TabsContent>
+        </Tabs>
+      </div>
+    </div>
+  );
+};
+
+export default SuiviDirection;
