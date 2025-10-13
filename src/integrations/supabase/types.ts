@@ -687,6 +687,258 @@ export type Database = {
           },
         ]
       }
+      game_clues: {
+        Row: {
+          clue_number: number
+          clue_text: string
+          created_at: string | null
+          difficulty_score: number | null
+          id: string
+          is_revealed: boolean | null
+          revealed_at: string | null
+          session_id: string
+        }
+        Insert: {
+          clue_number: number
+          clue_text: string
+          created_at?: string | null
+          difficulty_score?: number | null
+          id?: string
+          is_revealed?: boolean | null
+          revealed_at?: string | null
+          session_id: string
+        }
+        Update: {
+          clue_number?: number
+          clue_text?: string
+          created_at?: string | null
+          difficulty_score?: number | null
+          id?: string
+          is_revealed?: boolean | null
+          revealed_at?: string | null
+          session_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_clues_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "weekly_game_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      game_participants: {
+        Row: {
+          created_at: string | null
+          elimination_date: string | null
+          employee_id: string
+          id: string
+          is_eliminated: boolean | null
+          role: Database["public"]["Enums"]["game_role"]
+          session_id: string
+          total_points: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          elimination_date?: string | null
+          employee_id: string
+          id?: string
+          is_eliminated?: boolean | null
+          role: Database["public"]["Enums"]["game_role"]
+          session_id: string
+          total_points?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          elimination_date?: string | null
+          employee_id?: string
+          id?: string
+          is_eliminated?: boolean | null
+          role?: Database["public"]["Enums"]["game_role"]
+          session_id?: string
+          total_points?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_participants_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "game_participants_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "weekly_game_sessions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      game_player_stats: {
+        Row: {
+          best_investigator_awards: number | null
+          employee_id: string
+          id: string
+          times_as_target: number | null
+          times_investigator_won: number | null
+          times_target_won: number | null
+          total_points: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          best_investigator_awards?: number | null
+          employee_id: string
+          id?: string
+          times_as_target?: number | null
+          times_investigator_won?: number | null
+          times_target_won?: number | null
+          total_points?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          best_investigator_awards?: number | null
+          employee_id?: string
+          id?: string
+          times_as_target?: number | null
+          times_investigator_won?: number | null
+          times_target_won?: number | null
+          total_points?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_player_stats_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: true
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      game_prize_catalog: {
+        Row: {
+          created_at: string | null
+          id: string
+          is_available: boolean | null
+          points_required: number
+          prize_description: string | null
+          prize_name: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          is_available?: boolean | null
+          points_required: number
+          prize_description?: string | null
+          prize_name: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          is_available?: boolean | null
+          points_required?: number
+          prize_description?: string | null
+          prize_name?: string
+        }
+        Relationships: []
+      }
+      game_rewards_config: {
+        Row: {
+          config_type: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          points_amount: number
+          updated_at: string | null
+        }
+        Insert: {
+          config_type: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          points_amount: number
+          updated_at?: string | null
+        }
+        Update: {
+          config_type?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          points_amount?: number
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
+      game_votes: {
+        Row: {
+          clue_id: string | null
+          difficulty_rating: number | null
+          id: string
+          originality_rating: number | null
+          session_id: string
+          suspect_employee_id: string | null
+          vote_day: number | null
+          vote_type: Database["public"]["Enums"]["vote_type"]
+          voted_at: string | null
+          voter_employee_id: string
+        }
+        Insert: {
+          clue_id?: string | null
+          difficulty_rating?: number | null
+          id?: string
+          originality_rating?: number | null
+          session_id: string
+          suspect_employee_id?: string | null
+          vote_day?: number | null
+          vote_type: Database["public"]["Enums"]["vote_type"]
+          voted_at?: string | null
+          voter_employee_id: string
+        }
+        Update: {
+          clue_id?: string | null
+          difficulty_rating?: number | null
+          id?: string
+          originality_rating?: number | null
+          session_id?: string
+          suspect_employee_id?: string | null
+          vote_day?: number | null
+          vote_type?: Database["public"]["Enums"]["vote_type"]
+          voted_at?: string | null
+          voter_employee_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "game_votes_clue_id_fkey"
+            columns: ["clue_id"]
+            isOneToOne: false
+            referencedRelation: "game_clues"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "game_votes_session_id_fkey"
+            columns: ["session_id"]
+            isOneToOne: false
+            referencedRelation: "weekly_game_sessions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "game_votes_suspect_employee_id_fkey"
+            columns: ["suspect_employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "game_votes_voter_employee_id_fkey"
+            columns: ["voter_employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ideas: {
         Row: {
           commentaire_manager: string | null
@@ -1811,6 +2063,53 @@ export type Database = {
         }
         Relationships: []
       }
+      weekly_game_sessions: {
+        Row: {
+          anecdote: string | null
+          anecdote_originality_score: number | null
+          created_at: string | null
+          finished_at: string | null
+          id: string
+          started_at: string | null
+          status: Database["public"]["Enums"]["game_status"]
+          target_employee_id: string | null
+          week_number: number
+          year: number
+        }
+        Insert: {
+          anecdote?: string | null
+          anecdote_originality_score?: number | null
+          created_at?: string | null
+          finished_at?: string | null
+          id?: string
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["game_status"]
+          target_employee_id?: string | null
+          week_number: number
+          year: number
+        }
+        Update: {
+          anecdote?: string | null
+          anecdote_originality_score?: number | null
+          created_at?: string | null
+          finished_at?: string | null
+          id?: string
+          started_at?: string | null
+          status?: Database["public"]["Enums"]["game_status"]
+          target_employee_id?: string | null
+          week_number?: number
+          year?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "weekly_game_sessions_target_employee_id_fkey"
+            columns: ["target_employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       work_schedules: {
         Row: {
           commentaire: string | null
@@ -2025,6 +2324,13 @@ export type Database = {
         | "incident"
         | "a_faire"
       destinataire_type: "tout_le_monde" | "selection_equipe" | "groupe"
+      game_role: "target" | "investigator"
+      game_status:
+        | "registration_open"
+        | "waiting_anecdote"
+        | "in_progress"
+        | "finished"
+        | "cancelled_no_anecdote"
       gravite_erreur: "mineure" | "moyenne" | "majeure" | "critique"
       job_category: "Admin" | "Prothèse"
       statut_idee:
@@ -2043,6 +2349,11 @@ export type Database = {
         | "erreur_protocole"
         | "autre"
       type_quiz: "technique" | "collegue" | "mood"
+      vote_type:
+        | "elimination"
+        | "anecdote_originality"
+        | "clue_difficulty"
+        | "final_suspect"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -2182,6 +2493,14 @@ export const Constants = {
         "a_faire",
       ],
       destinataire_type: ["tout_le_monde", "selection_equipe", "groupe"],
+      game_role: ["target", "investigator"],
+      game_status: [
+        "registration_open",
+        "waiting_anecdote",
+        "in_progress",
+        "finished",
+        "cancelled_no_anecdote",
+      ],
       gravite_erreur: ["mineure", "moyenne", "majeure", "critique"],
       job_category: ["Admin", "Prothèse"],
       statut_idee: [
@@ -2202,6 +2521,12 @@ export const Constants = {
         "autre",
       ],
       type_quiz: ["technique", "collegue", "mood"],
+      vote_type: [
+        "elimination",
+        "anecdote_originality",
+        "clue_difficulty",
+        "final_suspect",
+      ],
     },
   },
 } as const
