@@ -684,6 +684,63 @@ export type Database = {
           },
         ]
       }
+      ideas: {
+        Row: {
+          commentaire_manager: string | null
+          created_at: string
+          description: string
+          employee_id: string | null
+          id: string
+          is_anonymous: boolean | null
+          reviewed_at: string | null
+          reviewed_by: string | null
+          statut: Database["public"]["Enums"]["statut_idee"] | null
+          titre: string
+          updated_at: string
+        }
+        Insert: {
+          commentaire_manager?: string | null
+          created_at?: string
+          description: string
+          employee_id?: string | null
+          id?: string
+          is_anonymous?: boolean | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          statut?: Database["public"]["Enums"]["statut_idee"] | null
+          titre: string
+          updated_at?: string
+        }
+        Update: {
+          commentaire_manager?: string | null
+          created_at?: string
+          description?: string
+          employee_id?: string | null
+          id?: string
+          is_anonymous?: boolean | null
+          reviewed_at?: string | null
+          reviewed_by?: string | null
+          statut?: Database["public"]["Enums"]["statut_idee"] | null
+          titre?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ideas_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ideas_reviewed_by_fkey"
+            columns: ["reviewed_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       intention_mapping: {
         Row: {
           bloc_id: string
@@ -1370,6 +1427,107 @@ export type Database = {
         }
         Relationships: []
       }
+      survey_responses: {
+        Row: {
+          created_at: string
+          employee_id: string | null
+          id: string
+          is_anonymous: boolean | null
+          reponses: Json
+          survey_id: string
+        }
+        Insert: {
+          created_at?: string
+          employee_id?: string | null
+          id?: string
+          is_anonymous?: boolean | null
+          reponses?: Json
+          survey_id: string
+        }
+        Update: {
+          created_at?: string
+          employee_id?: string | null
+          id?: string
+          is_anonymous?: boolean | null
+          reponses?: Json
+          survey_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "survey_responses_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "survey_responses_survey_id_fkey"
+            columns: ["survey_id"]
+            isOneToOne: false
+            referencedRelation: "surveys"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      surveys: {
+        Row: {
+          allow_anonymous: boolean | null
+          created_at: string
+          created_by: string | null
+          date_debut: string | null
+          date_fin: string | null
+          description: string | null
+          equipes: string[] | null
+          groupes: string[] | null
+          id: string
+          is_active: boolean | null
+          questions: Json
+          titre: string
+          type_destinataire: Database["public"]["Enums"]["destinataire_type"]
+          updated_at: string
+        }
+        Insert: {
+          allow_anonymous?: boolean | null
+          created_at?: string
+          created_by?: string | null
+          date_debut?: string | null
+          date_fin?: string | null
+          description?: string | null
+          equipes?: string[] | null
+          groupes?: string[] | null
+          id?: string
+          is_active?: boolean | null
+          questions?: Json
+          titre: string
+          type_destinataire?: Database["public"]["Enums"]["destinataire_type"]
+          updated_at?: string
+        }
+        Update: {
+          allow_anonymous?: boolean | null
+          created_at?: string
+          created_by?: string | null
+          date_debut?: string | null
+          date_fin?: string | null
+          description?: string | null
+          equipes?: string[] | null
+          groupes?: string[] | null
+          id?: string
+          is_active?: boolean | null
+          questions?: Json
+          titre?: string
+          type_destinataire?: Database["public"]["Enums"]["destinataire_type"]
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "surveys_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tasks: {
         Row: {
           assigned_to: string
@@ -1834,6 +1992,12 @@ export type Database = {
       destinataire_type: "tout_le_monde" | "selection_equipe" | "groupe"
       gravite_erreur: "mineure" | "moyenne" | "majeure" | "critique"
       job_category: "Admin" | "Prothèse"
+      statut_idee:
+        | "soumise"
+        | "en_examen"
+        | "approuvee"
+        | "rejetee"
+        | "implementee"
       statut_objectif: "atteint" | "en_cours" | "non_atteint"
       statut_score_mensuel: "ouvert" | "cloture" | "publie"
       statut_validation: "en_attente" | "valide" | "refuse"
@@ -1985,6 +2149,13 @@ export const Constants = {
       destinataire_type: ["tout_le_monde", "selection_equipe", "groupe"],
       gravite_erreur: ["mineure", "moyenne", "majeure", "critique"],
       job_category: ["Admin", "Prothèse"],
+      statut_idee: [
+        "soumise",
+        "en_examen",
+        "approuvee",
+        "rejetee",
+        "implementee",
+      ],
       statut_objectif: ["atteint", "en_cours", "non_atteint"],
       statut_score_mensuel: ["ouvert", "cloture", "publie"],
       statut_validation: ["en_attente", "valide", "refuse"],
