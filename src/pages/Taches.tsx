@@ -36,7 +36,8 @@ const Taches = () => {
   const { user } = useAuth();
   const { isAdmin, isManager } = useUserRole();
   const [tasks, setTasks] = useState<Task[]>([]);
-  const [helpTasks, setHelpTasks] = useState<Task[]>([]);
+  const [boomerangsSent, setBoomerangsSent] = useState<Task[]>([]);
+  const [boomerangsReceived, setBoomerangsReceived] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [currentEmployeeId, setCurrentEmployeeId] = useState<string | null>(null);
@@ -82,39 +83,54 @@ const Taches = () => {
     console.log("Fetching tasks for employee ID:", currentEmployeeId);
     setLoading(true);
     try {
-      // Mes tâches
+      // Mes tâches (assignées à moi, pas en mode boomerang actif)
       const { data: myTasks, error: myError } = await supabase
         .from("tasks")
         .select(`
           *,
           assigned_employee:employees!tasks_assigned_to_fkey(nom, prenom),
-          creator_employee:employees!tasks_created_by_fkey(nom, prenom),
-          dependency_employee:employees!tasks_depend_de_fkey(nom, prenom)
+          creator_employee:employees!tasks_created_by_fkey(nom, prenom)
         `)
         .eq("assigned_to", currentEmployeeId)
+        .eq("boomerang_active", false)
         .neq("statut", "annulee")
         .order("date_echeance");
 
-      console.log("My tasks query result:", myTasks, "Error:", myError);
       if (myError) throw myError;
 
-      // Tâches où je suis en dépendance
-      const { data: dependencyTasks, error: depError } = await supabase
+      // Boomerangs envoyés (je suis le propriétaire original)
+      const { data: sentBoomerangs, error: sentError } = await supabase
         .from("tasks")
         .select(`
           *,
           assigned_employee:employees!tasks_assigned_to_fkey(nom, prenom),
           creator_employee:employees!tasks_created_by_fkey(nom, prenom),
-          dependency_employee:employees!tasks_depend_de_fkey(nom, prenom)
+          boomerang_holder:employees!tasks_boomerang_current_holder_fkey(nom, prenom)
         `)
-        .eq("depend_de", currentEmployeeId)
-        .neq("statut", "annulee")
-        .order("date_echeance");
+        .eq("boomerang_original_owner", currentEmployeeId)
+        .eq("boomerang_active", true)
+        .order("boomerang_deadline");
 
-      if (depError) throw depError;
+      if (sentError) throw sentError;
+
+      // Boomerangs reçus (je suis le détenteur actuel)
+      const { data: receivedBoomerangs, error: receivedError } = await supabase
+        .from("tasks")
+        .select(`
+          *,
+          assigned_employee:employees!tasks_assigned_to_fkey(nom, prenom),
+          creator_employee:employees!tasks_created_by_fkey(nom, prenom),
+          boomerang_owner:employees!tasks_boomerang_original_owner_fkey(nom, prenom)
+        `)
+        .eq("boomerang_current_holder", currentEmployeeId)
+        .eq("boomerang_active", true)
+        .order("boomerang_deadline");
+
+      if (receivedError) throw receivedError;
 
       setTasks(myTasks || []);
-      setHelpTasks(dependencyTasks || []);
+      setBoomerangsSent(sentBoomerangs || []);
+      setBoomerangsReceived(receivedBoomerangs || []);
     } catch (error) {
       console.error("Error fetching tasks:", error);
       toast.error("Erreur lors du chargement des tâches");
@@ -140,12 +156,15 @@ const Taches = () => {
         </div>
 
         <Tabs defaultValue="my-tasks" className="w-full">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="my-tasks">
               Mes tâches ({tasks.length})
             </TabsTrigger>
-            <TabsTrigger value="help-requests">
-              Aide demandée par collègue ({helpTasks.length})
+            <TabsTrigger value="boomerangs-sent">
+              🪃 Envoyés ({boomerangsSent.length})
+            </TabsTrigger>
+            <TabsTrigger value="boomerangs-received">
+              🪃 Reçus ({boomerangsReceived.length})
             </TabsTrigger>
           </TabsList>
 
@@ -166,19 +185,35 @@ const Taches = () => {
             )}
           </TabsContent>
 
-          <TabsContent value="help-requests" className="space-y-4 mt-6">
+          <TabsContent value="boomerangs-sent" className="space-y-4 mt-6">
             {loading ? (
               <p className="text-center text-muted-foreground">Chargement...</p>
-            ) : helpTasks.length === 0 ? (
-              <p className="text-center text-muted-foreground">Aucune demande d'aide</p>
+            ) : boomerangsSent.length === 0 ? (
+              <p className="text-center text-muted-foreground">Aucun boomerang envoyé</p>
             ) : (
-              helpTasks.map((task) => (
+              boomerangsSent.map((task) => (
                 <TaskCard
                   key={task.id}
                   task={task}
                   currentEmployeeId={currentEmployeeId}
                   onUpdate={fetchTasks}
-                  isHelpRequest
+                />
+              ))
+            )}
+          </TabsContent>
+
+          <TabsContent value="boomerangs-received" className="space-y-4 mt-6">
+            {loading ? (
+              <p className="text-center text-muted-foreground">Chargement...</p>
+            ) : boomerangsReceived.length === 0 ? (
+              <p className="text-center text-muted-foreground">Aucun boomerang reçu</p>
+            ) : (
+              boomerangsReceived.map((task) => (
+                <TaskCard
+                  key={task.id}
+                  task={task}
+                  currentEmployeeId={currentEmployeeId}
+                  onUpdate={fetchTasks}
                 />
               ))
             )}

@@ -1531,6 +1531,12 @@ export type Database = {
       tasks: {
         Row: {
           assigned_to: string
+          boomerang_active: boolean | null
+          boomerang_current_holder: string | null
+          boomerang_deadline: string | null
+          boomerang_duration_hours: number | null
+          boomerang_history: Json | null
+          boomerang_original_owner: string | null
           commentaires: Json | null
           created_at: string
           created_by: string
@@ -1551,6 +1557,12 @@ export type Database = {
         }
         Insert: {
           assigned_to: string
+          boomerang_active?: boolean | null
+          boomerang_current_holder?: string | null
+          boomerang_deadline?: string | null
+          boomerang_duration_hours?: number | null
+          boomerang_history?: Json | null
+          boomerang_original_owner?: string | null
           commentaires?: Json | null
           created_at?: string
           created_by: string
@@ -1571,6 +1583,12 @@ export type Database = {
         }
         Update: {
           assigned_to?: string
+          boomerang_active?: boolean | null
+          boomerang_current_holder?: string | null
+          boomerang_deadline?: string | null
+          boomerang_duration_hours?: number | null
+          boomerang_history?: Json | null
+          boomerang_original_owner?: string | null
           commentaires?: Json | null
           created_at?: string
           created_by?: string
@@ -1593,6 +1611,20 @@ export type Database = {
           {
             foreignKeyName: "tasks_assigned_to_fkey"
             columns: ["assigned_to"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_boomerang_current_holder_fkey"
+            columns: ["boomerang_current_holder"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_boomerang_original_owner_fkey"
+            columns: ["boomerang_original_owner"]
             isOneToOne: false
             referencedRelation: "employees"
             referencedColumns: ["id"]

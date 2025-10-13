@@ -2,10 +2,11 @@ import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, Circle, Clock, MessageSquare, AlertCircle } from "lucide-react";
+import { CheckCircle2, Circle, Clock, MessageSquare } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { TaskDetailsDialog } from "./TaskDetailsDialog";
+import { BoomerangTimer } from "./BoomerangTimer";
 
 interface TaskCardProps {
   task: any;
@@ -116,17 +117,14 @@ export const TaskCard = ({ task, currentEmployeeId, onUpdate, isHelpRequest, isM
                 </div>
               )}
 
-              {task.depend_de && (
-                <Badge variant="outline" className="text-xs">
-                  <AlertCircle className="h-3 w-3 mr-1" />
-                  Dépendance
+              {task.boomerang_active && (
+                <Badge className="bg-orange-500/20 text-orange-700 dark:text-orange-400">
+                  🪃 Boomerang
                 </Badge>
               )}
 
-              {isHelpRequest && task.assigned_employee && (
-                <span className="text-sm text-muted-foreground">
-                  Pour : {task.assigned_employee.prenom} {task.assigned_employee.nom}
-                </span>
+              {task.boomerang_active && task.boomerang_deadline && (
+                <BoomerangTimer deadline={task.boomerang_deadline} />
               )}
             </div>
           </div>

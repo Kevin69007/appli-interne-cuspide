@@ -42,7 +42,6 @@ export const CreateTaskDialog = ({
     date_echeance: "",
     priorite: "normale" as "basse" | "normale" | "haute",
     recurrence: null as any,
-    depend_de: null as string | null,
     machine_piece: "",
     maintenance_type: "" as "machine" | "piece" | "",
   });
@@ -107,7 +106,6 @@ export const CreateTaskDialog = ({
         date_echeance: formData.date_echeance,
         priorite: formData.priorite,
         recurrence: formData.recurrence,
-        depend_de: formData.depend_de,
         statut: "en_cours",
       };
 
@@ -130,7 +128,6 @@ export const CreateTaskDialog = ({
         date_echeance: "",
         priorite: "normale",
         recurrence: null,
-        depend_de: null,
         machine_piece: "",
         maintenance_type: "",
       });
@@ -267,30 +264,6 @@ export const CreateTaskDialog = ({
               </SelectContent>
             </Select>
           </div>
-
-          {canAssignOthers && (
-            <div>
-              <Label htmlFor="depend_de">Dépendance (optionnel)</Label>
-              <Select
-                value={formData.depend_de || "none"}
-                onValueChange={(v) => setFormData({ ...formData, depend_de: v === "none" ? null : v })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Aucune dépendance" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="none">Aucune</SelectItem>
-                  {employees
-                    .filter((e) => e.id !== formData.assigned_to)
-                    .map((emp) => (
-                      <SelectItem key={emp.id} value={emp.id}>
-                        {emp.prenom} {emp.nom}
-                      </SelectItem>
-                    ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
 
           <RecurrenceSelectorNew
             value={formData.recurrence}
