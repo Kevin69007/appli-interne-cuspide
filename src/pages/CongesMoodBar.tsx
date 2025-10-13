@@ -9,6 +9,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Check, X, AlertCircle, TrendingDown } from "lucide-react";
 import { toast } from "sonner";
+import { Trombinoscope } from "@/components/rh/Trombinoscope";
 
 interface LeaveRequest {
   id: string;
@@ -263,7 +264,7 @@ const CongesMoodBar = () => {
         </div>
 
         <Tabs defaultValue="leave-requests" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="leave-requests">
               Demandes de congés ({leaveRequests.length})
             </TabsTrigger>
@@ -271,6 +272,7 @@ const CongesMoodBar = () => {
             <TabsTrigger value="mood">
               Mood Bar {lowMoodAlerts.length > 0 && `(${lowMoodAlerts.length} alertes)`}
             </TabsTrigger>
+            <TabsTrigger value="trombinoscope">Trombinoscope</TabsTrigger>
             <TabsTrigger value="payslips">Accès aux fiches de paie</TabsTrigger>
           </TabsList>
 
@@ -449,6 +451,10 @@ const CongesMoodBar = () => {
                 ))}
               </CardContent>
             </Card>
+          </TabsContent>
+
+          <TabsContent value="trombinoscope" className="space-y-4 mt-6">
+            <Trombinoscope />
           </TabsContent>
 
           <TabsContent value="payslips" className="space-y-4 mt-6">

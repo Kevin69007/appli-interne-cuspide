@@ -589,6 +589,7 @@ export type Database = {
           equipe: string | null
           id: string
           nom: string
+          photo_url: string | null
           poste: string | null
           prenom: string
           profile_id: string | null
@@ -602,6 +603,7 @@ export type Database = {
           equipe?: string | null
           id?: string
           nom: string
+          photo_url?: string | null
           poste?: string | null
           prenom: string
           profile_id?: string | null
@@ -615,6 +617,7 @@ export type Database = {
           equipe?: string | null
           id?: string
           nom?: string
+          photo_url?: string | null
           poste?: string | null
           prenom?: string
           profile_id?: string | null
