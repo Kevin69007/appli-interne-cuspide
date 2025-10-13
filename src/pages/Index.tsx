@@ -77,7 +77,7 @@ const Index = () => {
               { title: "Tâches", icon: "✅", path: "/taches" },
               { title: "Communication Générale", icon: "📢", path: "/communication-generale", restricted: true },
               { title: "Congés & Mood Bar", icon: "🌴", path: "/conges-mood-bar", restricted: true },
-              { title: "Commandes", icon: "🛒" },
+              { title: "Commandes", icon: "🛒", path: "/commandes-stock" },
               { title: "Enquêtes & Idées", icon: "💡" },
               { title: "Planning", icon: "📅", path: "/agenda" },
               { title: "Entretiens Locaux et Machines", icon: "🧼", path: "/entretiens-machines" },
