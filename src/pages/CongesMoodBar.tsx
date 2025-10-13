@@ -259,11 +259,11 @@ const CongesMoodBar = () => {
           <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
             <ArrowLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-3xl font-bold">Congés & Mood Bar</h1>
+          <h1 className="text-3xl font-bold">RH</h1>
         </div>
 
         <Tabs defaultValue="leave-requests" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="leave-requests">
               Demandes de congés ({leaveRequests.length})
             </TabsTrigger>
@@ -271,6 +271,7 @@ const CongesMoodBar = () => {
             <TabsTrigger value="mood">
               Mood Bar {lowMoodAlerts.length > 0 && `(${lowMoodAlerts.length} alertes)`}
             </TabsTrigger>
+            <TabsTrigger value="payslips">Accès aux fiches de paie</TabsTrigger>
           </TabsList>
 
           <TabsContent value="leave-requests" className="space-y-4 mt-6">
@@ -446,6 +447,25 @@ const CongesMoodBar = () => {
                     )}
                   </div>
                 ))}
+              </CardContent>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="payslips" className="space-y-4 mt-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>Accès aux fiches de paie</CardTitle>
+              </CardHeader>
+              <CardContent className="space-y-4">
+                <p className="text-muted-foreground">
+                  Consultez vos fiches de paie sur la plateforme Silae.
+                </p>
+                <Button 
+                  onClick={() => window.open("https://my.silae.fr/sign-in", "_blank")}
+                  className="w-full"
+                >
+                  Accéder à Silae
+                </Button>
               </CardContent>
             </Card>
           </TabsContent>

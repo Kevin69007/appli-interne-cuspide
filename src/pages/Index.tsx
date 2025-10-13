@@ -74,7 +74,7 @@ const Index = () => {
               { title: "Objectifs & Primes", icon: "🎯", path: "/objectifs-primes" },
               { title: "Tâches", icon: "✅", path: "/taches" },
               { title: "Communication Générale", icon: "📢", path: "/communication-generale", restricted: true },
-              { title: "Congés & Mood Bar", icon: "🌴", path: "/conges-mood-bar", restricted: true },
+              { title: "RH", icon: "🌴", path: "/conges-mood-bar", restricted: true },
               { title: "Commandes & Stock", icon: "🛒", path: "/commandes-stock" },
               { title: "Enquêtes & Idées", icon: "💡" },
               { title: "Planning", icon: "📅", path: "/agenda" },
