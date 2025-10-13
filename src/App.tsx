@@ -17,6 +17,7 @@ import Taches from "./pages/Taches";
 import CongesMoodBar from "./pages/CongesMoodBar";
 import Agenda from "./pages/Agenda";
 import Logs from "./pages/Logs";
+import Detente from "./pages/Detente";
 
 import EntretiensMachines from "./pages/EntretiensMachines";
 import CommandesStock from "./pages/CommandesStock";
@@ -58,6 +59,7 @@ const App = () => (
             <Route path="/conges-mood-bar" element={<CongesMoodBar />} />
             <Route path="/agenda" element={<Agenda />} />
             <Route path="/logs" element={<Logs />} />
+            <Route path="/detente" element={<Detente />} />
             <Route path="/entretiens-machines" element={<EntretiensMachines />} />
             <Route path="/commandes-stock" element={<CommandesStock />} />
             <Route path="/formation" element={<Formation />} />

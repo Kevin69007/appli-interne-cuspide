@@ -75,6 +75,7 @@ const Index = () => {
               { title: "Tâches", icon: "✅", path: "/taches" },
               { title: "Communication Générale", icon: "📢", path: "/communication-generale" },
               { title: "RH", icon: "🌴", path: "/conges-mood-bar", restricted: true },
+              { title: "Détente", icon: "🎮", path: "/detente" },
               { title: "Commandes & Stock", icon: "🛒", path: "/commandes-stock" },
               { title: "Planning", icon: "📅", path: "/agenda" },
               { title: "Suivi Direction", icon: "📊", path: "/suivi-direction", restricted: true },
