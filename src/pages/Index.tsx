@@ -70,14 +70,12 @@ const Index = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
-              { title: "Fiches de poste", icon: "📋", path: "/fiches-de-poste" },
+              { title: "Formation & Documentation", icon: "📚", path: "/formation" },
               { title: "Objectifs & Primes", icon: "🎯", path: "/objectifs-primes" },
-              { title: "Protocoles", icon: "📝", path: "/protocoles" },
-              { title: "Quiz", icon: "🧠", path: "/quiz" },
               { title: "Tâches", icon: "✅", path: "/taches" },
               { title: "Communication Générale", icon: "📢", path: "/communication-generale", restricted: true },
               { title: "Congés & Mood Bar", icon: "🌴", path: "/conges-mood-bar", restricted: true },
-              { title: "Commandes", icon: "🛒", path: "/commandes-stock" },
+              { title: "Commandes & Stock", icon: "🛒", path: "/commandes-stock" },
               { title: "Enquêtes & Idées", icon: "💡" },
               { title: "Planning", icon: "📅", path: "/agenda" },
               { title: "Entretiens Locaux et Machines", icon: "🧼", path: "/entretiens-machines" },

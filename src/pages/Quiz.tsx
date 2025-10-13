@@ -135,7 +135,7 @@ const Quiz = () => {
       setDocuments(formattedDocs || []);
     } catch (error) {
       console.error("Error fetching documents:", error);
-      toast.error("Erreur lors du chargement des quiz");
+      toast.error("Erreur lors du chargement des quizz");
     }
   };
 
@@ -243,21 +243,21 @@ const Quiz = () => {
 
       if (linkError) throw linkError;
 
-      toast.success("Quiz créé avec succès");
+      toast.success("Quizz créé avec succès");
       setIsDialogOpen(false);
       setFormData({ name: "", category: "", selectedProfiles: [], fileUrl: "" });
       setSelectedFile(null);
       fetchDocuments();
     } catch (error) {
       console.error("Error creating document:", error);
-      toast.error("Erreur lors de la création du quiz");
+      toast.error("Erreur lors de la création du quizz");
     } finally {
       setUploadingFile(false);
     }
   };
 
   const handleDelete = async (id: string) => {
-    if (!confirm("Êtes-vous sûr de vouloir supprimer ce quiz ?")) return;
+    if (!confirm("Êtes-vous sûr de vouloir supprimer ce quizz ?")) return;
 
     try {
       const { error } = await supabase
@@ -267,7 +267,7 @@ const Quiz = () => {
 
       if (error) throw error;
 
-      toast.success("Quiz supprimé avec succès");
+      toast.success("Quizz supprimé avec succès");
       fetchDocuments();
     } catch (error) {
       console.error("Error deleting document:", error);
@@ -361,7 +361,7 @@ const Quiz = () => {
 
       if (linkError) throw linkError;
 
-      toast.success("Quiz mis à jour avec succès");
+      toast.success("Quizz mis à jour avec succès");
       setIsEditDialogOpen(false);
       setEditingDoc(null);
       setFormData({ name: "", category: "", selectedProfiles: [], fileUrl: "" });
@@ -400,9 +400,9 @@ const Quiz = () => {
               <ArrowLeft className="h-5 w-5" />
             </Button>
             <div>
-              <h1 className="text-3xl font-bold">Quiz</h1>
+              <h1 className="text-3xl font-bold">Quizz</h1>
               <p className="text-muted-foreground">
-                Gérez les quiz et leurs accès
+                Gérez les quizz et leurs accès
               </p>
             </div>
           </div>
@@ -411,12 +411,12 @@ const Quiz = () => {
             <DialogTrigger asChild>
               <Button>
                 <Plus className="h-4 w-4 mr-2" />
-                Nouveau quiz
+                Nouveau quizz
               </Button>
             </DialogTrigger>
             <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
               <DialogHeader>
-                <DialogTitle>Créer un quiz</DialogTitle>
+                <DialogTitle>Créer un quizz</DialogTitle>
                 <DialogDescription>
                   Remplissez les informations et sélectionnez les profils autorisés
                 </DialogDescription>
@@ -424,14 +424,14 @@ const Quiz = () => {
               <form onSubmit={handleSubmit}>
                 <div className="space-y-4 py-4">
                   <div className="space-y-2">
-                    <Label htmlFor="name">Nom du quiz *</Label>
+                    <Label htmlFor="name">Nom du quizz *</Label>
                     <Input
                       id="name"
                       value={formData.name}
                       onChange={(e) =>
                         setFormData({ ...formData, name: e.target.value })
                       }
-                      placeholder="Ex: Quiz mensuel décembre"
+                      placeholder="Ex: Quizz mensuel décembre"
                     />
                   </div>
 

@@ -5,7 +5,7 @@ import { useUserRole } from "@/hooks/useUserRole";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Settings, Users, Trophy, FileText, Shield, ChevronLeft, Calendar, Target, Award } from "lucide-react";
+import { Settings, Users, FileText, Shield, ChevronLeft, Calendar, Target, Award } from "lucide-react";
 import { AddEmployeeDialog } from "@/components/objectifs-primes/AddEmployeeDialog";
 import { EmployeeObjectivesDialog } from "@/components/objectifs-primes/EmployeeObjectivesDialog";
 import { EmployeesList } from "@/components/objectifs-primes/EmployeesList";
@@ -97,7 +97,7 @@ const Admin = () => {
         </div>
 
         <Tabs defaultValue="config" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-5">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="config">
               <Settings className="h-4 w-4 mr-2" />
               Configuration
@@ -105,10 +105,6 @@ const Admin = () => {
             <TabsTrigger value="employees">
               <Users className="h-4 w-4 mr-2" />
               Employés
-            </TabsTrigger>
-            <TabsTrigger value="quiz">
-              <Trophy className="h-4 w-4 mr-2" />
-              Quiz
             </TabsTrigger>
             <TabsTrigger value="reports">
               <FileText className="h-4 w-4 mr-2" />
@@ -203,19 +199,6 @@ const Admin = () => {
                 </div>
               </div>
               <EmployeesList key={refreshKey} />
-            </Card>
-          </TabsContent>
-
-          <TabsContent value="quiz">
-            <Card className="p-6">
-              <div className="flex justify-between items-center mb-6">
-                <h3 className="text-lg font-semibold">Quiz mensuels</h3>
-                <Button>+ Créer un quiz</Button>
-              </div>
-              <div className="text-center py-12 text-muted-foreground">
-                <Trophy className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>Gestion des quiz à venir</p>
-              </div>
             </Card>
           </TabsContent>
 
