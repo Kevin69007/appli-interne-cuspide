@@ -12,6 +12,10 @@ const Detente = () => {
   const { session, participation, isLoading, register, isRegistering, submitAnecdote, isSubmitting } = useGameSession();
   const { data: role } = useGameRole(session?.id);
   const { isAdmin } = useUserRole();
+  
+  // State for target anecdote submission (must be at component level, not conditional)
+  const [anecdote, setAnecdote] = useState("");
+  const [clues, setClues] = useState(["", "", "", "", ""]);
 
   if (isLoading) {
     return (
@@ -163,9 +167,6 @@ const Detente = () => {
 
   // Target waiting for anecdote
   if (session.status === "waiting_anecdote" && role?.role === "target") {
-    const [anecdote, setAnecdote] = useState("");
-    const [clues, setClues] = useState(["", "", "", "", ""]);
-
     const handleSubmit = () => {
       if (!anecdote.trim()) {
         alert("Veuillez saisir une anecdote");
