@@ -76,13 +76,20 @@ const Index = () => {
               { title: "Communication Générale", icon: "📢", path: "/communication-generale" },
               { title: "RH", icon: "🌴", path: "/conges-mood-bar", restricted: true },
               { title: "Détente", icon: "🎮", path: "/detente" },
+              { title: "Traducteur", icon: "🌐", path: "https://interne-traducteur.cuspide.fr/", external: true },
               { title: "Commandes & Stock", icon: "🛒", path: "/commandes-stock" },
               { title: "Planning", icon: "📅", path: "/agenda" },
               { title: "Suivi Direction", icon: "📊", path: "/suivi-direction", restricted: true },
             ].filter(item => !item.restricted || isAdmin || isManager).map((item, index) => (
               <div
                 key={index}
-                onClick={() => item.path && navigate(item.path)}
+                onClick={() => {
+                  if (item.external) {
+                    window.open(item.path, '_blank', 'noopener,noreferrer');
+                  } else if (item.path) {
+                    navigate(item.path);
+                  }
+                }}
                 className="group p-6 rounded-xl border border-border bg-card hover:border-primary hover:shadow-lg hover:shadow-primary/20 transition-all duration-300 cursor-pointer"
               >
                 <div className="text-4xl mb-4">{item.icon}</div>
