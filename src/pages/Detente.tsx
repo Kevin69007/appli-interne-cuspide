@@ -2,13 +2,15 @@ import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useGameSession } from "@/hooks/useGameSession";
 import { useGameRole } from "@/hooks/useGameRole";
+import { useUserRole } from "@/hooks/useUserRole";
 import { Button } from "@/components/ui/button";
-import { Loader2, Frown, ChevronLeft } from "lucide-react";
+import { Loader2, Frown, ChevronLeft, FlaskConical } from "lucide-react";
 
 const Detente = () => {
   const navigate = useNavigate();
   const { session, participation, isLoading, register, isRegistering } = useGameSession();
   const { data: role } = useGameRole(session?.id);
+  const { isAdmin } = useUserRole();
 
   if (isLoading) {
     return (
@@ -22,15 +24,23 @@ const Detente = () => {
   if (!session) {
     return (
       <div className="container mx-auto p-6">
-        <div className="flex items-center gap-4 mb-6">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate("/")}
-          >
-            <ChevronLeft className="h-5 w-5" />
-          </Button>
-          <h1 className="text-2xl font-bold">Détente - La Cible de la semaine</h1>
+        <div className="flex items-center justify-between gap-4 mb-6">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate("/")}
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </Button>
+            <h1 className="text-2xl font-bold">Détente - La Cible de la semaine</h1>
+          </div>
+          {isAdmin && (
+            <Button variant="outline" onClick={() => navigate("/detente-test")}>
+              <FlaskConical className="h-4 w-4" />
+              Mode Test
+            </Button>
+          )}
         </div>
         <Card>
           <CardHeader>
@@ -50,15 +60,23 @@ const Detente = () => {
   if (session.status === "cancelled_no_anecdote") {
     return (
       <div className="container mx-auto p-6">
-        <div className="flex items-center gap-4 mb-6">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate("/")}
-          >
-            <ChevronLeft className="h-5 w-5" />
-          </Button>
-          <h1 className="text-2xl font-bold">Détente - La Cible de la semaine</h1>
+        <div className="flex items-center justify-between gap-4 mb-6">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate("/")}
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </Button>
+            <h1 className="text-2xl font-bold">Détente - La Cible de la semaine</h1>
+          </div>
+          {isAdmin && (
+            <Button variant="outline" onClick={() => navigate("/detente-test")}>
+              <FlaskConical className="h-4 w-4" />
+              Mode Test
+            </Button>
+          )}
         </div>
         <Card className="border-orange-500 bg-orange-50">
           <CardHeader>
@@ -84,15 +102,23 @@ const Detente = () => {
   if (session.status === "registration_open") {
     return (
       <div className="container mx-auto p-6">
-        <div className="flex items-center gap-4 mb-6">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate("/")}
-          >
-            <ChevronLeft className="h-5 w-5" />
-          </Button>
-          <h1 className="text-2xl font-bold">Détente - La Cible de la semaine</h1>
+        <div className="flex items-center justify-between gap-4 mb-6">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate("/")}
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </Button>
+            <h1 className="text-2xl font-bold">Détente - La Cible de la semaine</h1>
+          </div>
+          {isAdmin && (
+            <Button variant="outline" onClick={() => navigate("/detente-test")}>
+              <FlaskConical className="h-4 w-4" />
+              Mode Test
+            </Button>
+          )}
         </div>
         <Card>
           <CardHeader>
@@ -138,15 +164,23 @@ const Detente = () => {
   if (session.status === "waiting_anecdote" && role?.role === "target") {
     return (
       <div className="container mx-auto p-6">
-        <div className="flex items-center gap-4 mb-6">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate("/")}
-          >
-            <ChevronLeft className="h-5 w-5" />
-          </Button>
-          <h1 className="text-2xl font-bold">Détente - La Cible de la semaine</h1>
+        <div className="flex items-center justify-between gap-4 mb-6">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate("/")}
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </Button>
+            <h1 className="text-2xl font-bold">Détente - La Cible de la semaine</h1>
+          </div>
+          {isAdmin && (
+            <Button variant="outline" onClick={() => navigate("/detente-test")}>
+              <FlaskConical className="h-4 w-4" />
+              Mode Test
+            </Button>
+          )}
         </div>
         <Card>
           <CardHeader>
@@ -169,15 +203,23 @@ const Detente = () => {
   if (session.status === "in_progress") {
     return (
       <div className="container mx-auto p-6">
-        <div className="flex items-center gap-4 mb-6">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate("/")}
-          >
-            <ChevronLeft className="h-5 w-5" />
-          </Button>
-          <h1 className="text-2xl font-bold">Détente - La Cible de la semaine</h1>
+        <div className="flex items-center justify-between gap-4 mb-6">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate("/")}
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </Button>
+            <h1 className="text-2xl font-bold">Détente - La Cible de la semaine</h1>
+          </div>
+          {isAdmin && (
+            <Button variant="outline" onClick={() => navigate("/detente-test")}>
+              <FlaskConical className="h-4 w-4" />
+              Mode Test
+            </Button>
+          )}
         </div>
         <Card>
           <CardHeader>
@@ -205,15 +247,23 @@ const Detente = () => {
   if (session.status === "finished") {
     return (
       <div className="container mx-auto p-6">
-        <div className="flex items-center gap-4 mb-6">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => navigate("/")}
-          >
-            <ChevronLeft className="h-5 w-5" />
-          </Button>
-          <h1 className="text-2xl font-bold">Détente - La Cible de la semaine</h1>
+        <div className="flex items-center justify-between gap-4 mb-6">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => navigate("/")}
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </Button>
+            <h1 className="text-2xl font-bold">Détente - La Cible de la semaine</h1>
+          </div>
+          {isAdmin && (
+            <Button variant="outline" onClick={() => navigate("/detente-test")}>
+              <FlaskConical className="h-4 w-4" />
+              Mode Test
+            </Button>
+          )}
         </div>
         <Card>
           <CardHeader>
