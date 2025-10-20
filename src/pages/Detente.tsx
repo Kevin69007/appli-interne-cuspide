@@ -1,3 +1,4 @@
+import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useGameSession } from "@/hooks/useGameSession";
@@ -8,7 +9,7 @@ import { Loader2, Frown, ChevronLeft, FlaskConical } from "lucide-react";
 
 const Detente = () => {
   const navigate = useNavigate();
-  const { session, participation, isLoading, register, isRegistering } = useGameSession();
+  const { session, participation, isLoading, register, isRegistering, submitAnecdote, isSubmitting } = useGameSession();
   const { data: role } = useGameRole(session?.id);
   const { isAdmin } = useUserRole();
 
@@ -162,6 +163,21 @@ const Detente = () => {
 
   // Target waiting for anecdote
   if (session.status === "waiting_anecdote" && role?.role === "target") {
+    const [anecdote, setAnecdote] = useState("");
+    const [clues, setClues] = useState(["", "", "", "", ""]);
+
+    const handleSubmit = () => {
+      if (!anecdote.trim()) {
+        alert("Veuillez saisir une anecdote");
+        return;
+      }
+      if (clues.some(c => !c.trim())) {
+        alert("Veuillez saisir les 5 indices");
+        return;
+      }
+      submitAnecdote({ anecdote, clues });
+    };
+
     return (
       <div className="container mx-auto p-6">
         <div className="flex items-center justify-between gap-4 mb-6">
@@ -186,13 +202,66 @@ const Detente = () => {
           <CardHeader>
             <CardTitle>🎯 Vous êtes la Cible !</CardTitle>
           </CardHeader>
-          <CardContent>
+          <CardContent className="space-y-4">
             <p className="mb-4">
               Cette semaine, vous êtes la Cible ! Vous devez écrire une anecdote et préparer 5 indices avant 14h.
             </p>
-            <p className="text-sm text-muted-foreground">
+            <p className="text-sm text-muted-foreground mb-4">
               Votre anecdote et vos indices seront notés par les enquêteurs. Des points bonus vous seront attribués si vous résistez !
             </p>
+
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  📖 Votre anecdote
+                </label>
+                <textarea
+                  value={anecdote}
+                  onChange={(e) => setAnecdote(e.target.value)}
+                  placeholder="Racontez une anecdote personnelle intéressante..."
+                  className="w-full min-h-[120px] p-3 border rounded-md"
+                  disabled={isSubmitting}
+                />
+              </div>
+
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  🔍 Vos 5 indices (du plus difficile au plus facile)
+                </label>
+                {clues.map((clue, index) => (
+                  <div key={index} className="mb-2">
+                    <input
+                      type="text"
+                      value={clue}
+                      onChange={(e) => {
+                        const newClues = [...clues];
+                        newClues[index] = e.target.value;
+                        setClues(newClues);
+                      }}
+                      placeholder={`Indice ${index + 1}`}
+                      className="w-full p-2 border rounded-md"
+                      disabled={isSubmitting}
+                    />
+                  </div>
+                ))}
+              </div>
+
+              <Button
+                onClick={handleSubmit}
+                disabled={isSubmitting}
+                size="lg"
+                className="w-full"
+              >
+                {isSubmitting ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    Envoi en cours...
+                  </>
+                ) : (
+                  "Valider mon anecdote et mes indices"
+                )}
+              </Button>
+            </div>
           </CardContent>
         </Card>
       </div>
