@@ -1,10 +1,12 @@
+import { useNavigate } from "react-router-dom";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useGameSession } from "@/hooks/useGameSession";
 import { useGameRole } from "@/hooks/useGameRole";
 import { Button } from "@/components/ui/button";
-import { Loader2, Frown } from "lucide-react";
+import { Loader2, Frown, ChevronLeft } from "lucide-react";
 
 const Detente = () => {
+  const navigate = useNavigate();
   const { session, participation, isLoading, register, isRegistering } = useGameSession();
   const { data: role } = useGameRole(session?.id);
 
@@ -20,9 +22,19 @@ const Detente = () => {
   if (!session) {
     return (
       <div className="container mx-auto p-6">
+        <div className="flex items-center gap-4 mb-6">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate("/")}
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </Button>
+          <h1 className="text-2xl font-bold">Détente - La Cible de la semaine</h1>
+        </div>
         <Card>
           <CardHeader>
-            <CardTitle>🎮 Détente - La Cible de la semaine</CardTitle>
+            <CardTitle>🎮 Aucun jeu actif</CardTitle>
           </CardHeader>
           <CardContent>
             <p className="text-muted-foreground">
@@ -38,6 +50,16 @@ const Detente = () => {
   if (session.status === "cancelled_no_anecdote") {
     return (
       <div className="container mx-auto p-6">
+        <div className="flex items-center gap-4 mb-6">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate("/")}
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </Button>
+          <h1 className="text-2xl font-bold">Détente - La Cible de la semaine</h1>
+        </div>
         <Card className="border-orange-500 bg-orange-50">
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
@@ -62,6 +84,16 @@ const Detente = () => {
   if (session.status === "registration_open") {
     return (
       <div className="container mx-auto p-6">
+        <div className="flex items-center gap-4 mb-6">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate("/")}
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </Button>
+          <h1 className="text-2xl font-bold">Détente - La Cible de la semaine</h1>
+        </div>
         <Card>
           <CardHeader>
             <CardTitle>🎲 Tirage au sort de la Cible !</CardTitle>
@@ -106,6 +138,16 @@ const Detente = () => {
   if (session.status === "waiting_anecdote" && role?.role === "target") {
     return (
       <div className="container mx-auto p-6">
+        <div className="flex items-center gap-4 mb-6">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate("/")}
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </Button>
+          <h1 className="text-2xl font-bold">Détente - La Cible de la semaine</h1>
+        </div>
         <Card>
           <CardHeader>
             <CardTitle>🎯 Vous êtes la Cible !</CardTitle>
@@ -127,6 +169,16 @@ const Detente = () => {
   if (session.status === "in_progress") {
     return (
       <div className="container mx-auto p-6">
+        <div className="flex items-center gap-4 mb-6">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate("/")}
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </Button>
+          <h1 className="text-2xl font-bold">Détente - La Cible de la semaine</h1>
+        </div>
         <Card>
           <CardHeader>
             <CardTitle>
@@ -153,6 +205,16 @@ const Detente = () => {
   if (session.status === "finished") {
     return (
       <div className="container mx-auto p-6">
+        <div className="flex items-center gap-4 mb-6">
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => navigate("/")}
+          >
+            <ChevronLeft className="h-5 w-5" />
+          </Button>
+          <h1 className="text-2xl font-bold">Détente - La Cible de la semaine</h1>
+        </div>
         <Card>
           <CardHeader>
             <CardTitle>🎉 Jeu terminé !</CardTitle>
