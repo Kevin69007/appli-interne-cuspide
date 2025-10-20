@@ -6,9 +6,11 @@ import { useGameRole } from "@/hooks/useGameRole";
 import { useUserRole } from "@/hooks/useUserRole";
 import { Button } from "@/components/ui/button";
 import { Loader2, Frown, ChevronLeft, FlaskConical } from "lucide-react";
+import { useToast } from "@/hooks/use-toast";
 
 const Detente = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
   const { session, participation, isLoading, register, isRegistering, submitAnecdote, isSubmitting } = useGameSession();
   const { data: role } = useGameRole(session?.id);
   const { isAdmin } = useUserRole();
@@ -169,14 +171,40 @@ const Detente = () => {
   if (session.status === "waiting_anecdote" && role?.role === "target") {
     const handleSubmit = () => {
       if (!anecdote.trim()) {
-        alert("Veuillez saisir une anecdote");
+        toast({
+          title: "Anecdote requise",
+          description: "Veuillez saisir une anecdote",
+          variant: "destructive"
+        });
         return;
       }
       if (clues.some(c => !c.trim())) {
-        alert("Veuillez saisir les 5 indices");
+        toast({
+          title: "Indices requis",
+          description: "Veuillez saisir les 5 indices",
+          variant: "destructive"
+        });
         return;
       }
-      submitAnecdote({ anecdote, clues });
+      
+      submitAnecdote({ anecdote, clues }, {
+        onSuccess: () => {
+          toast({
+            title: "✅ Anecdote envoyée !",
+            description: "Votre anecdote et vos indices ont été soumis avec succès. Le jeu va bientôt commencer !",
+          });
+          // Reset form
+          setAnecdote("");
+          setClues(["", "", "", "", ""]);
+        },
+        onError: (error: Error) => {
+          toast({
+            title: "Erreur",
+            description: error.message || "Une erreur est survenue lors de l'envoi",
+            variant: "destructive"
+          });
+        }
+      });
     };
 
     return (
