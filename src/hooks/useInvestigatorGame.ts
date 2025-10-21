@@ -23,6 +23,7 @@ export const useInvestigatorGame = (sessionId: string | undefined) => {
       return data || [];
     },
     enabled: !!sessionId,
+    refetchInterval: 5000, // Refresh every 5 seconds to get new revealed clues
   });
 
   // Get current user's employee ID
