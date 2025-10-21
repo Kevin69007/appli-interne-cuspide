@@ -19,7 +19,12 @@ export const useInvestigatorGame = (sessionId: string | undefined) => {
         .eq("is_revealed", true)
         .order("clue_number");
 
-      if (error) throw error;
+      if (error) {
+        console.error("Error fetching clues:", error);
+        throw error;
+      }
+      
+      console.log("📋 Fetched revealed clues:", data);
       return data || [];
     },
     enabled: !!sessionId,

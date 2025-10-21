@@ -377,6 +377,11 @@ const Detente = () => {
                   <CardTitle>🔍 Indices révélés</CardTitle>
                 </CardHeader>
                 <CardContent>
+                  {(() => {
+                    console.log("🔍 Rendering clues - revealedClues:", revealedClues);
+                    console.log("🔍 revealedClues length:", revealedClues?.length);
+                    return null;
+                  })()}
                   {revealedClues && revealedClues.length > 0 ? (
                     <div className="space-y-2">
                       {revealedClues.map((clue) => (
