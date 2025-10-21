@@ -4,9 +4,11 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { useGameSession } from "@/hooks/useGameSession";
 import { useGameRole } from "@/hooks/useGameRole";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useInvestigatorGame } from "@/hooks/useInvestigatorGame";
 import { Button } from "@/components/ui/button";
-import { Loader2, Frown, ChevronLeft, FlaskConical } from "lucide-react";
+import { Loader2, Frown, ChevronLeft, FlaskConical, CheckCircle2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { Badge } from "@/components/ui/badge";
 
 const Detente = () => {
   const navigate = useNavigate();
@@ -14,10 +16,12 @@ const Detente = () => {
   const { session, participation, isLoading, register, isRegistering, submitAnecdote, isSubmitting } = useGameSession();
   const { data: role } = useGameRole(session?.id);
   const { isAdmin } = useUserRole();
+  const { clues: revealedClues, myVote, participants, vote, isVoting } = useInvestigatorGame(session?.id);
   
   // State for target anecdote submission (must be at component level, not conditional)
   const [anecdote, setAnecdote] = useState("");
   const [clues, setClues] = useState(["", "", "", "", ""]);
+  const [selectedVote, setSelectedVote] = useState<string>("");
 
   if (isLoading) {
     return (
@@ -299,6 +303,34 @@ const Detente = () => {
 
   // Game in progress
   if (session.status === "in_progress") {
+    const handleVoteSubmit = () => {
+      if (!selectedVote) {
+        toast({
+          title: "Sélection requise",
+          description: "Veuillez sélectionner une personne",
+          variant: "destructive"
+        });
+        return;
+      }
+      
+      vote(selectedVote, {
+        onSuccess: () => {
+          toast({
+            title: "✅ Vote enregistré !",
+            description: "Votre vote a été pris en compte.",
+          });
+          setSelectedVote("");
+        },
+        onError: (error: Error) => {
+          toast({
+            title: "Erreur",
+            description: error.message || "Erreur lors du vote",
+            variant: "destructive"
+          });
+        }
+      });
+    };
+
     return (
       <div className="container mx-auto p-6">
         <div className="flex items-center justify-between gap-4 mb-6">
@@ -319,24 +351,125 @@ const Detente = () => {
             </Button>
           )}
         </div>
-        <Card>
-          <CardHeader>
-            <CardTitle>
-              {role?.role === "target" ? "🎯 Vous êtes la Cible" : "🕵️ Vous êtes Enquêteur"}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
+        
+        <div className="space-y-6">
+          {/* Anecdote Card */}
+          <Card>
+            <CardHeader>
+              <CardTitle>
+                {role?.role === "target" ? "🎯 Vous êtes la Cible" : "🕵️ Vous êtes Enquêteur"}
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
               <div className="p-4 bg-secondary rounded-lg">
                 <h3 className="font-semibold mb-2">📖 L'anecdote</h3>
                 <p className="italic">{session.anecdote}</p>
               </div>
-              <p className="text-sm text-muted-foreground">
-                Interface complète en cours de développement...
-              </p>
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
+
+          {/* Investigator specific content */}
+          {role?.role === "investigator" && (
+            <>
+              {/* Revealed Clues */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>🔍 Indices révélés</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {revealedClues && revealedClues.length > 0 ? (
+                    <div className="space-y-2">
+                      {revealedClues.map((clue) => (
+                        <div key={clue.id} className="p-3 bg-secondary rounded-lg">
+                          <Badge variant="outline" className="mb-2">Indice {clue.clue_number}</Badge>
+                          <p>{clue.clue_text}</p>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <p className="text-muted-foreground">Aucun indice révélé pour le moment...</p>
+                  )}
+                </CardContent>
+              </Card>
+
+              {/* Voting Section */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>🗳️ Qui est la Cible ?</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  {myVote ? (
+                    <div className="p-4 bg-green-50 rounded-lg border border-green-200">
+                      <div className="flex items-center gap-2 text-green-700">
+                        <CheckCircle2 className="h-5 w-5" />
+                        <p className="font-medium">
+                          Vous avez voté pour : {myVote.suspect_employee?.prenom} {myVote.suspect_employee?.nom}
+                        </p>
+                      </div>
+                    </div>
+                  ) : (
+                    <div className="space-y-4">
+                      <p className="text-sm text-muted-foreground">
+                        Sélectionnez qui vous pensez être la Cible de cette semaine :
+                      </p>
+                      <div className="space-y-2">
+                        {participants?.map((participant) => {
+                          const employee = participant.employees as { id: string; prenom: string; nom: string } | null;
+                          return (
+                            <div
+                              key={participant.id}
+                              className={`p-3 border rounded-lg cursor-pointer transition-colors ${
+                                selectedVote === participant.employee_id
+                                  ? "bg-primary/10 border-primary"
+                                  : "hover:bg-secondary"
+                              }`}
+                              onClick={() => setSelectedVote(participant.employee_id)}
+                            >
+                              <div className="flex items-center justify-between">
+                                <span className="font-medium">
+                                  {employee?.prenom} {employee?.nom}
+                                </span>
+                                {selectedVote === participant.employee_id && (
+                                  <CheckCircle2 className="h-5 w-5 text-primary" />
+                                )}
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                      <Button
+                        onClick={handleVoteSubmit}
+                        disabled={isVoting || !selectedVote}
+                        size="lg"
+                        className="w-full"
+                      >
+                        {isVoting ? (
+                          <>
+                            <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                            Envoi du vote...
+                          </>
+                        ) : (
+                          "Confirmer mon vote"
+                        )}
+                      </Button>
+                    </div>
+                  )}
+                </CardContent>
+              </Card>
+            </>
+          )}
+
+          {/* Target specific message */}
+          {role?.role === "target" && (
+            <Card>
+              <CardContent className="pt-6">
+                <p className="text-center text-muted-foreground">
+                  Les enquêteurs essaient de vous identifier ! Restez discret... 🤫
+                </p>
+              </CardContent>
+            </Card>
+          )}
+        </div>
       </div>
     );
   }
