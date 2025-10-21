@@ -95,7 +95,13 @@ export const useGameSession = () => {
 
       if (sessionError) throw sessionError;
 
-      // Insert clues
+      // Delete existing clues for this session (in case of resubmission)
+      await supabase
+        .from("game_clues")
+        .delete()
+        .eq("session_id", session.id);
+
+      // Insert new clues
       const clueData = clues.map((clue, index) => ({
         session_id: session.id,
         clue_number: index + 1,
