@@ -95,6 +95,50 @@ const DetenteTest = () => {
     refetchInterval: 5000,
   });
 
+  // Fetch all employees
+  const { data: allEmployees } = useQuery({
+    queryKey: ["all-employees"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("employees")
+        .select("*")
+        .order("nom");
+      if (error) throw error;
+      return data;
+    },
+  });
+
+  const addInvestigator = async (employeeId: string) => {
+    if (!session) return;
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from("game_participants")
+        .insert({
+          session_id: session.id,
+          employee_id: employeeId,
+          role: "investigator",
+        });
+
+      if (error) throw error;
+
+      toast({
+        title: "✅ Enquêteur ajouté !",
+        description: "L'employé a été ajouté comme enquêteur.",
+      });
+
+      refetchParticipants();
+    } catch (error: any) {
+      toast({
+        title: "Erreur",
+        description: error.message || "Impossible d'ajouter l'enquêteur",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const callEdgeFunction = async (functionName: string, body?: any) => {
     setLoading(true);
     try {
@@ -353,6 +397,34 @@ const DetenteTest = () => {
                       </span>
                     </div>
                   ))}
+                </div>
+              </div>
+            )}
+
+            {/* Add Investigators Section */}
+            {session && session.status === "in_progress" && allEmployees && participants && (
+              <div className="mt-6 p-4 bg-purple-50 dark:bg-purple-950 rounded-lg">
+                <h5 className="font-semibold text-sm mb-3 text-purple-900 dark:text-purple-100">
+                  👥 Ajouter des enquêteurs
+                </h5>
+                <div className="space-y-2">
+                  {allEmployees
+                    .filter(emp => !participants.some(p => p.employee_id === emp.id))
+                    .map(employee => (
+                      <div key={employee.id} className="flex items-center justify-between p-2 bg-white dark:bg-gray-800 rounded">
+                        <span className="text-sm">{employee.prenom} {employee.nom}</span>
+                        <Button
+                          size="sm"
+                          onClick={() => addInvestigator(employee.id)}
+                          disabled={loading}
+                        >
+                          Ajouter
+                        </Button>
+                      </div>
+                    ))}
+                  {allEmployees.length > 0 && allEmployees.every(emp => participants.some(p => p.employee_id === emp.id)) && (
+                    <p className="text-xs text-muted-foreground">Tous les employés participent déjà au jeu.</p>
+                  )}
                 </div>
               </div>
             )}
