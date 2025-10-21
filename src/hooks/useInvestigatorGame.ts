@@ -69,25 +69,21 @@ export const useInvestigatorGame = (sessionId: string | undefined) => {
     enabled: !!sessionId && !!employeeId,
   });
 
-  // Get all participants (for voting list)
-  const { data: participants, isLoading: participantsLoading } = useQuery({
-    queryKey: ["game-participants", sessionId],
+  // Get all employees (for voting list)
+  const { data: allEmployees, isLoading: employeesLoading } = useQuery({
+    queryKey: ["all-employees"],
     queryFn: async () => {
-      if (!sessionId) return [];
-
       const { data, error } = await supabase
-        .from("game_participants")
-        .select("id, employee_id, role, is_eliminated, employees!game_participants_employee_id_fkey(id, prenom, nom)")
-        .eq("session_id", sessionId)
-        .eq("is_eliminated", false);
+        .from("employees")
+        .select("id, prenom, nom, photo_url, poste, equipe")
+        .order("nom");
 
       if (error) throw error;
       return data || [];
     },
-    enabled: !!sessionId,
   });
 
-  // Submit vote
+  // Submit elimination vote
   const voteMutation = useMutation({
     mutationFn: async (suspectEmployeeId: string) => {
       if (!sessionId || !employeeId) throw new Error("Missing data");
@@ -106,12 +102,56 @@ export const useInvestigatorGame = (sessionId: string | undefined) => {
     },
   });
 
+  // Submit anecdote vote
+  const voteAnecdoteMutation = useMutation({
+    mutationFn: async (rating: number) => {
+      if (!sessionId || !employeeId) throw new Error("Missing data");
+
+      const { error } = await supabase.from("game_votes").insert({
+        session_id: sessionId,
+        voter_employee_id: employeeId,
+        vote_type: "anecdote_originality",
+        originality_rating: rating,
+      });
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["my-vote"] });
+    },
+  });
+
+  // Submit clue vote
+  const voteClueMutation = useMutation({
+    mutationFn: async ({ clueId, difficultyRating, originalityRating }: { clueId: string; difficultyRating: number; originalityRating: number }) => {
+      if (!sessionId || !employeeId) throw new Error("Missing data");
+
+      const { error } = await supabase.from("game_votes").insert({
+        session_id: sessionId,
+        voter_employee_id: employeeId,
+        vote_type: "clue_difficulty",
+        clue_id: clueId,
+        difficulty_rating: difficultyRating,
+        originality_rating: originalityRating,
+      });
+
+      if (error) throw error;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["my-vote"] });
+    },
+  });
+
   return {
     clues,
     myVote,
-    participants,
-    isLoading: cluesLoading || voteLoading || participantsLoading,
+    allEmployees,
+    isLoading: cluesLoading || voteLoading || employeesLoading,
     vote: voteMutation.mutate,
     isVoting: voteMutation.isPending,
+    voteAnecdote: voteAnecdoteMutation.mutate,
+    isVotingAnecdote: voteAnecdoteMutation.isPending,
+    voteClue: voteClueMutation.mutate,
+    isVotingClue: voteClueMutation.isPending,
   };
 };

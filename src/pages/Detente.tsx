@@ -16,7 +16,7 @@ const Detente = () => {
   const { session, participation, isLoading, register, isRegistering, submitAnecdote, isSubmitting } = useGameSession();
   const { data: role } = useGameRole(session?.id);
   const { isAdmin } = useUserRole();
-  const { clues: revealedClues, myVote, participants, vote, isVoting } = useInvestigatorGame(session?.id);
+  const { clues: revealedClues, myVote, allEmployees, vote, isVoting, voteAnecdote, isVotingAnecdote, voteClue, isVotingClue } = useInvestigatorGame(session?.id);
   
   // State for target anecdote submission (must be at component level, not conditional)
   const [anecdote, setAnecdote] = useState("");
@@ -397,6 +397,104 @@ const Detente = () => {
                 </CardContent>
               </Card>
 
+              {/* Vote for Anecdote */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>⭐ Notez l'anecdote</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-sm text-muted-foreground mb-4">
+                    Évaluez l'originalité de l'anecdote (1 = peu original, 5 = très original)
+                  </p>
+                  <div className="flex gap-2">
+                    {[1, 2, 3, 4, 5].map((rating) => (
+                      <Button
+                        key={rating}
+                        onClick={() => voteAnecdote(rating, {
+                          onSuccess: () => {
+                            toast({
+                              title: "✅ Vote enregistré !",
+                              description: `Vous avez noté l'anecdote ${rating}/5`,
+                            });
+                          },
+                          onError: (error: Error) => {
+                            toast({
+                              title: "Erreur",
+                              description: error.message || "Erreur lors du vote",
+                              variant: "destructive",
+                            });
+                          }
+                        })}
+                        disabled={isVotingAnecdote}
+                        variant="outline"
+                        className="flex-1"
+                      >
+                        {rating} ⭐
+                      </Button>
+                    ))}
+                  </div>
+                </CardContent>
+              </Card>
+
+              {/* Vote for Clues */}
+              {revealedClues && revealedClues.length > 0 && (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>💡 Notez les indices</CardTitle>
+                  </CardHeader>
+                  <CardContent className="space-y-4">
+                    <p className="text-sm text-muted-foreground">
+                      Évaluez la difficulté et l'originalité de chaque indice
+                    </p>
+                    {revealedClues.map((clue) => (
+                      <div key={clue.id} className="p-4 border rounded-lg space-y-3">
+                        <div>
+                          <Badge variant="outline" className="mb-2">Indice {clue.clue_number}</Badge>
+                          <p className="text-sm">{clue.clue_text}</p>
+                        </div>
+                        <div className="space-y-2">
+                          <div>
+                            <p className="text-xs font-medium mb-1">Difficulté (1 = facile, 5 = difficile)</p>
+                            <div className="flex gap-2">
+                              {[1, 2, 3, 4, 5].map((rating) => (
+                                <Button
+                                  key={rating}
+                                  onClick={() => voteClue({ 
+                                    clueId: clue.id, 
+                                    difficultyRating: rating,
+                                    originalityRating: 3 // valeur par défaut
+                                  }, {
+                                    onSuccess: () => {
+                                      toast({
+                                        title: "✅ Vote enregistré !",
+                                        description: `Difficulté: ${rating}/5`,
+                                      });
+                                    },
+                                    onError: (error: Error) => {
+                                      toast({
+                                        title: "Erreur",
+                                        description: error.message,
+                                        variant: "destructive",
+                                      });
+                                    }
+                                  })}
+                                  disabled={isVotingClue}
+                                  variant="outline"
+                                  size="sm"
+                                  className="flex-1"
+                                >
+                                  {rating}
+                                </Button>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </CardContent>
+                </Card>
+              )}
+
               {/* Voting Section */}
               <Card>
                 <CardHeader>
@@ -418,29 +516,46 @@ const Detente = () => {
                         Sélectionnez qui vous pensez être la Cible de cette semaine :
                       </p>
                       <div className="space-y-2">
-                        {participants?.map((participant) => {
-                          const employee = participant.employees as { id: string; prenom: string; nom: string } | null;
-                          return (
-                            <div
-                              key={participant.id}
-                              className={`p-3 border rounded-lg cursor-pointer transition-colors ${
-                                selectedVote === participant.employee_id
-                                  ? "bg-primary/10 border-primary"
-                                  : "hover:bg-secondary"
-                              }`}
-                              onClick={() => setSelectedVote(participant.employee_id)}
-                            >
-                              <div className="flex items-center justify-between">
-                                <span className="font-medium">
-                                  {employee?.prenom} {employee?.nom}
-                                </span>
-                                {selectedVote === participant.employee_id && (
-                                  <CheckCircle2 className="h-5 w-5 text-primary" />
+                        {allEmployees?.map((employee) => (
+                          <div
+                            key={employee.id}
+                            className={`p-3 border rounded-lg cursor-pointer transition-colors ${
+                              selectedVote === employee.id
+                                ? "bg-primary/10 border-primary"
+                                : "hover:bg-secondary"
+                            }`}
+                            onClick={() => setSelectedVote(employee.id)}
+                          >
+                            <div className="flex items-center justify-between gap-3">
+                              <div className="flex items-center gap-3">
+                                {employee.photo_url ? (
+                                  <img 
+                                    src={employee.photo_url} 
+                                    alt={`${employee.prenom} ${employee.nom}`}
+                                    className="w-10 h-10 rounded-full object-cover"
+                                  />
+                                ) : (
+                                  <div className="w-10 h-10 rounded-full bg-muted flex items-center justify-center">
+                                    <span className="text-sm font-medium">
+                                      {employee.prenom[0]}{employee.nom[0]}
+                                    </span>
+                                  </div>
                                 )}
+                                <div>
+                                  <p className="font-medium">
+                                    {employee.prenom} {employee.nom}
+                                  </p>
+                                  {employee.poste && (
+                                    <p className="text-xs text-muted-foreground">{employee.poste}</p>
+                                  )}
+                                </div>
                               </div>
+                              {selectedVote === employee.id && (
+                                <CheckCircle2 className="h-5 w-5 text-primary" />
+                              )}
                             </div>
-                          );
-                        })}
+                          </div>
+                        ))}
                       </div>
                       <Button
                         onClick={handleVoteSubmit}
