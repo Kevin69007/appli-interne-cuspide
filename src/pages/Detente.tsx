@@ -16,7 +16,7 @@ const Detente = () => {
   const { session, participation, isLoading, register, isRegistering, submitAnecdote, isSubmitting } = useGameSession();
   const { data: role } = useGameRole(session?.id);
   const { isAdmin } = useUserRole();
-  const { clues: revealedClues, myVote, allEmployees, vote, isVoting, voteAnecdote, isVotingAnecdote, voteClue, isVotingClue } = useInvestigatorGame(session?.id);
+  const { clues: revealedClues, myVote, myAnecdoteVote, myClueVotes, allEmployees, vote, isVoting, voteAnecdote, isVotingAnecdote, voteClue, isVotingClue } = useInvestigatorGame(session?.id);
   
   // State for target anecdote submission (must be at component level, not conditional)
   const [anecdote, setAnecdote] = useState("");
@@ -398,43 +398,57 @@ const Detente = () => {
               </Card>
 
               {/* Vote for Anecdote */}
-              <Card>
-                <CardHeader>
-                  <CardTitle>⭐ Notez l'anecdote</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <p className="text-sm text-muted-foreground mb-4">
-                    Évaluez l'originalité de l'anecdote (1 = peu original, 5 = très original)
-                  </p>
-                  <div className="flex gap-2">
-                    {[1, 2, 3, 4, 5].map((rating) => (
-                      <Button
-                        key={rating}
-                        onClick={() => voteAnecdote(rating, {
-                          onSuccess: () => {
-                            toast({
-                              title: "✅ Vote enregistré !",
-                              description: `Vous avez noté l'anecdote ${rating}/5`,
-                            });
-                          },
-                          onError: (error: Error) => {
-                            toast({
-                              title: "Erreur",
-                              description: error.message || "Erreur lors du vote",
-                              variant: "destructive",
-                            });
-                          }
-                        })}
-                        disabled={isVotingAnecdote}
-                        variant="outline"
-                        className="flex-1"
-                      >
-                        {rating} ⭐
-                      </Button>
-                    ))}
-                  </div>
-                </CardContent>
-              </Card>
+              {!myAnecdoteVote ? (
+                <Card>
+                  <CardHeader>
+                    <CardTitle>⭐ Notez l'anecdote</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <p className="text-sm text-muted-foreground mb-4">
+                      Évaluez l'originalité de l'anecdote (1 = peu original, 5 = très original) - Vote unique
+                    </p>
+                    <div className="flex gap-2">
+                      {[1, 2, 3, 4, 5].map((rating) => (
+                        <Button
+                          key={rating}
+                          onClick={() => voteAnecdote(rating, {
+                            onSuccess: () => {
+                              toast({
+                                title: "✅ Vote enregistré !",
+                                description: `Vous avez noté l'anecdote ${rating}/5`,
+                              });
+                            },
+                            onError: (error: Error) => {
+                              toast({
+                                title: "Erreur",
+                                description: error.message || "Erreur lors du vote",
+                                variant: "destructive",
+                              });
+                            }
+                          })}
+                          disabled={isVotingAnecdote}
+                          variant="outline"
+                          className="flex-1"
+                        >
+                          {rating} ⭐
+                        </Button>
+                      ))}
+                    </div>
+                  </CardContent>
+                </Card>
+              ) : (
+                <Card className="bg-muted/50">
+                  <CardHeader>
+                    <CardTitle>⭐ Anecdote notée</CardTitle>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex items-center gap-2 text-muted-foreground">
+                      <CheckCircle2 className="h-5 w-5 text-green-600" />
+                      <p>Vous avez déjà noté l'anecdote : {myAnecdoteVote.originality_rating}/5 ⭐</p>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
 
               {/* Vote for Clues */}
               {revealedClues && revealedClues.length > 0 && (
@@ -444,53 +458,65 @@ const Detente = () => {
                   </CardHeader>
                   <CardContent className="space-y-4">
                     <p className="text-sm text-muted-foreground">
-                      Évaluez la difficulté et l'originalité de chaque indice
+                      Évaluez la difficulté de chaque indice (1 = facile, 5 = difficile) - Vote unique par indice
                     </p>
-                    {revealedClues.map((clue) => (
-                      <div key={clue.id} className="p-4 border rounded-lg space-y-3">
-                        <div>
-                          <Badge variant="outline" className="mb-2">Indice {clue.clue_number}</Badge>
-                          <p className="text-sm">{clue.clue_text}</p>
-                        </div>
-                        <div className="space-y-2">
+                    {revealedClues.map((clue) => {
+                      const hasVoted = myClueVotes?.some(v => v.clue_id === clue.id);
+                      const myVoteForClue = myClueVotes?.find(v => v.clue_id === clue.id);
+                      
+                      return (
+                        <div key={clue.id} className="p-4 border rounded-lg space-y-3">
                           <div>
-                            <p className="text-xs font-medium mb-1">Difficulté (1 = facile, 5 = difficile)</p>
-                            <div className="flex gap-2">
-                              {[1, 2, 3, 4, 5].map((rating) => (
-                                <Button
-                                  key={rating}
-                                  onClick={() => voteClue({ 
-                                    clueId: clue.id, 
-                                    difficultyRating: rating,
-                                    originalityRating: 3 // valeur par défaut
-                                  }, {
-                                    onSuccess: () => {
-                                      toast({
-                                        title: "✅ Vote enregistré !",
-                                        description: `Difficulté: ${rating}/5`,
-                                      });
-                                    },
-                                    onError: (error: Error) => {
-                                      toast({
-                                        title: "Erreur",
-                                        description: error.message,
-                                        variant: "destructive",
-                                      });
-                                    }
-                                  })}
-                                  disabled={isVotingClue}
-                                  variant="outline"
-                                  size="sm"
-                                  className="flex-1"
-                                >
-                                  {rating}
-                                </Button>
-                              ))}
-                            </div>
+                            <Badge variant="outline" className="mb-2">Indice {clue.clue_number}</Badge>
+                            <p className="text-sm">{clue.clue_text}</p>
                           </div>
+                          {!hasVoted ? (
+                            <div className="space-y-2">
+                              <div>
+                                <p className="text-xs font-medium mb-1">Difficulté</p>
+                                <div className="flex gap-2">
+                                  {[1, 2, 3, 4, 5].map((rating) => (
+                                    <Button
+                                      key={rating}
+                                      onClick={() => voteClue({ 
+                                        clueId: clue.id, 
+                                        difficultyRating: rating,
+                                        originalityRating: rating
+                                      }, {
+                                        onSuccess: () => {
+                                          toast({
+                                            title: "✅ Vote enregistré !",
+                                            description: `Difficulté notée: ${rating}/5`,
+                                          });
+                                        },
+                                        onError: (error: Error) => {
+                                          toast({
+                                            title: "Erreur",
+                                            description: error.message,
+                                            variant: "destructive",
+                                          });
+                                        }
+                                      })}
+                                      disabled={isVotingClue}
+                                      variant="outline"
+                                      size="sm"
+                                      className="flex-1"
+                                    >
+                                      {rating} ⭐
+                                    </Button>
+                                  ))}
+                                </div>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-2 text-muted-foreground text-sm">
+                              <CheckCircle2 className="h-4 w-4 text-green-600" />
+                              <p>✓ Déjà noté : {myVoteForClue?.difficulty_rating}/5 ⭐</p>
+                            </div>
+                          )}
                         </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </CardContent>
                 </Card>
               )}
@@ -498,7 +524,7 @@ const Detente = () => {
               {/* Voting Section */}
               <Card>
                 <CardHeader>
-                  <CardTitle>🗳️ Qui est la Cible ?</CardTitle>
+                  <CardTitle>🗳️ Vote d'élimination quotidien</CardTitle>
                 </CardHeader>
                 <CardContent>
                   {myVote ? (
@@ -506,14 +532,17 @@ const Detente = () => {
                       <div className="flex items-center gap-2 text-green-700">
                         <CheckCircle2 className="h-5 w-5" />
                         <p className="font-medium">
-                          Vous avez voté pour : {myVote.suspect_employee?.prenom} {myVote.suspect_employee?.nom}
+                          Vous avez voté pour éliminer : {myVote.suspect_employee?.prenom} {myVote.suspect_employee?.nom}
                         </p>
                       </div>
+                      <p className="text-xs text-green-600 mt-2">
+                        3 éliminations auront lieu pendant la partie. Le vote final pour identifier la Cible aura lieu le dernier jour.
+                      </p>
                     </div>
                   ) : (
                     <div className="space-y-4">
                       <p className="text-sm text-muted-foreground">
-                        Sélectionnez qui vous pensez être la Cible de cette semaine :
+                        Votez pour éliminer un suspect aujourd'hui (3 éliminations durant la partie, le vote final pour la Cible sera le dernier jour) :
                       </p>
                       <div className="space-y-2">
                         {allEmployees?.map((employee) => (

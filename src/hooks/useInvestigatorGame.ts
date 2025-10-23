@@ -49,7 +49,7 @@ export const useInvestigatorGame = (sessionId: string | undefined) => {
     enabled: !!user,
   });
 
-  // Get current user's vote
+  // Get current user's elimination vote
   const { data: myVote, isLoading: voteLoading } = useQuery({
     queryKey: ["my-vote", sessionId, employeeId],
     queryFn: async () => {
@@ -65,6 +65,45 @@ export const useInvestigatorGame = (sessionId: string | undefined) => {
 
       if (error) throw error;
       return data;
+    },
+    enabled: !!sessionId && !!employeeId,
+  });
+
+  // Get current user's anecdote vote
+  const { data: myAnecdoteVote } = useQuery({
+    queryKey: ["my-anecdote-vote", sessionId, employeeId],
+    queryFn: async () => {
+      if (!sessionId || !employeeId) return null;
+
+      const { data, error } = await supabase
+        .from("game_votes")
+        .select("*")
+        .eq("session_id", sessionId)
+        .eq("voter_employee_id", employeeId)
+        .eq("vote_type", "anecdote_originality")
+        .maybeSingle();
+
+      if (error) throw error;
+      return data;
+    },
+    enabled: !!sessionId && !!employeeId,
+  });
+
+  // Get current user's clue votes
+  const { data: myClueVotes } = useQuery({
+    queryKey: ["my-clue-votes", sessionId, employeeId],
+    queryFn: async () => {
+      if (!sessionId || !employeeId) return [];
+
+      const { data, error } = await supabase
+        .from("game_votes")
+        .select("*")
+        .eq("session_id", sessionId)
+        .eq("voter_employee_id", employeeId)
+        .eq("vote_type", "clue_difficulty");
+
+      if (error) throw error;
+      return data || [];
     },
     enabled: !!sessionId && !!employeeId,
   });
@@ -117,7 +156,7 @@ export const useInvestigatorGame = (sessionId: string | undefined) => {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["my-vote"] });
+      queryClient.invalidateQueries({ queryKey: ["my-anecdote-vote"] });
     },
   });
 
@@ -138,13 +177,15 @@ export const useInvestigatorGame = (sessionId: string | undefined) => {
       if (error) throw error;
     },
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["my-vote"] });
+      queryClient.invalidateQueries({ queryKey: ["my-clue-votes"] });
     },
   });
 
   return {
     clues,
     myVote,
+    myAnecdoteVote,
+    myClueVotes,
     allEmployees,
     isLoading: cluesLoading || voteLoading || employeesLoading,
     vote: voteMutation.mutate,
