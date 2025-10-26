@@ -3,9 +3,10 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Plus, Edit, Trash2 } from "lucide-react";
+import { Plus, Edit, Trash2, Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { CreateSupplierDialog } from "./CreateSupplierDialog";
+import { ImportSuppliersDialog } from "./config/ImportSuppliersDialog";
 import { useUserRole } from "@/hooks/useUserRole";
 
 export const SuppliersList = () => {
@@ -13,6 +14,7 @@ export const SuppliersList = () => {
   const queryClient = useQueryClient();
   const { isAdmin } = useUserRole();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
   const [editingSupplier, setEditingSupplier] = useState<any>(null);
 
   const { data: suppliers, isLoading } = useQuery({
@@ -57,10 +59,16 @@ export const SuppliersList = () => {
           </p>
         </div>
         {isAdmin && (
-          <Button onClick={() => setShowCreateDialog(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            Nouveau fournisseur
-          </Button>
+          <div className="flex gap-2">
+            <Button variant="outline" onClick={() => setImportDialogOpen(true)}>
+              <Upload className="h-4 w-4 mr-2" />
+              Import CSV/Excel
+            </Button>
+            <Button onClick={() => setShowCreateDialog(true)}>
+              <Plus className="h-4 w-4 mr-2" />
+              Nouveau fournisseur
+            </Button>
+          </div>
         )}
       </div>
 
@@ -143,6 +151,11 @@ export const SuppliersList = () => {
           if (!open) setEditingSupplier(null);
         }}
         supplier={editingSupplier}
+      />
+
+      <ImportSuppliersDialog
+        open={importDialogOpen}
+        onOpenChange={setImportDialogOpen}
       />
     </div>
   );

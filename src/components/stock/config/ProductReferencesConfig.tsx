@@ -6,9 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Plus, Edit, Trash2 } from "lucide-react";
+import { Plus, Edit, Trash2, Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { ImportProductReferencesDialog } from "./ImportProductReferencesDialog";
 
 export const ProductReferencesConfig = () => {
   const { toast } = useToast();
@@ -22,6 +23,7 @@ export const ProductReferencesConfig = () => {
   const [minimumOrderQty, setMinimumOrderQty] = useState("1");
   const [unitPrice, setUnitPrice] = useState("");
   const [alertThreshold, setAlertThreshold] = useState("0");
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
 
   const { data: products, isLoading } = useQuery({
     queryKey: ["product-references"],
@@ -154,7 +156,13 @@ export const ProductReferencesConfig = () => {
     <div className="space-y-6">
       <Card>
         <CardHeader>
-          <CardTitle>{editingId ? "Modifier" : "Nouvelle"} référence produit</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle>{editingId ? "Modifier" : "Nouvelle"} référence produit</CardTitle>
+            <Button variant="outline" size="sm" onClick={() => setImportDialogOpen(true)}>
+              <Upload className="h-4 w-4 mr-2" />
+              Import CSV/Excel
+            </Button>
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -334,6 +342,11 @@ export const ProductReferencesConfig = () => {
           )}
         </CardContent>
       </Card>
+
+      <ImportProductReferencesDialog
+        open={importDialogOpen}
+        onOpenChange={setImportDialogOpen}
+      />
     </div>
   );
 };

@@ -6,8 +6,9 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Plus, Edit, Trash2 } from "lucide-react";
+import { Plus, Edit, Trash2, Upload } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
+import { ImportCategoriesDialog } from "./ImportCategoriesDialog";
 
 export const ProductCategoriesConfig = () => {
   const { toast } = useToast();
@@ -15,6 +16,7 @@ export const ProductCategoriesConfig = () => {
   const [editingId, setEditingId] = useState<string | null>(null);
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
+  const [importDialogOpen, setImportDialogOpen] = useState(false);
 
   const { data: categories, isLoading } = useQuery({
     queryKey: ["product-categories"],
@@ -90,7 +92,13 @@ export const ProductCategoriesConfig = () => {
     <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
       <Card className="md:col-span-1">
         <CardHeader>
-          <CardTitle>{editingId ? "Modifier" : "Nouvelle"} catégorie</CardTitle>
+          <div className="flex items-center justify-between">
+            <CardTitle>{editingId ? "Modifier" : "Nouvelle"} catégorie</CardTitle>
+            <Button variant="outline" size="sm" onClick={() => setImportDialogOpen(true)}>
+              <Upload className="h-4 w-4 mr-2" />
+              Import
+            </Button>
+          </div>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="space-y-2">
@@ -179,6 +187,11 @@ export const ProductCategoriesConfig = () => {
           )}
         </CardContent>
       </Card>
+
+      <ImportCategoriesDialog
+        open={importDialogOpen}
+        onOpenChange={setImportDialogOpen}
+      />
     </div>
   );
 };
