@@ -1259,6 +1259,159 @@ export type Database = {
           },
         ]
       }
+      order_items: {
+        Row: {
+          created_at: string
+          id: string
+          notes: string | null
+          order_id: string
+          product_reference_id: string
+          quantity: number
+          unit_price: number | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          order_id: string
+          product_reference_id: string
+          quantity: number
+          unit_price?: number | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          notes?: string | null
+          order_id?: string
+          product_reference_id?: string
+          quantity?: number
+          unit_price?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "order_items_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "order_items_product_reference_id_fkey"
+            columns: ["product_reference_id"]
+            isOneToOne: false
+            referencedRelation: "product_references"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      orders: {
+        Row: {
+          comments: string | null
+          created_at: string
+          created_by: string
+          delivered_at: string | null
+          delivered_by: string | null
+          expected_delivery_date: string | null
+          id: string
+          linked_task_id: string | null
+          order_date: string
+          order_method: Database["public"]["Enums"]["order_method"] | null
+          order_number: string | null
+          order_placed_at: string | null
+          order_placed_by: string | null
+          rejection_reason: string | null
+          status: Database["public"]["Enums"]["order_status"]
+          supplier_id: string
+          total_amount: number | null
+          updated_at: string
+          validated_at: string | null
+          validated_by: string | null
+          validation_mode: Database["public"]["Enums"]["validation_mode"]
+        }
+        Insert: {
+          comments?: string | null
+          created_at?: string
+          created_by: string
+          delivered_at?: string | null
+          delivered_by?: string | null
+          expected_delivery_date?: string | null
+          id?: string
+          linked_task_id?: string | null
+          order_date?: string
+          order_method?: Database["public"]["Enums"]["order_method"] | null
+          order_number?: string | null
+          order_placed_at?: string | null
+          order_placed_by?: string | null
+          rejection_reason?: string | null
+          status?: Database["public"]["Enums"]["order_status"]
+          supplier_id: string
+          total_amount?: number | null
+          updated_at?: string
+          validated_at?: string | null
+          validated_by?: string | null
+          validation_mode?: Database["public"]["Enums"]["validation_mode"]
+        }
+        Update: {
+          comments?: string | null
+          created_at?: string
+          created_by?: string
+          delivered_at?: string | null
+          delivered_by?: string | null
+          expected_delivery_date?: string | null
+          id?: string
+          linked_task_id?: string | null
+          order_date?: string
+          order_method?: Database["public"]["Enums"]["order_method"] | null
+          order_number?: string | null
+          order_placed_at?: string | null
+          order_placed_by?: string | null
+          rejection_reason?: string | null
+          status?: Database["public"]["Enums"]["order_status"]
+          supplier_id?: string
+          total_amount?: number | null
+          updated_at?: string
+          validated_at?: string | null
+          validated_by?: string | null
+          validation_mode?: Database["public"]["Enums"]["validation_mode"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "orders_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_delivered_by_fkey"
+            columns: ["delivered_by"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_order_placed_by_fkey"
+            columns: ["order_placed_by"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "orders_validated_by_fkey"
+            columns: ["validated_by"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payments: {
         Row: {
           actual_payment_date: string | null
@@ -1308,6 +1461,96 @@ export type Database = {
             columns: ["user_profile_id"]
             isOneToOne: false
             referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      product_categories: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          is_active: boolean | null
+          name: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      product_references: {
+        Row: {
+          alert_threshold: number | null
+          category_id: string | null
+          created_at: string
+          current_stock: number | null
+          id: string
+          is_active: boolean | null
+          minimum_order_quantity: number | null
+          name: string
+          packaging: string | null
+          reference_code: string
+          supplier_id: string
+          unit_price: number | null
+          updated_at: string
+        }
+        Insert: {
+          alert_threshold?: number | null
+          category_id?: string | null
+          created_at?: string
+          current_stock?: number | null
+          id?: string
+          is_active?: boolean | null
+          minimum_order_quantity?: number | null
+          name: string
+          packaging?: string | null
+          reference_code: string
+          supplier_id: string
+          unit_price?: number | null
+          updated_at?: string
+        }
+        Update: {
+          alert_threshold?: number | null
+          category_id?: string | null
+          created_at?: string
+          current_stock?: number | null
+          id?: string
+          is_active?: boolean | null
+          minimum_order_quantity?: number | null
+          name?: string
+          packaging?: string | null
+          reference_code?: string
+          supplier_id?: string
+          unit_price?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "product_references_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "product_categories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "product_references_supplier_id_fkey"
+            columns: ["supplier_id"]
+            isOneToOne: false
+            referencedRelation: "suppliers"
             referencedColumns: ["id"]
           },
         ]
@@ -1681,6 +1924,108 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      stock_movements: {
+        Row: {
+          created_at: string
+          employee_id: string | null
+          id: string
+          movement_type: string
+          notes: string | null
+          order_id: string | null
+          product_reference_id: string
+          quantity: number
+        }
+        Insert: {
+          created_at?: string
+          employee_id?: string | null
+          id?: string
+          movement_type: string
+          notes?: string | null
+          order_id?: string | null
+          product_reference_id: string
+          quantity: number
+        }
+        Update: {
+          created_at?: string
+          employee_id?: string | null
+          id?: string
+          movement_type?: string
+          notes?: string | null
+          order_id?: string | null
+          product_reference_id?: string
+          quantity?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "stock_movements_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_movements_order_id_fkey"
+            columns: ["order_id"]
+            isOneToOne: false
+            referencedRelation: "orders"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "stock_movements_product_reference_id_fkey"
+            columns: ["product_reference_id"]
+            isOneToOne: false
+            referencedRelation: "product_references"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      suppliers: {
+        Row: {
+          auto_email_on_order: boolean | null
+          contact_email: string | null
+          contact_phone: string | null
+          created_at: string
+          id: string
+          is_active: boolean | null
+          name: string
+          notes: string | null
+          responsible_employee_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          auto_email_on_order?: boolean | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          name: string
+          notes?: string | null
+          responsible_employee_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          auto_email_on_order?: boolean | null
+          contact_email?: string | null
+          contact_phone?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean | null
+          name?: string
+          notes?: string | null
+          responsible_employee_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "suppliers_responsible_employee_id_fkey"
+            columns: ["responsible_employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       survey_responses: {
         Row: {
@@ -2063,6 +2408,45 @@ export type Database = {
         }
         Relationships: []
       }
+      user_validation_config: {
+        Row: {
+          employee_id: string
+          id: string
+          updated_at: string
+          updated_by: string | null
+          validation_mode: Database["public"]["Enums"]["validation_mode"]
+        }
+        Insert: {
+          employee_id: string
+          id?: string
+          updated_at?: string
+          updated_by?: string | null
+          validation_mode?: Database["public"]["Enums"]["validation_mode"]
+        }
+        Update: {
+          employee_id?: string
+          id?: string
+          updated_at?: string
+          updated_by?: string | null
+          validation_mode?: Database["public"]["Enums"]["validation_mode"]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_validation_config_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: true
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "user_validation_config_updated_by_fkey"
+            columns: ["updated_by"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       weekly_game_sessions: {
         Row: {
           anecdote: string | null
@@ -2165,33 +2549,11 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      binary_quantize: {
-        Args: { "": string } | { "": unknown }
-        Returns: unknown
-      }
-      can_auto_declare: {
-        Args: { p_categorie: string }
-        Returns: boolean
-      }
+      can_auto_declare: { Args: { p_categorie: string }; Returns: boolean }
+      generate_order_number: { Args: never; Returns: string }
       get_current_user_role: {
-        Args: Record<PropertyKey, never>
+        Args: never
         Returns: Database["public"]["Enums"]["app_role"]
-      }
-      halfvec_avg: {
-        Args: { "": number[] }
-        Returns: unknown
-      }
-      halfvec_out: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      halfvec_send: {
-        Args: { "": unknown }
-        Returns: string
-      }
-      halfvec_typmod_in: {
-        Args: { "": unknown[] }
-        Returns: number
       }
       has_role: {
         Args: {
@@ -2200,50 +2562,11 @@ export type Database = {
         }
         Returns: boolean
       }
-      hnsw_bit_support: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      hnsw_halfvec_support: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      hnsw_sparsevec_support: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      hnswhandler: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
       is_employee_team_member: {
         Args: { p_employee_id: string }
         Returns: boolean
       }
-      is_manager: {
-        Args: Record<PropertyKey, never>
-        Returns: boolean
-      }
-      ivfflat_bit_support: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      ivfflat_halfvec_support: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      ivfflathandler: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      l2_norm: {
-        Args: { "": unknown } | { "": unknown }
-        Returns: number
-      }
-      l2_normalize: {
-        Args: { "": string } | { "": unknown } | { "": unknown }
-        Returns: unknown
-      }
+      is_manager: { Args: never; Returns: boolean }
       match_response_blocks: {
         Args: {
           match_count: number
@@ -2275,42 +2598,6 @@ export type Database = {
           title: string
         }[]
       }
-      sparsevec_out: {
-        Args: { "": unknown }
-        Returns: unknown
-      }
-      sparsevec_send: {
-        Args: { "": unknown }
-        Returns: string
-      }
-      sparsevec_typmod_in: {
-        Args: { "": unknown[] }
-        Returns: number
-      }
-      vector_avg: {
-        Args: { "": number[] }
-        Returns: string
-      }
-      vector_dims: {
-        Args: { "": string } | { "": unknown }
-        Returns: number
-      }
-      vector_norm: {
-        Args: { "": string }
-        Returns: number
-      }
-      vector_out: {
-        Args: { "": string }
-        Returns: unknown
-      }
-      vector_send: {
-        Args: { "": string }
-        Returns: string
-      }
-      vector_typmod_in: {
-        Args: { "": unknown[] }
-        Returns: number
-      }
     }
     Enums: {
       app_role: "admin" | "user" | "manager"
@@ -2333,6 +2620,15 @@ export type Database = {
         | "cancelled_no_anecdote"
       gravite_erreur: "mineure" | "moyenne" | "majeure" | "critique"
       job_category: "Admin" | "Prothèse"
+      order_method: "phone" | "email" | "platform" | "other"
+      order_status:
+        | "draft"
+        | "pending_validation"
+        | "validated"
+        | "ordered"
+        | "delivered"
+        | "archived"
+        | "rejected"
       statut_idee:
         | "soumise"
         | "en_examen"
@@ -2349,6 +2645,7 @@ export type Database = {
         | "erreur_protocole"
         | "autre"
       type_quiz: "technique" | "collegue" | "mood"
+      validation_mode: "auto" | "manual"
       vote_type:
         | "elimination"
         | "anecdote_originality"
@@ -2503,6 +2800,16 @@ export const Constants = {
       ],
       gravite_erreur: ["mineure", "moyenne", "majeure", "critique"],
       job_category: ["Admin", "Prothèse"],
+      order_method: ["phone", "email", "platform", "other"],
+      order_status: [
+        "draft",
+        "pending_validation",
+        "validated",
+        "ordered",
+        "delivered",
+        "archived",
+        "rejected",
+      ],
       statut_idee: [
         "soumise",
         "en_examen",
@@ -2521,6 +2828,7 @@ export const Constants = {
         "autre",
       ],
       type_quiz: ["technique", "collegue", "mood"],
+      validation_mode: ["auto", "manual"],
       vote_type: [
         "elimination",
         "anecdote_originality",
