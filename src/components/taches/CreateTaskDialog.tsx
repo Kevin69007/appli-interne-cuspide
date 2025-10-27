@@ -23,6 +23,7 @@ interface CreateTaskDialogProps {
   onTaskCreated: () => void;
   canAssignOthers: boolean;
   isMaintenance?: boolean;
+  projectId?: string;
 }
 
 export const CreateTaskDialog = ({
@@ -32,6 +33,7 @@ export const CreateTaskDialog = ({
   onTaskCreated,
   canAssignOthers,
   isMaintenance = false,
+  projectId,
 }: CreateTaskDialogProps) => {
   const [loading, setLoading] = useState(false);
   const [employees, setEmployees] = useState<Employee[]>([]);
@@ -119,6 +121,15 @@ export const CreateTaskDialog = ({
       console.log("Task creation result:", { data, error });
 
       if (error) throw error;
+
+      // Si un projectId est fourni, lier la tâche au projet
+      if (projectId && data) {
+        const { error: linkError } = await supabase.from("project_tasks").insert({
+          project_id: projectId,
+          task_id: data[0].id,
+        });
+        if (linkError) console.error("Error linking task to project:", linkError);
+      }
 
       toast.success("Tâche créée avec succès");
       setFormData({

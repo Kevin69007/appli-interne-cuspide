@@ -24,6 +24,8 @@ import EntretiensMachines from "./pages/EntretiensMachines";
 import CommandesStock from "./pages/CommandesStock";
 import Formation from "./pages/Formation";
 import SuiviDirection from "./pages/SuiviDirection";
+import Projets from "./pages/Projets";
+import ProjetDetails from "./pages/ProjetDetails";
 
 const queryClient = new QueryClient({
   defaultOptions: {
@@ -66,6 +68,8 @@ const App = () => (
             <Route path="/commandes-stock" element={<CommandesStock />} />
             <Route path="/formation" element={<Formation />} />
             <Route path="/suivi-direction" element={<SuiviDirection />} />
+            <Route path="/projets" element={<Projets />} />
+            <Route path="/projets/:id" element={<ProjetDetails />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </AuthProvider>
