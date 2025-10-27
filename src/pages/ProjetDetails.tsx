@@ -15,6 +15,7 @@ import { toast } from "sonner";
 import { TaskCard } from "@/components/taches/TaskCard";
 import { CreateTaskDialog } from "@/components/taches/CreateTaskDialog";
 import { LinkTaskToProjectDialog } from "@/components/projects/LinkTaskToProjectDialog";
+import { ProjectTimeline } from "@/components/projects/ProjectTimeline";
 
 interface Project {
   id: string;
@@ -271,11 +272,15 @@ const ProjetDetails = () => {
           </TabsContent>
 
           <TabsContent value="timeline" className="mt-6">
-            <Card className="p-8 text-center">
-              <p className="text-muted-foreground">
-                Timeline du projet à venir
-              </p>
-            </Card>
+            <div className="bg-card rounded-lg border border-border p-6">
+              <ProjectTimeline
+                tasks={tasks}
+                projectCreatedAt={project.created_at}
+                onTaskClick={() => {
+                  // Tasks are already handled by TaskCard
+                }}
+              />
+            </div>
           </TabsContent>
         </Tabs>
       </div>

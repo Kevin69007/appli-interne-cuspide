@@ -1617,12 +1617,15 @@ export type Database = {
       }
       project_meetings: {
         Row: {
+          audio_url: string | null
           created_at: string | null
           created_by: string | null
           date_reunion: string
           decisions: Json | null
+          duree_minutes: number | null
           fichier_audio_url: string | null
           id: string
+          notes: string | null
           participants: Json | null
           project_id: string | null
           resume_ia: string | null
@@ -1632,12 +1635,15 @@ export type Database = {
           updated_at: string | null
         }
         Insert: {
+          audio_url?: string | null
           created_at?: string | null
           created_by?: string | null
           date_reunion: string
           decisions?: Json | null
+          duree_minutes?: number | null
           fichier_audio_url?: string | null
           id?: string
+          notes?: string | null
           participants?: Json | null
           project_id?: string | null
           resume_ia?: string | null
@@ -1647,12 +1653,15 @@ export type Database = {
           updated_at?: string | null
         }
         Update: {
+          audio_url?: string | null
           created_at?: string | null
           created_by?: string | null
           date_reunion?: string
           decisions?: Json | null
+          duree_minutes?: number | null
           fichier_audio_url?: string | null
           id?: string
+          notes?: string | null
           participants?: Json | null
           project_id?: string | null
           resume_ia?: string | null

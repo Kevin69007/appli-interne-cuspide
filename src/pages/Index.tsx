@@ -74,6 +74,8 @@ const Index = () => {
               { title: "Objectifs & Primes", icon: "🎯", path: "/objectifs-primes" },
               { title: "Tâches", icon: "✅", path: "/taches" },
               { title: "Communication Générale", icon: "📢", path: "/communication-generale" },
+              { title: "Projets", icon: "🗂️", path: "/projets" },
+              { title: "Réunions", icon: "🎤", path: "/reunions" },
               { title: "RH", icon: "🌴", path: "/conges-mood-bar", restricted: true },
               { title: "Détente", icon: "🎮", path: "/detente" },
               { title: "Traducteur", icon: "🌐", path: "https://interne-traducteur.cuspide.fr/", external: true },

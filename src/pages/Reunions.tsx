@@ -13,11 +13,12 @@ interface Meeting {
   project_id: string;
   titre: string;
   date_reunion: string;
-  duree_minutes: number;
-  participants: string[];
+  duree_minutes?: number;
+  participants: any;
   transcription?: string;
   resume_ia?: string;
   audio_url?: string;
+  fichier_audio_url?: string;
   created_at: string;
   project?: {
     titre: string;

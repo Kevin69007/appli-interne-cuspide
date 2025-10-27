@@ -8,10 +8,11 @@ interface Meeting {
   id: string;
   titre: string;
   date_reunion: string;
-  duree_minutes: number;
-  participants: string[];
+  duree_minutes?: number;
+  participants: any;
   transcription?: string;
   audio_url?: string;
+  fichier_audio_url?: string;
   project?: {
     titre: string;
   };
@@ -46,17 +47,19 @@ export const MeetingCard = ({ meeting, onClick }: MeetingCardProps) => {
             </span>
           </div>
           
-          <div className="flex items-center gap-2">
-            <Clock className="w-4 h-4" />
-            <span>{meeting.duree_minutes} minutes</span>
-          </div>
+          {meeting.duree_minutes && (
+            <div className="flex items-center gap-2">
+              <Clock className="w-4 h-4" />
+              <span>{meeting.duree_minutes} minutes</span>
+            </div>
+          )}
           
           <div className="flex items-center gap-2">
             <Users className="w-4 h-4" />
-            <span>{meeting.participants.length} participant(s)</span>
+            <span>{Array.isArray(meeting.participants) ? meeting.participants.length : 0} participant(s)</span>
           </div>
 
-          {meeting.audio_url && (
+          {(meeting.audio_url || meeting.fichier_audio_url) && (
             <div className="flex items-center gap-2">
               <FileAudio className="w-4 h-4" />
               <span>Audio disponible</span>

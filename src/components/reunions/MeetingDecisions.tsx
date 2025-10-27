@@ -25,14 +25,19 @@ export const MeetingDecisions = ({ meetingId }: MeetingDecisionsProps) => {
     try {
       const { data, error } = await supabase
         .from("project_meetings")
-        .select("decisions_ia")
+        .select("decisions")
         .eq("id", meetingId)
         .single();
 
       if (error) throw error;
       
-      if (data?.decisions_ia) {
-        setDecisions(Array.isArray(data.decisions_ia) ? data.decisions_ia : []);
+      if (data?.decisions) {
+        const decisionsData = Array.isArray(data.decisions) ? data.decisions : [];
+        setDecisions(decisionsData.map((d: any) => ({
+          type: d.type || '',
+          description: d.description || '',
+          action_required: d.action_required || false,
+        })));
       }
     } catch (error) {
       console.error("Error fetching decisions:", error);

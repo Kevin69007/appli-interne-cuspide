@@ -14,12 +14,13 @@ interface Meeting {
   project_id: string;
   titre: string;
   date_reunion: string;
-  duree_minutes: number;
-  participants: string[];
+  duree_minutes?: number;
+  participants: any;
   notes?: string;
   transcription?: string;
   resume_ia?: string;
   audio_url?: string;
+  fichier_audio_url?: string;
   project?: {
     titre: string;
   };
@@ -100,14 +101,16 @@ const ReunionDetails = () => {
               </span>
             </div>
             
-            <div className="flex items-center gap-2 text-muted-foreground">
-              <Clock className="w-4 h-4" />
-              <span>{meeting.duree_minutes} minutes</span>
-            </div>
+            {meeting.duree_minutes && (
+              <div className="flex items-center gap-2 text-muted-foreground">
+                <Clock className="w-4 h-4" />
+                <span>{meeting.duree_minutes} minutes</span>
+              </div>
+            )}
             
             <div className="flex items-center gap-2 text-muted-foreground">
               <Users className="w-4 h-4" />
-              <span>{meeting.participants.length} participant(s)</span>
+              <span>{Array.isArray(meeting.participants) ? meeting.participants.length : 0} participant(s)</span>
             </div>
           </div>
 
@@ -118,11 +121,11 @@ const ReunionDetails = () => {
             </div>
           )}
 
-          {meeting.participants.length > 0 && (
+          {Array.isArray(meeting.participants) && meeting.participants.length > 0 && (
             <div className="mt-4 pt-4 border-t border-border">
               <h3 className="font-semibold mb-2">Participants</h3>
               <div className="flex flex-wrap gap-2">
-                {meeting.participants.map((participant, index) => (
+                {meeting.participants.map((participant: string, index: number) => (
                   <span
                     key={index}
                     className="px-3 py-1 bg-muted rounded-full text-sm"
@@ -136,11 +139,11 @@ const ReunionDetails = () => {
         </div>
 
         {/* Audio player */}
-        {meeting.audio_url && (
+        {(meeting.audio_url || meeting.fichier_audio_url) && (
           <div className="bg-card rounded-lg border border-border p-6 mb-6">
             <h3 className="font-semibold mb-4">Enregistrement audio</h3>
             <audio controls className="w-full">
-              <source src={meeting.audio_url} type="audio/mpeg" />
+              <source src={meeting.audio_url || meeting.fichier_audio_url} type="audio/mpeg" />
               Votre navigateur ne supporte pas la lecture audio.
             </audio>
           </div>
