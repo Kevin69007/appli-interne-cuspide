@@ -1615,6 +1615,175 @@ export type Database = {
         }
         Relationships: []
       }
+      project_meetings: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          date_reunion: string
+          decisions: Json | null
+          fichier_audio_url: string | null
+          id: string
+          participants: Json | null
+          project_id: string | null
+          resume_ia: string | null
+          task_id: string | null
+          titre: string
+          transcription: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          date_reunion: string
+          decisions?: Json | null
+          fichier_audio_url?: string | null
+          id?: string
+          participants?: Json | null
+          project_id?: string | null
+          resume_ia?: string | null
+          task_id?: string | null
+          titre: string
+          transcription?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          date_reunion?: string
+          decisions?: Json | null
+          fichier_audio_url?: string | null
+          id?: string
+          participants?: Json | null
+          project_id?: string | null
+          resume_ia?: string | null
+          task_id?: string | null
+          titre?: string
+          transcription?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_meetings_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_meetings_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_meetings_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      project_tasks: {
+        Row: {
+          created_at: string | null
+          id: string
+          ordre: number | null
+          project_id: string
+          task_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          ordre?: number | null
+          project_id: string
+          task_id: string
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          ordre?: number | null
+          project_id?: string
+          task_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "project_tasks_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "project_tasks_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      projects: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          date_creation: string | null
+          date_echeance: string | null
+          description: string | null
+          id: string
+          is_priority: boolean | null
+          progression: number | null
+          responsable_id: string | null
+          statut: Database["public"]["Enums"]["project_status"] | null
+          titre: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          date_creation?: string | null
+          date_echeance?: string | null
+          description?: string | null
+          id?: string
+          is_priority?: boolean | null
+          progression?: number | null
+          responsable_id?: string | null
+          statut?: Database["public"]["Enums"]["project_status"] | null
+          titre: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          date_creation?: string | null
+          date_echeance?: string | null
+          description?: string | null
+          id?: string
+          is_priority?: boolean | null
+          progression?: number | null
+          responsable_id?: string | null
+          statut?: Database["public"]["Enums"]["project_status"] | null
+          titre?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "projects_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "projects_responsable_id_fkey"
+            columns: ["responsable_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       protocol_profiles: {
         Row: {
           created_at: string
@@ -2128,9 +2297,122 @@ export type Database = {
           },
         ]
       }
+      task_postponements: {
+        Row: {
+          ancienne_date: string
+          commentaire_validateur: string | null
+          created_at: string | null
+          date_validation: string | null
+          demandeur_id: string
+          id: string
+          nouvelle_date_proposee: string
+          raison_imprevue: string
+          statut: Database["public"]["Enums"]["postponement_status"] | null
+          task_id: string
+          validateur_id: string | null
+        }
+        Insert: {
+          ancienne_date: string
+          commentaire_validateur?: string | null
+          created_at?: string | null
+          date_validation?: string | null
+          demandeur_id: string
+          id?: string
+          nouvelle_date_proposee: string
+          raison_imprevue: string
+          statut?: Database["public"]["Enums"]["postponement_status"] | null
+          task_id: string
+          validateur_id?: string | null
+        }
+        Update: {
+          ancienne_date?: string
+          commentaire_validateur?: string | null
+          created_at?: string | null
+          date_validation?: string | null
+          demandeur_id?: string
+          id?: string
+          nouvelle_date_proposee?: string
+          raison_imprevue?: string
+          statut?: Database["public"]["Enums"]["postponement_status"] | null
+          task_id?: string
+          validateur_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_postponements_demandeur_id_fkey"
+            columns: ["demandeur_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_postponements_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_postponements_validateur_id_fkey"
+            columns: ["validateur_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      task_progress_comments: {
+        Row: {
+          commentaire: string
+          created_at: string | null
+          date_avancement: string | null
+          employee_id: string
+          id: string
+          photos: string[] | null
+          pourcentage_avancement: number | null
+          task_id: string
+        }
+        Insert: {
+          commentaire: string
+          created_at?: string | null
+          date_avancement?: string | null
+          employee_id: string
+          id?: string
+          photos?: string[] | null
+          pourcentage_avancement?: number | null
+          task_id: string
+        }
+        Update: {
+          commentaire?: string
+          created_at?: string | null
+          date_avancement?: string | null
+          employee_id?: string
+          id?: string
+          photos?: string[] | null
+          pourcentage_avancement?: number | null
+          task_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_progress_comments_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "task_progress_comments_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       tasks: {
         Row: {
           assigned_to: string
+          avancement_pourcentage: number | null
           boomerang_active: boolean | null
           boomerang_current_holder: string | null
           boomerang_deadline: string | null
@@ -2142,8 +2424,10 @@ export type Database = {
           created_by: string
           date_echeance: string
           depend_de: string | null
+          dernier_commentaire_avancement: string | null
           description: string | null
           id: string
+          is_priority: boolean | null
           machine_piece: string | null
           maintenance_type: string | null
           parent_task_id: string | null
@@ -2157,6 +2441,7 @@ export type Database = {
         }
         Insert: {
           assigned_to: string
+          avancement_pourcentage?: number | null
           boomerang_active?: boolean | null
           boomerang_current_holder?: string | null
           boomerang_deadline?: string | null
@@ -2168,8 +2453,10 @@ export type Database = {
           created_by: string
           date_echeance: string
           depend_de?: string | null
+          dernier_commentaire_avancement?: string | null
           description?: string | null
           id?: string
+          is_priority?: boolean | null
           machine_piece?: string | null
           maintenance_type?: string | null
           parent_task_id?: string | null
@@ -2183,6 +2470,7 @@ export type Database = {
         }
         Update: {
           assigned_to?: string
+          avancement_pourcentage?: number | null
           boomerang_active?: boolean | null
           boomerang_current_holder?: string | null
           boomerang_deadline?: string | null
@@ -2194,8 +2482,10 @@ export type Database = {
           created_by?: string
           date_echeance?: string
           depend_de?: string | null
+          dernier_commentaire_avancement?: string | null
           description?: string | null
           id?: string
+          is_priority?: boolean | null
           machine_piece?: string | null
           maintenance_type?: string | null
           parent_task_id?: string | null
@@ -2629,6 +2919,8 @@ export type Database = {
         | "delivered"
         | "archived"
         | "rejected"
+      postponement_status: "en_attente" | "approuve" | "refuse"
+      project_status: "a_venir" | "en_cours" | "termine" | "en_pause"
       statut_idee:
         | "soumise"
         | "en_examen"
@@ -2810,6 +3102,8 @@ export const Constants = {
         "archived",
         "rejected",
       ],
+      postponement_status: ["en_attente", "approuve", "refuse"],
+      project_status: ["a_venir", "en_cours", "termine", "en_pause"],
       statut_idee: [
         "soumise",
         "en_examen",
