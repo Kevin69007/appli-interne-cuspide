@@ -1,5 +1,12 @@
 project_id = "nnnqtzebszqloegavtxc"
 
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "graphql_public"]
+extra_search_path = ["public", "extensions"]
+max_rows = 1000
+
 [functions.create-employee]
 verify_jwt = true
 
@@ -19,4 +26,16 @@ verify_jwt = false
 verify_jwt = false
 
 [functions.final-vote-reveal]
+verify_jwt = false
+
+[functions.transcribe-meeting-audio]
+verify_jwt = false
+
+[functions.generate-meeting-summary]
+verify_jwt = false
+
+[functions.extract-meeting-decisions]
+verify_jwt = false
+
+[functions.send-priority-task-reminders]
 verify_jwt = false

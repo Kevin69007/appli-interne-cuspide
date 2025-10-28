@@ -16,6 +16,7 @@ import { TaskCard } from "@/components/taches/TaskCard";
 import { CreateTaskDialog } from "@/components/taches/CreateTaskDialog";
 import { LinkTaskToProjectDialog } from "@/components/projects/LinkTaskToProjectDialog";
 import { ProjectTimeline } from "@/components/projects/ProjectTimeline";
+import { ProjectStats } from "@/components/projects/ProjectStats";
 
 interface Project {
   id: string;
