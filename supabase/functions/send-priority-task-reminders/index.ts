@@ -42,18 +42,28 @@ serve(async (req) => {
     let notificationsSent = 0;
 
     for (const task of tasks || []) {
-      if (!task.responsible) continue;
+      const responsible = Array.isArray(task.responsible) && task.responsible.length > 0 
+        ? task.responsible[0] 
+        : task.responsible;
+      
+      if (!responsible || Array.isArray(responsible)) continue;
 
       // Get employee ID
       const { data: employee } = await supabase
         .from('employees')
         .select('id')
-        .eq('user_id', task.responsible.user_id)
+        .eq('user_id', responsible.user_id)
         .single();
 
       if (!employee) continue;
 
-      const projectInfo = task.project_tasks?.[0]?.project;
+      const projectData = task.project_tasks?.[0]?.project;
+      const projectInfo = Array.isArray(projectData) && projectData.length > 0 
+        ? projectData[0] 
+        : projectData;
+      
+      if (!projectInfo || Array.isArray(projectInfo)) continue;
+      
       const projectTitle = projectInfo ? ` (Projet: ${projectInfo.titre})` : '';
 
       // Create notification
@@ -64,8 +74,8 @@ serve(async (req) => {
           type: 'priority_task_no_progress',
           titre: 'Tâche prioritaire sans avancement',
           message: `La tâche prioritaire "${task.titre}"${projectTitle} n'a pas eu de commentaire d'avancement depuis plus de 2 jours.`,
-          url: task.project_tasks?.[0]?.project?.id 
-            ? `/projets/${task.project_tasks[0].project.id}` 
+          url: projectInfo.id 
+            ? `/projets/${projectInfo.id}` 
             : '/taches',
         });
 

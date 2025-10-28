@@ -38,6 +38,10 @@ serve(async (req) => {
       throw new Error('No transcription available for this meeting');
     }
 
+    const projectTitle = Array.isArray(meeting.project) && meeting.project.length > 0 
+      ? meeting.project[0].titre 
+      : null;
+
     console.log('Generating summary for meeting:', meeting.titre);
 
     // Call OpenAI GPT-4 for summary
@@ -64,7 +68,7 @@ serve(async (req) => {
           {
             role: 'user',
             content: `Réunion: ${meeting.titre}
-            ${meeting.project ? `Projet: ${meeting.project.titre}` : ''}
+            ${projectTitle ? `Projet: ${projectTitle}` : ''}
             
             Transcription:
             ${meeting.transcription}`
