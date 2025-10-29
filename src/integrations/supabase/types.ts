@@ -24,12 +24,14 @@ export type Database = {
           date_validation: string | null
           detail: string | null
           duree_minutes: number | null
+          ecart_pourcentage: number | null
           employee_id: string
           gravite: Database["public"]["Enums"]["gravite_erreur"] | null
           id: string
           motif: string | null
           photos: string[] | null
           points: number | null
+          points_objectif: number | null
           statut_objectif: Database["public"]["Enums"]["statut_objectif"] | null
           statut_validation:
             | Database["public"]["Enums"]["statut_validation"]
@@ -40,6 +42,8 @@ export type Database = {
             | Database["public"]["Enums"]["type_incident_materiel"]
             | null
           updated_at: string
+          valeur_controlee: number | null
+          valeur_declaree: number | null
           valide_par: string | null
         }
         Insert: {
@@ -51,12 +55,14 @@ export type Database = {
           date_validation?: string | null
           detail?: string | null
           duree_minutes?: number | null
+          ecart_pourcentage?: number | null
           employee_id: string
           gravite?: Database["public"]["Enums"]["gravite_erreur"] | null
           id?: string
           motif?: string | null
           photos?: string[] | null
           points?: number | null
+          points_objectif?: number | null
           statut_objectif?:
             | Database["public"]["Enums"]["statut_objectif"]
             | null
@@ -69,6 +75,8 @@ export type Database = {
             | Database["public"]["Enums"]["type_incident_materiel"]
             | null
           updated_at?: string
+          valeur_controlee?: number | null
+          valeur_declaree?: number | null
           valide_par?: string | null
         }
         Update: {
@@ -80,12 +88,14 @@ export type Database = {
           date_validation?: string | null
           detail?: string | null
           duree_minutes?: number | null
+          ecart_pourcentage?: number | null
           employee_id?: string
           gravite?: Database["public"]["Enums"]["gravite_erreur"] | null
           id?: string
           motif?: string | null
           photos?: string[] | null
           points?: number | null
+          points_objectif?: number | null
           statut_objectif?:
             | Database["public"]["Enums"]["statut_objectif"]
             | null
@@ -98,6 +108,8 @@ export type Database = {
             | Database["public"]["Enums"]["type_incident_materiel"]
             | null
           updated_at?: string
+          valeur_controlee?: number | null
+          valeur_declaree?: number | null
           valide_par?: string | null
         }
         Relationships: [
@@ -153,6 +165,41 @@ export type Database = {
         }
         Relationships: []
       }
+      annual_cagnotte: {
+        Row: {
+          annee: number
+          created_at: string
+          employee_id: string
+          id: string
+          total_points: number
+          updated_at: string
+        }
+        Insert: {
+          annee: number
+          created_at?: string
+          employee_id: string
+          id?: string
+          total_points?: number
+          updated_at?: string
+        }
+        Update: {
+          annee?: number
+          created_at?: string
+          employee_id?: string
+          id?: string
+          total_points?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "annual_cagnotte_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       audit_log: {
         Row: {
           action: string
@@ -183,6 +230,84 @@ export type Database = {
           record_id?: string | null
           table_name?: string
           user_id?: string | null
+        }
+        Relationships: []
+      }
+      best_of_month: {
+        Row: {
+          annee: number
+          bonus_points: number
+          employee_id: string
+          id: string
+          mois: number
+          validated_at: string
+          validated_by: string | null
+        }
+        Insert: {
+          annee: number
+          bonus_points: number
+          employee_id: string
+          id?: string
+          mois: number
+          validated_at?: string
+          validated_by?: string | null
+        }
+        Update: {
+          annee?: number
+          bonus_points?: number
+          employee_id?: string
+          id?: string
+          mois?: number
+          validated_at?: string
+          validated_by?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "best_of_month_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "best_of_month_validated_by_fkey"
+            columns: ["validated_by"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      bonus_malus_config: {
+        Row: {
+          created_at: string
+          description: string | null
+          event_type: string
+          gravite: Database["public"]["Enums"]["gravite_type"] | null
+          id: string
+          is_active: boolean
+          points: number
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          event_type: string
+          gravite?: Database["public"]["Enums"]["gravite_type"] | null
+          id?: string
+          is_active?: boolean
+          points?: number
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          event_type?: string
+          gravite?: Database["public"]["Enums"]["gravite_type"] | null
+          id?: string
+          is_active?: boolean
+          points?: number
+          updated_at?: string
         }
         Relationships: []
       }
@@ -1149,13 +1274,17 @@ export type Database = {
       monthly_scores: {
         Row: {
           annee: number
+          bonus_points: number | null
           cloture_par: string | null
           created_at: string
           date_cloture: string | null
           employee_id: string
           id: string
+          malus_points: number | null
           mois: number
           prime_montant: number | null
+          projection_percentage: number | null
+          projection_status: string | null
           score_attitude: number | null
           score_global: number | null
           score_horaires: number | null
@@ -1167,13 +1296,17 @@ export type Database = {
         }
         Insert: {
           annee: number
+          bonus_points?: number | null
           cloture_par?: string | null
           created_at?: string
           date_cloture?: string | null
           employee_id: string
           id?: string
+          malus_points?: number | null
           mois: number
           prime_montant?: number | null
+          projection_percentage?: number | null
+          projection_status?: string | null
           score_attitude?: number | null
           score_global?: number | null
           score_horaires?: number | null
@@ -1185,13 +1318,17 @@ export type Database = {
         }
         Update: {
           annee?: number
+          bonus_points?: number | null
           cloture_par?: string | null
           created_at?: string
           date_cloture?: string | null
           employee_id?: string
           id?: string
+          malus_points?: number | null
           mois?: number
           prime_montant?: number | null
+          projection_percentage?: number | null
+          projection_status?: string | null
           score_attitude?: number | null
           score_global?: number | null
           score_horaires?: number | null
@@ -2103,6 +2240,87 @@ export type Database = {
         }
         Relationships: []
       }
+      reward_catalog: {
+        Row: {
+          created_at: string
+          description: string | null
+          id: string
+          image_url: string | null
+          is_active: boolean
+          points_required: number
+          titre: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          points_required: number
+          titre: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          id?: string
+          image_url?: string | null
+          is_active?: boolean
+          points_required?: number
+          titre?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      reward_redemptions: {
+        Row: {
+          delivered_at: string | null
+          employee_id: string
+          id: string
+          notes: string | null
+          points_spent: number
+          redeemed_at: string
+          reward_id: string
+          status: string
+        }
+        Insert: {
+          delivered_at?: string | null
+          employee_id: string
+          id?: string
+          notes?: string | null
+          points_spent: number
+          redeemed_at?: string
+          reward_id: string
+          status?: string
+        }
+        Update: {
+          delivered_at?: string | null
+          employee_id?: string
+          id?: string
+          notes?: string | null
+          points_spent?: number
+          redeemed_at?: string
+          reward_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "reward_redemptions_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "reward_redemptions_reward_id_fkey"
+            columns: ["reward_id"]
+            isOneToOne: false
+            referencedRelation: "reward_catalog"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       stock_movements: {
         Row: {
           created_at: string
@@ -2918,6 +3136,7 @@ export type Database = {
         | "finished"
         | "cancelled_no_anecdote"
       gravite_erreur: "mineure" | "moyenne" | "majeure" | "critique"
+      gravite_type: "mineure" | "moyenne" | "majeure"
       job_category: "Admin" | "Prothèse"
       order_method: "phone" | "email" | "platform" | "other"
       order_status:
@@ -3100,6 +3319,7 @@ export const Constants = {
         "cancelled_no_anecdote",
       ],
       gravite_erreur: ["mineure", "moyenne", "majeure", "critique"],
+      gravite_type: ["mineure", "moyenne", "majeure"],
       job_category: ["Admin", "Prothèse"],
       order_method: ["phone", "email", "platform", "other"],
       order_status: [

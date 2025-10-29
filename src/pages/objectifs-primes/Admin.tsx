@@ -5,10 +5,14 @@ import { useUserRole } from "@/hooks/useUserRole";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Settings, Users, FileText, Shield, ChevronLeft, Calendar, Target, Award } from "lucide-react";
+import { Settings, Users, FileText, Shield, ChevronLeft, Calendar, Target, Award, Trophy, Gift } from "lucide-react";
 import { AddEmployeeDialog } from "@/components/objectifs-primes/AddEmployeeDialog";
 import { EmployeeObjectivesDialog } from "@/components/objectifs-primes/EmployeeObjectivesDialog";
 import { EmployeesList } from "@/components/objectifs-primes/EmployeesList";
+import { BonusMalusConfig } from "@/components/objectifs-primes/BonusMalusConfig";
+import { GeneralConfig } from "@/components/objectifs-primes/GeneralConfig";
+import { BestOfMonthAdmin } from "@/components/objectifs-primes/BestOfMonthAdmin";
+import { RewardCatalogAdmin } from "@/components/objectifs-primes/RewardCatalogAdmin";
 
 const Admin = () => {
   const [refreshKey, setRefreshKey] = useState(0);
@@ -96,19 +100,27 @@ const Admin = () => {
           </Card>
         </div>
 
-        <Tabs defaultValue="config" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="config">
+        <Tabs defaultValue="baremes" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-6">
+            <TabsTrigger value="baremes">
               <Settings className="h-4 w-4 mr-2" />
-              Configuration
+              Barèmes
+            </TabsTrigger>
+            <TabsTrigger value="general">
+              <FileText className="h-4 w-4 mr-2" />
+              Général
             </TabsTrigger>
             <TabsTrigger value="employees">
               <Users className="h-4 w-4 mr-2" />
               Employés
             </TabsTrigger>
-            <TabsTrigger value="reports">
-              <FileText className="h-4 w-4 mr-2" />
-              Rapports
+            <TabsTrigger value="best">
+              <Trophy className="h-4 w-4 mr-2" />
+              Meilleur du mois
+            </TabsTrigger>
+            <TabsTrigger value="rewards">
+              <Gift className="h-4 w-4 mr-2" />
+              Récompenses
             </TabsTrigger>
             <TabsTrigger value="audit">
               <Shield className="h-4 w-4 mr-2" />
@@ -116,77 +128,14 @@ const Admin = () => {
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="config" className="space-y-6">
+          <TabsContent value="baremes">
             <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-4">Pondérations des scores</h3>
-              <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
-                  <div>
-                    <label className="text-sm font-medium">Protocoles (%)</label>
-                    <input type="number" defaultValue={30} className="w-full mt-1 px-3 py-2 border rounded-md" />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium">Objectifs (%)</label>
-                    <input type="number" defaultValue={30} className="w-full mt-1 px-3 py-2 border rounded-md" />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium">Horaires (%)</label>
-                    <input type="number" defaultValue={20} className="w-full mt-1 px-3 py-2 border rounded-md" />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium">Matériel (%)</label>
-                    <input type="number" defaultValue={10} className="w-full mt-1 px-3 py-2 border rounded-md" />
-                  </div>
-                  <div>
-                    <label className="text-sm font-medium">Attitude (%)</label>
-                    <input type="number" defaultValue={10} className="w-full mt-1 px-3 py-2 border rounded-md" />
-                  </div>
-                </div>
-                <Button>Enregistrer les pondérations</Button>
-              </div>
+              <BonusMalusConfig />
             </Card>
+          </TabsContent>
 
-            <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-4">Barèmes de points</h3>
-              <div className="space-y-4">
-                <div>
-                  <label className="text-sm font-medium">Erreur mineure</label>
-                  <input type="number" defaultValue={-1} className="w-full mt-1 px-3 py-2 border rounded-md" />
-                </div>
-                <div>
-                  <label className="text-sm font-medium">Erreur majeure</label>
-                  <input type="number" defaultValue={-3} className="w-full mt-1 px-3 py-2 border rounded-md" />
-                </div>
-                <div>
-                  <label className="text-sm font-medium">Erreur critique</label>
-                  <input type="number" defaultValue={-5} className="w-full mt-1 px-3 py-2 border rounded-md" />
-                </div>
-                <Button>Enregistrer les barèmes</Button>
-              </div>
-            </Card>
-
-            <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-4">Droits d'auto-déclaration</h3>
-              <div className="space-y-3">
-                <label className="flex items-center gap-2">
-                  <input type="checkbox" className="rounded" />
-                  <span className="text-sm">Protocoles</span>
-                </label>
-                <label className="flex items-center gap-2">
-                  <input type="checkbox" defaultChecked className="rounded" />
-                  <span className="text-sm">Objectifs</span>
-                </label>
-                <label className="flex items-center gap-2">
-                  <input type="checkbox" className="rounded" />
-                  <span className="text-sm">Horaires</span>
-                </label>
-                <label className="flex items-center gap-2">
-                  <input type="checkbox" defaultChecked className="rounded" />
-                  <span className="text-sm">Matériel</span>
-                </label>
-                <Button>Enregistrer les droits</Button>
-              </div>
-            </Card>
+          <TabsContent value="general">
+            <GeneralConfig />
           </TabsContent>
 
           <TabsContent value="employees">
@@ -202,13 +151,15 @@ const Admin = () => {
             </Card>
           </TabsContent>
 
-          <TabsContent value="reports">
+          <TabsContent value="best">
             <Card className="p-6">
-              <h3 className="text-lg font-semibold mb-6">Rapports et exports</h3>
-              <div className="text-center py-12 text-muted-foreground">
-                <FileText className="h-12 w-12 mx-auto mb-4 opacity-50" />
-                <p>Fonctionnalité de rapports à venir</p>
-              </div>
+              <BestOfMonthAdmin />
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="rewards">
+            <Card className="p-6">
+              <RewardCatalogAdmin />
             </Card>
           </TabsContent>
 
