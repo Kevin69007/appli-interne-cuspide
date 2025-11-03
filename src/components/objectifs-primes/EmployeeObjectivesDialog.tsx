@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Target, X } from "lucide-react";
@@ -47,6 +48,7 @@ interface Objective {
   valeur_cible: number;
   indicateur: string;
   recurrence: "jour" | "semaine" | "mois";
+  points_objectif: number;
 }
 
 export const EmployeeObjectivesDialog = () => {
@@ -58,12 +60,26 @@ export const EmployeeObjectivesDialog = () => {
   
   const [selectedMonths, setSelectedMonths] = useState<number[]>([new Date().getMonth() + 1]);
   const [selectedYears, setSelectedYears] = useState<number[]>([new Date().getFullYear()]);
+  const [totalPointsConfig, setTotalPointsConfig] = useState(100);
 
   useEffect(() => {
     if (open) {
       fetchEmployees();
+      fetchTotalPointsConfig();
     }
   }, [open]);
+
+  const fetchTotalPointsConfig = async () => {
+    const { data } = await supabase
+      .from('configuration')
+      .select('valeur')
+      .eq('cle', 'objectifs_points_total')
+      .single();
+
+    if (data?.valeur && typeof data.valeur === 'number') {
+      setTotalPointsConfig(data.valeur);
+    }
+  };
 
   const fetchEmployees = async () => {
     const { data, error } = await supabase
@@ -106,6 +122,14 @@ export const EmployeeObjectivesDialog = () => {
 
   const handleRemoveObjective = (index: number) => {
     setObjectives(objectives.filter((_, i) => i !== index));
+  };
+
+  const getTotalPoints = () => {
+    return objectives.reduce((sum, obj) => sum + obj.points_objectif, 0);
+  };
+
+  const getPointsRemaining = () => {
+    return totalPointsConfig - getTotalPoints();
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -250,8 +274,23 @@ export const EmployeeObjectivesDialog = () => {
 
           <div>
             <div className="flex items-center justify-between mb-4">
-              <Label>Objectifs</Label>
-              <CreateObjectiveDialog onObjectiveCreated={handleAddObjective} />
+              <div>
+                <Label>Objectifs</Label>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Total: <strong>{getTotalPoints()}</strong> / {totalPointsConfig} pts
+                  {getPointsRemaining() < 0 && (
+                    <span className="text-destructive ml-2">
+                      (Dépassement de {Math.abs(getPointsRemaining())} pts)
+                    </span>
+                  )}
+                  {getPointsRemaining() > 0 && (
+                    <span className="text-muted-foreground ml-2">
+                      ({getPointsRemaining()} pts restants)
+                    </span>
+                  )}
+                </p>
+              </div>
+              <CreateObjectiveDialog onObjectiveCreated={handleAddObjective} totalPointsConfig={totalPointsConfig} currentTotal={getTotalPoints()} />
             </div>
             
             {objectives.length === 0 ? (
@@ -262,7 +301,7 @@ export const EmployeeObjectivesDialog = () => {
               <div className="space-y-2">
                 {objectives.map((obj, index) => (
                   <div key={index} className="flex items-center justify-between p-3 border rounded-md">
-                    <div>
+                    <div className="flex-1">
                       <p className="font-medium">{obj.nom}</p>
                       <p className="text-sm text-muted-foreground">
                         Cible: {obj.valeur_cible} {obj.indicateur}
@@ -271,6 +310,9 @@ export const EmployeeObjectivesDialog = () => {
                         Récurrence: {obj.recurrence === "jour" ? "Quotidien" : obj.recurrence === "semaine" ? "Hebdomadaire (vendredi)" : "Mensuel"}
                       </p>
                     </div>
+                    <Badge variant="secondary" className="ml-2">
+                      {obj.points_objectif} pts
+                    </Badge>
                     <Button
                       type="button"
                       variant="ghost"
@@ -291,7 +333,7 @@ export const EmployeeObjectivesDialog = () => {
             </Button>
             <Button 
               type="submit" 
-              disabled={loading || selectedEmployees.length === 0 || selectedMonths.length === 0 || selectedYears.length === 0 || objectives.length === 0}
+              disabled={loading || selectedEmployees.length === 0 || selectedMonths.length === 0 || selectedYears.length === 0 || objectives.length === 0 || getPointsRemaining() < 0}
             >
               {loading ? "Enregistrement..." : "Enregistrer"}
             </Button>

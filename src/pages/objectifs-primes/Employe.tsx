@@ -1,17 +1,50 @@
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Trophy, Target, Clock, AlertCircle, ChevronLeft, Star } from "lucide-react";
 import { MonthCalendar } from "@/components/objectifs-primes/MonthCalendar";
+import { EmployeeMonthlyScore } from "@/components/objectifs-primes/EmployeeMonthlyScore";
+import { AnnualCagnotteWidget } from "@/components/objectifs-primes/AnnualCagnotteWidget";
+import { ObjectiveDeclarationDialog } from "@/components/objectifs-primes/ObjectiveDeclarationDialog";
+import { supabase } from "@/integrations/supabase/client";
 
 const Employe = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [employeeId, setEmployeeId] = useState<string | null>(null);
+
+  const currentMonth = new Date().getMonth() + 1;
+  const currentYear = new Date().getFullYear();
+
+  useEffect(() => {
+    if (user) {
+      fetchEmployeeId();
+    }
+  }, [user]);
+
+  const fetchEmployeeId = async () => {
+    if (!user) return;
+    
+    const { data } = await supabase
+      .from('employees')
+      .select('id')
+      .eq('user_id', user.id)
+      .single();
+
+    if (data) {
+      setEmployeeId(data.id);
+    }
+  };
 
   if (!user) {
     navigate("/auth");
+    return null;
+  }
+
+  if (!employeeId) {
     return null;
   }
 
@@ -39,39 +72,13 @@ const Employe = () => {
 
       <main className="container mx-auto px-4 py-8">
         {/* Score global */}
-        <Card className="p-8 mb-8 bg-gradient-to-br from-primary/10 via-background to-background">
-          <div className="text-center mb-6">
-            <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-primary/20 mb-4">
-              <Trophy className="h-12 w-12 text-primary" />
-            </div>
-            <h2 className="text-3xl font-bold mb-2">Score du mois</h2>
-            <div className="text-6xl font-bold text-primary mb-4">82/100</div>
-            <p className="text-muted-foreground">Prime estimée: 450€</p>
-          </div>
-
-          <div className="grid grid-cols-2 md:grid-cols-5 gap-4 max-w-4xl mx-auto">
-            <div className="text-center">
-              <div className="text-2xl font-bold">25</div>
-              <div className="text-xs text-muted-foreground">Protocoles</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold">28</div>
-              <div className="text-xs text-muted-foreground">Objectifs</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold">18</div>
-              <div className="text-xs text-muted-foreground">Horaires</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold">9</div>
-              <div className="text-xs text-muted-foreground">Matériel</div>
-            </div>
-            <div className="text-center">
-              <div className="text-2xl font-bold">8</div>
-              <div className="text-xs text-muted-foreground">Attitude</div>
-            </div>
-          </div>
-        </Card>
+        <div className="mb-8">
+          <EmployeeMonthlyScore 
+            employeeId={employeeId} 
+            month={currentMonth} 
+            year={currentYear} 
+          />
+        </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           {/* Objectifs du mois */}
@@ -107,9 +114,9 @@ const Employe = () => {
               </div>
             </div>
 
-            <Button className="w-full mt-6" variant="outline">
-              Déclarer un objectif
-            </Button>
+            <div className="mt-6">
+              <ObjectiveDeclarationDialog employeeId={employeeId} />
+            </div>
           </Card>
 
           {/* Quiz du mois */}
@@ -154,6 +161,11 @@ const Employe = () => {
               </div>
             </div>
           </Card>
+        </div>
+
+        {/* Cagnotte annuelle */}
+        <div className="mb-8">
+          <AnnualCagnotteWidget employeeId={employeeId} />
         </div>
 
         {/* Agenda du mois */}

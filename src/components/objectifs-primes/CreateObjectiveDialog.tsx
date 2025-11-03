@@ -11,27 +11,43 @@ interface Objective {
   valeur_cible: number;
   indicateur: string;
   recurrence: "jour" | "semaine" | "mois";
+  points_objectif: number;
 }
 
 interface CreateObjectiveDialogProps {
   onObjectiveCreated: (objective: Objective) => void;
+  totalPointsConfig: number;
+  currentTotal: number;
 }
 
-export const CreateObjectiveDialog = ({ onObjectiveCreated }: CreateObjectiveDialogProps) => {
+export const CreateObjectiveDialog = ({ onObjectiveCreated, totalPointsConfig, currentTotal }: CreateObjectiveDialogProps) => {
   const [open, setOpen] = useState(false);
   const [formData, setFormData] = useState({
     nom: "",
     valeur_cible: 0,
     indicateur: "",
-    recurrence: "mois" as "jour" | "semaine" | "mois"
+    recurrence: "mois" as "jour" | "semaine" | "mois",
+    points_objectif: 0
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    
+    if (formData.points_objectif === 0) {
+      return;
+    }
+    
+    if (currentTotal + formData.points_objectif > totalPointsConfig) {
+      return;
+    }
+    
     onObjectiveCreated(formData);
-    setFormData({ nom: "", valeur_cible: 0, indicateur: "", recurrence: "mois" });
+    setFormData({ nom: "", valeur_cible: 0, indicateur: "", recurrence: "mois", points_objectif: 0 });
     setOpen(false);
   };
+
+  const pointsRemaining = totalPointsConfig - currentTotal;
+  const isOverLimit = formData.points_objectif > pointsRemaining;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -94,11 +110,33 @@ export const CreateObjectiveDialog = ({ onObjectiveCreated }: CreateObjectiveDia
             </Select>
           </div>
 
+          <div>
+            <Label htmlFor="points">Points objectif *</Label>
+            <Input
+              id="points"
+              type="number"
+              min="0"
+              max={pointsRemaining}
+              value={formData.points_objectif}
+              onChange={(e) => setFormData({ ...formData, points_objectif: parseInt(e.target.value) || 0 })}
+              placeholder={`Ex: ${Math.min(10, pointsRemaining)}`}
+              required
+            />
+            <p className="text-xs text-muted-foreground mt-1">
+              Points restants: {pointsRemaining} / {totalPointsConfig}
+            </p>
+            {isOverLimit && (
+              <p className="text-xs text-destructive mt-1">
+                ⚠️ Dépassement de {formData.points_objectif - pointsRemaining} pts
+              </p>
+            )}
+          </div>
+
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Annuler
             </Button>
-            <Button type="submit">
+            <Button type="submit" disabled={isOverLimit || formData.points_objectif === 0}>
               Créer
             </Button>
           </div>

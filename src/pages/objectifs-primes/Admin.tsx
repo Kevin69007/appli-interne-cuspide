@@ -13,6 +13,7 @@ import { BonusMalusConfig } from "@/components/objectifs-primes/BonusMalusConfig
 import { GeneralConfig } from "@/components/objectifs-primes/GeneralConfig";
 import { BestOfMonthAdmin } from "@/components/objectifs-primes/BestOfMonthAdmin";
 import { RewardCatalogAdmin } from "@/components/objectifs-primes/RewardCatalogAdmin";
+import { ObjectiveValidationPanel } from "@/components/objectifs-primes/ObjectiveValidationPanel";
 
 const Admin = () => {
   const [refreshKey, setRefreshKey] = useState(0);
@@ -149,6 +150,10 @@ const Admin = () => {
               </div>
               <EmployeesList key={refreshKey} />
             </Card>
+            
+            <div className="mt-6">
+              <ObjectiveValidationPanel />
+            </div>
           </TabsContent>
 
           <TabsContent value="best">
