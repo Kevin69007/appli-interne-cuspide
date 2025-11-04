@@ -1220,6 +1220,111 @@ export type Database = {
         }
         Relationships: []
       }
+      kpi_definitions: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean | null
+          nom: string
+          recurrence: string
+          responsable_id: string | null
+          type_donnee: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          nom: string
+          recurrence: string
+          responsable_id?: string | null
+          type_donnee: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean | null
+          nom?: string
+          recurrence?: string
+          responsable_id?: string | null
+          type_donnee?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kpi_definitions_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "kpi_definitions_responsable_id_fkey"
+            columns: ["responsable_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      kpi_values: {
+        Row: {
+          created_at: string | null
+          id: string
+          kpi_id: string
+          notes: string | null
+          periode_debut: string
+          periode_fin: string | null
+          saisi_par: string | null
+          updated_at: string | null
+          valeur: number
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          kpi_id: string
+          notes?: string | null
+          periode_debut: string
+          periode_fin?: string | null
+          saisi_par?: string | null
+          updated_at?: string | null
+          valeur: number
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          kpi_id?: string
+          notes?: string | null
+          periode_debut?: string
+          periode_fin?: string | null
+          saisi_par?: string | null
+          updated_at?: string | null
+          valeur?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kpi_values_kpi_id_fkey"
+            columns: ["kpi_id"]
+            isOneToOne: false
+            referencedRelation: "kpi_definitions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "kpi_values_saisi_par_fkey"
+            columns: ["saisi_par"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       maintenance_log: {
         Row: {
           completed_at: string
@@ -1392,6 +1497,117 @@ export type Database = {
             columns: ["employee_id"]
             isOneToOne: false
             referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      objectifs_individuels: {
+        Row: {
+          created_at: string | null
+          employee_id: string
+          id: string
+          modifie_par: string | null
+          nom: string
+          periode_debut: string
+          periode_fin: string | null
+          raison_modification: string | null
+          statut: string | null
+          type_periode: string
+          unite: string | null
+          updated_at: string | null
+          valeur_cible: number
+          valeur_realisee: number | null
+        }
+        Insert: {
+          created_at?: string | null
+          employee_id: string
+          id?: string
+          modifie_par?: string | null
+          nom: string
+          periode_debut: string
+          periode_fin?: string | null
+          raison_modification?: string | null
+          statut?: string | null
+          type_periode: string
+          unite?: string | null
+          updated_at?: string | null
+          valeur_cible: number
+          valeur_realisee?: number | null
+        }
+        Update: {
+          created_at?: string | null
+          employee_id?: string
+          id?: string
+          modifie_par?: string | null
+          nom?: string
+          periode_debut?: string
+          periode_fin?: string | null
+          raison_modification?: string | null
+          statut?: string | null
+          type_periode?: string
+          unite?: string | null
+          updated_at?: string | null
+          valeur_cible?: number
+          valeur_realisee?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "objectifs_individuels_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "objectifs_individuels_modifie_par_fkey"
+            columns: ["modifie_par"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      objectifs_modifications: {
+        Row: {
+          ancienne_valeur: number | null
+          created_at: string | null
+          id: string
+          modifie_par: string | null
+          nouvelle_valeur: number | null
+          objectif_id: string
+          raison: string | null
+        }
+        Insert: {
+          ancienne_valeur?: number | null
+          created_at?: string | null
+          id?: string
+          modifie_par?: string | null
+          nouvelle_valeur?: number | null
+          objectif_id: string
+          raison?: string | null
+        }
+        Update: {
+          ancienne_valeur?: number | null
+          created_at?: string | null
+          id?: string
+          modifie_par?: string | null
+          nouvelle_valeur?: number | null
+          objectif_id?: string
+          raison?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "objectifs_modifications_modifie_par_fkey"
+            columns: ["modifie_par"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "objectifs_modifications_objectif_id_fkey"
+            columns: ["objectif_id"]
+            isOneToOne: false
+            referencedRelation: "objectifs_individuels"
             referencedColumns: ["id"]
           },
         ]
@@ -1598,6 +1814,54 @@ export type Database = {
             columns: ["user_profile_id"]
             isOneToOne: false
             referencedRelation: "user_profiles"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      pointage: {
+        Row: {
+          created_at: string | null
+          date: string
+          employee_id: string
+          heures: number
+          id: string
+          saisi_par: string | null
+          taux_activite: number | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          date: string
+          employee_id: string
+          heures: number
+          id?: string
+          saisi_par?: string | null
+          taux_activite?: number | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          date?: string
+          employee_id?: string
+          heures?: number
+          id?: string
+          saisi_par?: string | null
+          taux_activite?: number | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "pointage_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "pointage_saisi_par_fkey"
+            columns: ["saisi_par"]
+            isOneToOne: false
+            referencedRelation: "employees"
             referencedColumns: ["id"]
           },
         ]
@@ -2162,6 +2426,81 @@ export type Database = {
           {
             foreignKeyName: "quiz_responses_vote_collegue_id_fkey"
             columns: ["vote_collegue_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      recurring_tasks: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          derniere_execution: string | null
+          description: string | null
+          heure_rappel: string | null
+          id: string
+          is_active: boolean | null
+          jour_mois: number | null
+          jour_semaine: number | null
+          lien_process: string | null
+          prochaine_execution: string | null
+          recurrence: string
+          responsable_id: string
+          titre: string
+          type: string
+          type_process: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          derniere_execution?: string | null
+          description?: string | null
+          heure_rappel?: string | null
+          id?: string
+          is_active?: boolean | null
+          jour_mois?: number | null
+          jour_semaine?: number | null
+          lien_process?: string | null
+          prochaine_execution?: string | null
+          recurrence: string
+          responsable_id: string
+          titre: string
+          type: string
+          type_process?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          derniere_execution?: string | null
+          description?: string | null
+          heure_rappel?: string | null
+          id?: string
+          is_active?: boolean | null
+          jour_mois?: number | null
+          jour_semaine?: number | null
+          lien_process?: string | null
+          prochaine_execution?: string | null
+          recurrence?: string
+          responsable_id?: string
+          titre?: string
+          type?: string
+          type_process?: string | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "recurring_tasks_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "recurring_tasks_responsable_id_fkey"
+            columns: ["responsable_id"]
             isOneToOne: false
             referencedRelation: "employees"
             referencedColumns: ["id"]

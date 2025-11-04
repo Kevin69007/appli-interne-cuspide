@@ -7,6 +7,8 @@ import { ChevronLeft } from "lucide-react";
 import { toast } from "sonner";
 import EntretiensMachines from "./EntretiensMachines";
 import Logs from "./Logs";
+import { PointageList } from "@/components/suivi-direction/PointageList";
+import { DashboardObjectifs } from "@/components/suivi-direction/DashboardObjectifs";
 
 const SuiviDirection = () => {
   const navigate = useNavigate();
@@ -52,12 +54,7 @@ const SuiviDirection = () => {
           </TabsContent>
 
           <TabsContent value="pointage" className="mt-6">
-            <div className="bg-card rounded-lg border border-border p-8 text-center">
-              <h3 className="text-xl font-semibold mb-2">Info Pointage</h3>
-              <p className="text-muted-foreground">
-                Cette section sera développée prochainement pour gérer les informations de pointage des employés.
-              </p>
-            </div>
+            <PointageList />
           </TabsContent>
 
           <TabsContent value="audit" className="mt-6">
@@ -65,12 +62,7 @@ const SuiviDirection = () => {
           </TabsContent>
 
           <TabsContent value="dashboard" className="mt-6">
-            <div className="bg-card rounded-lg border border-border p-8 text-center">
-              <h3 className="text-xl font-semibold mb-2">Dashboard</h3>
-              <p className="text-muted-foreground">
-                Cette section sera développée prochainement pour afficher les statistiques et indicateurs clés.
-              </p>
-            </div>
+            <DashboardObjectifs />
           </TabsContent>
         </Tabs>
       </div>
