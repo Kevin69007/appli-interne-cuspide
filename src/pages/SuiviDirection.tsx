@@ -41,28 +41,28 @@ const SuiviDirection = () => {
           <h1 className="text-3xl font-bold">Suivi Direction</h1>
         </div>
 
-        <Tabs defaultValue="entretiens" className="w-full">
+        <Tabs defaultValue="dashboard" className="w-full">
           <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="entretiens">Entretiens Locaux et Machines</TabsTrigger>
-            <TabsTrigger value="pointage">Info Pointage</TabsTrigger>
-            <TabsTrigger value="audit">Journal d'audit</TabsTrigger>
             <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
+            <TabsTrigger value="pointage">Info Pointage</TabsTrigger>
+            <TabsTrigger value="entretiens">Entretiens Locaux et Machines</TabsTrigger>
+            <TabsTrigger value="audit">Journal d'audit</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="entretiens" className="mt-6">
-            <EntretiensMachines />
+          <TabsContent value="dashboard" className="mt-6">
+            <DashboardObjectifs />
           </TabsContent>
 
           <TabsContent value="pointage" className="mt-6">
             <PointageList />
           </TabsContent>
 
-          <TabsContent value="audit" className="mt-6">
-            <Logs />
+          <TabsContent value="entretiens" className="mt-6">
+            <EntretiensMachines />
           </TabsContent>
 
-          <TabsContent value="dashboard" className="mt-6">
-            <DashboardObjectifs />
+          <TabsContent value="audit" className="mt-6">
+            <Logs />
           </TabsContent>
         </Tabs>
       </div>

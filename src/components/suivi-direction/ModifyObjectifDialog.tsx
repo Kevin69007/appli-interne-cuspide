@@ -46,13 +46,17 @@ export const ModifyObjectifDialog = ({ open, onOpenChange, objectif, onSuccess }
         .eq("user_id", userData.user?.id)
         .single();
 
+      const ancienneValeur = objectif.valeur_cible;
+      const nouvelleValeur = parseFloat(valeurCible);
+      const ecartPourcentage = Math.abs(((nouvelleValeur - ancienneValeur) / ancienneValeur) * 100);
+
       // Enregistrer la modification dans l'historique
       const { error: historyError } = await supabase
         .from("objectifs_modifications")
         .insert({
           objectif_id: objectif.id,
-          ancienne_valeur: objectif.valeur_cible,
-          nouvelle_valeur: parseFloat(valeurCible),
+          ancienne_valeur: ancienneValeur,
+          nouvelle_valeur: nouvelleValeur,
           modifie_par: employeeData?.id,
           raison
         });
@@ -63,7 +67,7 @@ export const ModifyObjectifDialog = ({ open, onOpenChange, objectif, onSuccess }
       const { error } = await supabase
         .from("objectifs_individuels")
         .update({
-          valeur_cible: parseFloat(valeurCible),
+          valeur_cible: nouvelleValeur,
           valeur_realisee: valeurRealisee ? parseFloat(valeurRealisee) : null,
           modifie_par: employeeData?.id,
           raison_modification: raison,
@@ -73,7 +77,28 @@ export const ModifyObjectifDialog = ({ open, onOpenChange, objectif, onSuccess }
 
       if (error) throw error;
 
-      toast.success("Objectif modifié avec succès");
+      // Appliquer une pénalité si l'écart est significatif (> 10%)
+      if (ecartPourcentage > 10) {
+        // Créer une notification pour l'employé
+        const { error: notifError } = await supabase
+          .from("notifications")
+          .insert({
+            employee_id: objectif.employee_id,
+            type: "malus",
+            titre: "Objectif corrigé",
+            message: `Votre objectif "${objectif.nom}" a été corrigé par un manager. Un malus a été appliqué en raison de l'écart important (${ecartPourcentage.toFixed(1)}%).`,
+            url: "/objectifs-primes/employe"
+          });
+
+        if (notifError) {
+          console.error("Erreur notification:", notifError);
+        }
+
+        toast.success(`Objectif modifié avec pénalité appliquée (écart: ${ecartPourcentage.toFixed(1)}%)`);
+      } else {
+        toast.success("Objectif modifié avec succès");
+      }
+
       onSuccess();
       onOpenChange(false);
     } catch (error: any) {

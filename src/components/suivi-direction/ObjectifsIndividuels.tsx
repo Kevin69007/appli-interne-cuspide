@@ -10,6 +10,7 @@ import { useUserRole } from "@/hooks/useUserRole";
 import { Badge } from "@/components/ui/badge";
 import { DeclareObjectifDialog } from "./DeclareObjectifDialog";
 import { ModifyObjectifDialog } from "./ModifyObjectifDialog";
+import { ObjectifsFilters, FilterValues } from "./ObjectifsFilters";
 
 interface Objectif {
   id: string;
@@ -35,6 +36,7 @@ interface Objectif {
 
 export const ObjectifsIndividuels = () => {
   const [objectifs, setObjectifs] = useState<Objectif[]>([]);
+  const [filteredObjectifs, setFilteredObjectifs] = useState<Objectif[]>([]);
   const [loading, setLoading] = useState(true);
   const [showDeclareDialog, setShowDeclareDialog] = useState(false);
   const [showModifyDialog, setShowModifyDialog] = useState(false);
@@ -44,27 +46,17 @@ export const ObjectifsIndividuels = () => {
   const fetchObjectifs = async () => {
     try {
       setLoading(true);
+      
+      // Simplifier la requête pour éviter les problèmes de jointure
+      const { data: userData } = await supabase.auth.getUser();
+      
       let query = supabase
         .from("objectifs_individuels")
-        .select(`
-          id,
-          nom,
-          type_periode,
-          valeur_cible,
-          valeur_realisee,
-          unite,
-          periode_debut,
-          periode_fin,
-          statut,
-          raison_modification,
-          employee:employees!objectifs_individuels_employee_id_fkey(id, nom, prenom),
-          modifie_par:employees!objectifs_individuels_modifie_par_fkey(nom, prenom)
-        `)
+        .select("*")
         .order("periode_debut", { ascending: false });
 
       // Si l'utilisateur n'est ni admin ni manager, filtrer ses propres objectifs
       if (!isAdmin && !isManager) {
-        const { data: userData } = await supabase.auth.getUser();
         const { data: employeeData } = await supabase
           .from("employees")
           .select("id")
@@ -77,11 +69,40 @@ export const ObjectifsIndividuels = () => {
       }
 
       const { data, error } = await query;
-      if (error) throw error;
-      setObjectifs(data || []);
+      if (error) {
+        console.error("Erreur requête objectifs:", error);
+        throw error;
+      }
+
+      // Enrichir avec les données des employés
+      if (data && data.length > 0) {
+        const employeeIds = [...new Set([
+          ...data.map(obj => obj.employee_id),
+          ...data.filter(obj => obj.modifie_par).map(obj => obj.modifie_par)
+        ])];
+
+        const { data: employeesData } = await supabase
+          .from("employees")
+          .select("id, nom, prenom")
+          .in("id", employeeIds);
+
+        const employeesMap = new Map(employeesData?.map(emp => [emp.id, emp]) || []);
+
+        const enrichedData = data.map(obj => ({
+          ...obj,
+          employee: employeesMap.get(obj.employee_id) || { id: obj.employee_id, nom: "Inconnu", prenom: "" },
+          modifie_par: obj.modifie_par ? employeesMap.get(obj.modifie_par) : undefined
+        }));
+
+        setObjectifs(enrichedData as any);
+        setFilteredObjectifs(enrichedData as any);
+      } else {
+        setObjectifs([]);
+        setFilteredObjectifs([]);
+      }
     } catch (error: any) {
       toast.error("Erreur lors du chargement des objectifs");
-      console.error(error);
+      console.error("Erreur détaillée:", error);
     } finally {
       setLoading(false);
     }
@@ -119,15 +140,45 @@ export const ObjectifsIndividuels = () => {
     setShowModifyDialog(true);
   };
 
+  const handleFilterChange = (filters: FilterValues) => {
+    let filtered = [...objectifs];
+
+    if (filters.employeeId) {
+      filtered = filtered.filter(obj => obj.employee.id === filters.employeeId);
+    }
+
+    if (filters.startDate) {
+      filtered = filtered.filter(obj => obj.periode_debut >= filters.startDate);
+    }
+
+    if (filters.endDate) {
+      filtered = filtered.filter(obj => obj.periode_debut <= filters.endDate);
+    }
+
+    if (filters.typePeriode) {
+      filtered = filtered.filter(obj => obj.type_periode === filters.typePeriode);
+    }
+
+    if (filters.statut) {
+      filtered = filtered.filter(obj => obj.statut === filters.statut);
+    }
+
+    setFilteredObjectifs(filtered);
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <h3 className="text-lg font-semibold">Objectifs individuels</h3>
-        <Button onClick={() => setShowDeclareDialog(true)} size="sm">
-          <Plus className="h-4 w-4 mr-2" />
-          Déclarer un objectif
-        </Button>
+        {!isAdmin && !isManager && (
+          <Button onClick={() => setShowDeclareDialog(true)} size="sm">
+            <Plus className="h-4 w-4 mr-2" />
+            Déclarer un objectif
+          </Button>
+        )}
       </div>
+
+      <ObjectifsFilters onFilterChange={handleFilterChange} objectifs={filteredObjectifs} />
 
       <div className="bg-card rounded-lg border border-border overflow-hidden">
         <Table>
@@ -150,14 +201,14 @@ export const ObjectifsIndividuels = () => {
                   Chargement...
                 </TableCell>
               </TableRow>
-            ) : objectifs.length === 0 ? (
+            ) : filteredObjectifs.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={8} className="text-center text-muted-foreground">
                   Aucun objectif déclaré
                 </TableCell>
               </TableRow>
             ) : (
-              objectifs.map((objectif) => (
+              filteredObjectifs.map((objectif) => (
                 <TableRow key={objectif.id}>
                   <TableCell>
                     {objectif.employee.prenom} {objectif.employee.nom}
