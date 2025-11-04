@@ -1,59 +1,46 @@
-import { useState, useEffect } from "react";
-import { supabase } from "@/integrations/supabase/client";
-import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
-import { toast } from "sonner";
+import { useState } from "react";
 import { useUserRole } from "@/hooks/useUserRole";
-import { CreateKPIDialog } from "./CreateKPIDialog";
-import { KPIList } from "./KPIList";
-import { KPIValuesTable } from "./KPIValuesTable";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { KPIDashboardView } from "./kpi/dashboard/KPIDashboardView";
+import { KPIAnalysisView } from "./kpi/analysis/KPIAnalysisView";
+import { KPIDataView } from "./kpi/data/KPIDataView";
+import { KPIList } from "./KPIList";
+import { KPIObjectifsConfig } from "./kpi/config/KPIObjectifsConfig";
 
 export const KPIDashboard = () => {
-  const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [refreshKey, setRefreshKey] = useState(0);
   const { isAdmin, isManager } = useUserRole();
-
-  const handleSuccess = () => {
-    setRefreshKey(prev => prev + 1);
-  };
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">Chiffres & KPI</h3>
-        {isAdmin && (
-          <Button onClick={() => setShowCreateDialog(true)} size="sm">
-            <Plus className="h-4 w-4 mr-2" />
-            Créer un KPI
-          </Button>
-        )}
-      </div>
-
-      <Tabs defaultValue="values" className="w-full">
-        <TabsList>
-          <TabsTrigger value="values">Valeurs saisies</TabsTrigger>
-          {(isAdmin || isManager) && <TabsTrigger value="config">Configuration KPI</TabsTrigger>}
+      <Tabs defaultValue="dashboard" className="w-full">
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="dashboard">📈 Dashboard</TabsTrigger>
+          <TabsTrigger value="analysis">🔍 Analyse</TabsTrigger>
+          <TabsTrigger value="data">📋 Données</TabsTrigger>
+          {isAdmin && <TabsTrigger value="config">⚙️ Configuration</TabsTrigger>}
         </TabsList>
 
-        <TabsContent value="values" className="mt-4">
-          <KPIValuesTable key={refreshKey} onSuccess={handleSuccess} />
+        <TabsContent value="dashboard" className="mt-6">
+          <KPIDashboardView />
         </TabsContent>
 
-        {(isAdmin || isManager) && (
-          <TabsContent value="config" className="mt-4">
-            <KPIList key={refreshKey} onSuccess={handleSuccess} />
+        <TabsContent value="analysis" className="mt-6">
+          <KPIAnalysisView />
+        </TabsContent>
+
+        <TabsContent value="data" className="mt-6">
+          <KPIDataView />
+        </TabsContent>
+
+        {isAdmin && (
+          <TabsContent value="config" className="mt-6">
+            <div className="space-y-6">
+              <KPIList onSuccess={() => {}} />
+              <KPIObjectifsConfig />
+            </div>
           </TabsContent>
         )}
       </Tabs>
-
-      {isAdmin && (
-        <CreateKPIDialog
-          open={showCreateDialog}
-          onOpenChange={setShowCreateDialog}
-          onSuccess={handleSuccess}
-        />
-      )}
     </div>
   );
 };

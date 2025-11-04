@@ -1274,6 +1274,57 @@ export type Database = {
           },
         ]
       }
+      kpi_objectifs: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          kpi_id: string
+          periode_debut: string
+          periode_fin: string | null
+          type_periode: string
+          updated_at: string
+          valeur_objectif: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          kpi_id: string
+          periode_debut: string
+          periode_fin?: string | null
+          type_periode: string
+          updated_at?: string
+          valeur_objectif: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          kpi_id?: string
+          periode_debut?: string
+          periode_fin?: string | null
+          type_periode?: string
+          updated_at?: string
+          valeur_objectif?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "kpi_objectifs_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "kpi_objectifs_kpi_id_fkey"
+            columns: ["kpi_id"]
+            isOneToOne: false
+            referencedRelation: "kpi_definitions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       kpi_values: {
         Row: {
           created_at: string | null
