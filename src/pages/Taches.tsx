@@ -8,7 +8,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, ArrowLeft } from "lucide-react";
 import { CreateTaskDialog } from "@/components/taches/CreateTaskDialog";
 import { TaskCard } from "@/components/taches/TaskCard";
+import { TaskFilters, TaskFilters as TaskFiltersType } from "@/components/taches/TaskFilters";
 import { toast } from "sonner";
+import { isAfter, isBefore, isEqual, startOfDay } from "date-fns";
 
 interface Task {
   id: string;
@@ -41,6 +43,14 @@ const Taches = () => {
   const [loading, setLoading] = useState(true);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [currentEmployeeId, setCurrentEmployeeId] = useState<string | null>(null);
+  const [filters, setFilters] = useState<TaskFiltersType>({
+    searchTerm: "",
+    statut: null,
+    priorite: null,
+    dateDebut: null,
+    dateFin: null,
+    hideCompleted: false,
+  });
 
   useEffect(() => {
     if (!user) {
@@ -139,6 +149,52 @@ const Taches = () => {
     }
   };
 
+  // Filter tasks based on active filters
+  const filterTasks = (tasks: Task[]) => {
+    return tasks.filter((task) => {
+      // Search term filter
+      if (filters.searchTerm) {
+        const term = filters.searchTerm.toLowerCase();
+        const matchTitle = task.titre.toLowerCase().includes(term);
+        const matchDesc = task.description?.toLowerCase().includes(term);
+        if (!matchTitle && !matchDesc) return false;
+      }
+
+      // Status filter
+      if (filters.statut && task.statut !== filters.statut) return false;
+
+      // Hide completed filter
+      if (filters.hideCompleted && task.statut === "terminee") return false;
+
+      // Priority filter
+      if (filters.priorite && task.priorite !== filters.priorite) return false;
+
+      // Date range filter
+      if (filters.dateDebut || filters.dateFin) {
+        const taskDate = startOfDay(new Date(task.date_echeance));
+        
+        if (filters.dateDebut) {
+          const startDate = startOfDay(filters.dateDebut);
+          if (isBefore(taskDate, startDate)) return false;
+        }
+        
+        if (filters.dateFin) {
+          const endDate = startOfDay(filters.dateFin);
+          if (isAfter(taskDate, endDate)) return false;
+        }
+      }
+
+      return true;
+    });
+  };
+
+  const filteredTasks = filterTasks(tasks);
+  const filteredBoomerangsSent = filterTasks(boomerangsSent);
+  const filteredBoomerangsReceived = filterTasks(boomerangsReceived);
+
+  const totalTasks = tasks.length + boomerangsSent.length + boomerangsReceived.length;
+  const totalFiltered = filteredTasks.length + filteredBoomerangsSent.length + filteredBoomerangsReceived.length;
+
   return (
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-6xl mx-auto">
@@ -155,31 +211,56 @@ const Taches = () => {
           </Button>
         </div>
 
+        <TaskFilters
+          onFilterChange={setFilters}
+          taskCount={{
+            total: totalTasks,
+            filtered: totalFiltered,
+          }}
+        />
+
         <Tabs defaultValue="my-tasks" className="w-full">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="my-tasks">
-              Mes tâches ({tasks.length})
+              Mes tâches ({filteredTasks.length})
             </TabsTrigger>
             <TabsTrigger value="boomerangs-sent">
-              🪃 Envoyés ({boomerangsSent.length})
+              🪃 Envoyés ({filteredBoomerangsSent.length})
             </TabsTrigger>
             <TabsTrigger value="boomerangs-received">
-              🪃 Reçus ({boomerangsReceived.length})
+              🪃 Reçus ({filteredBoomerangsReceived.length})
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="my-tasks" className="space-y-4 mt-6">
             {loading ? (
               <p className="text-center text-muted-foreground">Chargement...</p>
-            ) : tasks.length === 0 ? (
-              <p className="text-center text-muted-foreground">Aucune tâche pour le moment</p>
+            ) : filteredTasks.length === 0 ? (
+              <div className="text-center space-y-2">
+                <p className="text-muted-foreground">
+                  {tasks.length === 0 ? "Aucune tâche pour le moment" : "Aucune tâche ne correspond à vos critères"}
+                </p>
+                {tasks.length > 0 && (
+                  <Button variant="outline" size="sm" onClick={() => setFilters({
+                    searchTerm: "",
+                    statut: null,
+                    priorite: null,
+                    dateDebut: null,
+                    dateFin: null,
+                    hideCompleted: false,
+                  })}>
+                    Réinitialiser les filtres
+                  </Button>
+                )}
+              </div>
             ) : (
-              tasks.map((task) => (
+              filteredTasks.map((task) => (
                 <TaskCard
                   key={task.id}
                   task={task}
                   currentEmployeeId={currentEmployeeId}
                   onUpdate={fetchTasks}
+                  highlightTerm={filters.searchTerm}
                 />
               ))
             )}
@@ -188,15 +269,32 @@ const Taches = () => {
           <TabsContent value="boomerangs-sent" className="space-y-4 mt-6">
             {loading ? (
               <p className="text-center text-muted-foreground">Chargement...</p>
-            ) : boomerangsSent.length === 0 ? (
-              <p className="text-center text-muted-foreground">Aucun boomerang envoyé</p>
+            ) : filteredBoomerangsSent.length === 0 ? (
+              <div className="text-center space-y-2">
+                <p className="text-muted-foreground">
+                  {boomerangsSent.length === 0 ? "Aucun boomerang envoyé" : "Aucun boomerang ne correspond à vos critères"}
+                </p>
+                {boomerangsSent.length > 0 && (
+                  <Button variant="outline" size="sm" onClick={() => setFilters({
+                    searchTerm: "",
+                    statut: null,
+                    priorite: null,
+                    dateDebut: null,
+                    dateFin: null,
+                    hideCompleted: false,
+                  })}>
+                    Réinitialiser les filtres
+                  </Button>
+                )}
+              </div>
             ) : (
-              boomerangsSent.map((task) => (
+              filteredBoomerangsSent.map((task) => (
                 <TaskCard
                   key={task.id}
                   task={task}
                   currentEmployeeId={currentEmployeeId}
                   onUpdate={fetchTasks}
+                  highlightTerm={filters.searchTerm}
                 />
               ))
             )}
@@ -205,15 +303,32 @@ const Taches = () => {
           <TabsContent value="boomerangs-received" className="space-y-4 mt-6">
             {loading ? (
               <p className="text-center text-muted-foreground">Chargement...</p>
-            ) : boomerangsReceived.length === 0 ? (
-              <p className="text-center text-muted-foreground">Aucun boomerang reçu</p>
+            ) : filteredBoomerangsReceived.length === 0 ? (
+              <div className="text-center space-y-2">
+                <p className="text-muted-foreground">
+                  {boomerangsReceived.length === 0 ? "Aucun boomerang reçu" : "Aucun boomerang ne correspond à vos critères"}
+                </p>
+                {boomerangsReceived.length > 0 && (
+                  <Button variant="outline" size="sm" onClick={() => setFilters({
+                    searchTerm: "",
+                    statut: null,
+                    priorite: null,
+                    dateDebut: null,
+                    dateFin: null,
+                    hideCompleted: false,
+                  })}>
+                    Réinitialiser les filtres
+                  </Button>
+                )}
+              </div>
             ) : (
-              boomerangsReceived.map((task) => (
+              filteredBoomerangsReceived.map((task) => (
                 <TaskCard
                   key={task.id}
                   task={task}
                   currentEmployeeId={currentEmployeeId}
                   onUpdate={fetchTasks}
+                  highlightTerm={filters.searchTerm}
                 />
               ))
             )}

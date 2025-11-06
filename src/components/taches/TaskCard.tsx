@@ -14,10 +14,27 @@ interface TaskCardProps {
   onUpdate: () => void;
   isHelpRequest?: boolean;
   isMaintenance?: boolean;
+  highlightTerm?: string;
 }
 
-export const TaskCard = ({ task, currentEmployeeId, onUpdate, isHelpRequest, isMaintenance }: TaskCardProps) => {
+export const TaskCard = ({ task, currentEmployeeId, onUpdate, isHelpRequest, isMaintenance, highlightTerm }: TaskCardProps) => {
   const [showDetails, setShowDetails] = useState(false);
+
+  // Highlight search terms in text
+  const highlightText = (text: string) => {
+    if (!highlightTerm || !text) return text;
+    
+    const regex = new RegExp(`(${highlightTerm})`, 'gi');
+    const parts = text.split(regex);
+    
+    return parts.map((part, i) => 
+      regex.test(part) ? (
+        <span key={i} className="bg-yellow-200 dark:bg-yellow-800 font-semibold">{part}</span>
+      ) : (
+        part
+      )
+    );
+  };
 
   const getPriorityColor = (priorite: string) => {
     switch (priorite) {
@@ -82,12 +99,12 @@ export const TaskCard = ({ task, currentEmployeeId, onUpdate, isHelpRequest, isM
                 {getStatusIcon()}
               </button>
               <h3 className={`font-semibold text-lg ${task.statut === "terminee" ? "line-through" : ""}`}>
-                {task.titre}
+                {highlightText(task.titre)}
               </h3>
             </div>
 
             {task.description && (
-              <p className="text-sm text-muted-foreground ml-8">{task.description}</p>
+              <p className="text-sm text-muted-foreground ml-8">{highlightText(task.description)}</p>
             )}
 
             <div className="flex flex-wrap items-center gap-2 ml-8">

@@ -217,7 +217,7 @@ export const TaskDetailsDialog = ({
                   <p className="text-muted-foreground mt-2">{task.description}</p>
                 )}
               </div>
-              {task.statut !== "annulee" && !task.boomerang_active && (
+              {task.statut !== "annulee" && task.statut !== "terminee" && !task.boomerang_active && (
                 <Button variant="ghost" size="icon" onClick={handleCancel} title="Annuler la tâche">
                   <XCircle className="h-4 w-4 text-destructive" />
                 </Button>
