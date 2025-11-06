@@ -24,6 +24,7 @@ export const GeneralConfig = () => {
   const [config, setConfig] = useState<ConfigValues>({
     objectifs_points_total: 100,
     meilleur_mois_bonus: 20,
+    colleague_vote_bonus: 20,
     tier1_max: 10,
     tier1_malus: 0,
     tier2_min: 10,
@@ -44,7 +45,7 @@ export const GeneralConfig = () => {
       const { data, error } = await supabase
         .from('configuration')
         .select('*')
-        .in('cle', ['objectifs_points_total', 'meilleur_mois_bonus', 'auto_declaration_tolerance_tiers']);
+        .in('cle', ['objectifs_points_total', 'meilleur_mois_bonus', 'colleague_vote_bonus', 'auto_declaration_tolerance_tiers']);
 
       if (error) throw error;
 
@@ -58,9 +59,14 @@ export const GeneralConfig = () => {
           ? JSON.parse(configMap.auto_declaration_tolerance_tiers)
           : configMap.auto_declaration_tolerance_tiers;
 
+        const colleagueVoteBonus = typeof configMap.colleague_vote_bonus === 'object' && configMap.colleague_vote_bonus !== null
+          ? (configMap.colleague_vote_bonus as any).points || 20
+          : parseInt(configMap.colleague_vote_bonus) || 20;
+
         setConfig({
           objectifs_points_total: parseInt(configMap.objectifs_points_total) || 100,
           meilleur_mois_bonus: parseInt(configMap.meilleur_mois_bonus) || 20,
+          colleague_vote_bonus: colleagueVoteBonus,
           tier1_max: toleranceTiers?.tier1?.max || 10,
           tier1_malus: toleranceTiers?.tier1?.malus || 0,
           tier2_min: toleranceTiers?.tier2?.min || 10,
@@ -90,6 +96,7 @@ export const GeneralConfig = () => {
       const updates = [
         { cle: 'objectifs_points_total', valeur: config.objectifs_points_total.toString() },
         { cle: 'meilleur_mois_bonus', valeur: config.meilleur_mois_bonus.toString() },
+        { cle: 'colleague_vote_bonus', valeur: JSON.stringify({ points: config.colleague_vote_bonus }) },
         { cle: 'auto_declaration_tolerance_tiers', valeur: JSON.stringify(toleranceTiers) }
       ];
 
@@ -154,6 +161,19 @@ export const GeneralConfig = () => {
               />
               <p className="text-xs text-muted-foreground">
                 Points bonus attribués au meilleur employé du mois
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <Label htmlFor="colleague_vote_bonus">Bonus collègue du mois (vote)</Label>
+              <Input
+                id="colleague_vote_bonus"
+                type="number"
+                value={config.colleague_vote_bonus}
+                onChange={(e) => setConfig(prev => ({ ...prev, colleague_vote_bonus: parseInt(e.target.value) || 20 }))}
+              />
+              <p className="text-xs text-muted-foreground">
+                Points attribués au gagnant du vote collègue du mois
               </p>
             </div>
           </div>
