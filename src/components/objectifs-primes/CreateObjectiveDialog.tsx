@@ -103,7 +103,7 @@ export const CreateObjectiveDialog = ({ onObjectiveCreated, totalPointsConfig, c
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="jour">Quotidien (chaque jour)</SelectItem>
+                <SelectItem value="jour">Quotidien (du lundi au vendredi)</SelectItem>
                 <SelectItem value="semaine">Hebdomadaire (chaque vendredi)</SelectItem>
                 <SelectItem value="mois">Mensuel (dernier jour du mois)</SelectItem>
               </SelectContent>

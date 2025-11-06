@@ -17,9 +17,15 @@ const generateRecurringDates = (year: number, month: number, recurrence: "jour" 
   const daysInMonth = new Date(year, month, 0).getDate();
   
   if (recurrence === "jour") {
-    // Chaque jour du mois
+    // Chaque jour du mois SAUF samedi et dimanche
     for (let day = 1; day <= daysInMonth; day++) {
-      dates.push(new Date(year, month - 1, day).toISOString().split('T')[0]);
+      const date = new Date(year, month - 1, day);
+      const dayOfWeek = date.getDay(); // 0 = dimanche, 6 = samedi
+      
+      // Exclure les week-ends
+      if (dayOfWeek !== 0 && dayOfWeek !== 6) {
+        dates.push(date.toISOString().split('T')[0]);
+      }
     }
   } else if (recurrence === "semaine") {
     // Chaque vendredi du mois (jour 5 de la semaine, 0 = dimanche)

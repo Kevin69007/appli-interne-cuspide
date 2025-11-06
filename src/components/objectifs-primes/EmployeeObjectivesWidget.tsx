@@ -65,6 +65,13 @@ export const EmployeeObjectivesWidget = ({ employeeId }: Props) => {
     }
 
     try {
+      // Mise à jour optimiste : retirer l'objectif immédiatement de l'état local
+      setObjectives(prev => prev.map(obj => 
+        obj.id === objectiveId 
+          ? { ...obj, valeur_declaree: parseFloat(valeurDeclaree), statut_validation: 'en_attente' }
+          : obj
+      ));
+
       const { error } = await supabase
         .from('agenda_entries')
         .update({
@@ -78,10 +85,14 @@ export const EmployeeObjectivesWidget = ({ employeeId }: Props) => {
       toast.success("Objectif déclaré ! En attente de validation.");
       setDeclaringObjectiveId(null);
       setValeurDeclaree("");
-      fetchObjectives();
+      
+      // Rafraîchir depuis la DB pour confirmer
+      await fetchObjectives();
     } catch (error) {
       console.error('Error declaring objective:', error);
       toast.error("Erreur lors de la déclaration");
+      // En cas d'erreur, re-fetch pour restaurer l'état correct
+      await fetchObjectives();
     }
   };
 
@@ -127,6 +138,7 @@ export const EmployeeObjectivesWidget = ({ employeeId }: Props) => {
   const ObjectiveItem = ({ obj, variant }: { obj: Objective; variant: 'overdue' | 'today' | 'upcoming' | 'pending' | 'validated' }) => {
     const data = getObjectiveData(obj.detail);
     const isExpanded = declaringObjectiveId === obj.id;
+    const canDeclare = obj.date <= today; // Vérification de date
 
     return (
       <div className={cn(
@@ -144,7 +156,9 @@ export const EmployeeObjectivesWidget = ({ employeeId }: Props) => {
               {data?.valeur_cible && ` • Objectif: ${data.valeur_cible} ${data.indicateur || ''}`}
             </p>
           </div>
-          {variant !== 'validated' && variant !== 'pending' && (
+          
+          {/* Afficher le bouton uniquement si l'objectif peut être déclaré */}
+          {variant !== 'validated' && variant !== 'pending' && canDeclare && (
             <Button 
               size="sm" 
               variant="outline"
@@ -153,6 +167,14 @@ export const EmployeeObjectivesWidget = ({ employeeId }: Props) => {
               {isExpanded ? <X className="h-3 w-3" /> : "Déclarer"}
             </Button>
           )}
+          
+          {/* Badge pour les objectifs futurs */}
+          {variant === 'upcoming' && !canDeclare && (
+            <Badge variant="secondary" className="text-xs">
+              🔒 Pas encore disponible
+            </Badge>
+          )}
+          
           {variant === 'pending' && (
             <Badge variant="secondary" className="text-xs">⏳ En attente</Badge>
           )}
@@ -163,7 +185,7 @@ export const EmployeeObjectivesWidget = ({ employeeId }: Props) => {
           )}
         </div>
         
-        {isExpanded && (
+        {isExpanded && canDeclare && (
           <div className="mt-3 pt-3 border-t flex gap-2">
             <Input
               type="number"
