@@ -14,6 +14,8 @@ import { GeneralConfig } from "@/components/objectifs-primes/GeneralConfig";
 import { BestOfMonthAdmin } from "@/components/objectifs-primes/BestOfMonthAdmin";
 import { RewardCatalogAdmin } from "@/components/objectifs-primes/RewardCatalogAdmin";
 import { ObjectiveValidationPanel } from "@/components/objectifs-primes/ObjectiveValidationPanel";
+import { ColleagueVoteResults } from "@/components/objectifs-primes/ColleagueVoteResults";
+import { MoodRatingsAdmin } from "@/components/objectifs-primes/MoodRatingsAdmin";
 
 const Admin = () => {
   const [refreshKey, setRefreshKey] = useState(0);
@@ -102,7 +104,7 @@ const Admin = () => {
         </div>
 
         <Tabs defaultValue="baremes" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-6">
+          <TabsList className="grid w-full grid-cols-7">
             <TabsTrigger value="baremes">
               <Settings className="h-4 w-4 mr-2" />
               Barèmes
@@ -115,9 +117,13 @@ const Admin = () => {
               <Users className="h-4 w-4 mr-2" />
               Employés
             </TabsTrigger>
-            <TabsTrigger value="best">
+            <TabsTrigger value="votes">
+              <Users className="h-4 w-4 mr-2" />
+              Votes
+            </TabsTrigger>
+            <TabsTrigger value="mood">
               <Trophy className="h-4 w-4 mr-2" />
-              Meilleur du mois
+              Mood
             </TabsTrigger>
             <TabsTrigger value="rewards">
               <Gift className="h-4 w-4 mr-2" />
@@ -156,10 +162,12 @@ const Admin = () => {
             </div>
           </TabsContent>
 
-          <TabsContent value="best">
-            <Card className="p-6">
-              <BestOfMonthAdmin />
-            </Card>
+          <TabsContent value="votes">
+            <ColleagueVoteResults />
+          </TabsContent>
+
+          <TabsContent value="mood">
+            <MoodRatingsAdmin />
           </TabsContent>
 
           <TabsContent value="rewards">

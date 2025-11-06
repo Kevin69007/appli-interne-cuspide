@@ -392,6 +392,51 @@ export type Database = {
         }
         Relationships: []
       }
+      colleague_votes: {
+        Row: {
+          annee: number
+          commentaire: string | null
+          created_at: string
+          id: string
+          mois: number
+          voted_for_employee_id: string
+          voter_employee_id: string
+        }
+        Insert: {
+          annee: number
+          commentaire?: string | null
+          created_at?: string
+          id?: string
+          mois: number
+          voted_for_employee_id: string
+          voter_employee_id: string
+        }
+        Update: {
+          annee?: number
+          commentaire?: string | null
+          created_at?: string
+          id?: string
+          mois?: number
+          voted_for_employee_id?: string
+          voter_employee_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "colleague_votes_voted_for_employee_id_fkey"
+            columns: ["voted_for_employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "colleague_votes_voter_employee_id_fkey"
+            columns: ["voter_employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       communication_lectures: {
         Row: {
           communication_id: string
@@ -1504,6 +1549,44 @@ export type Database = {
           },
           {
             foreignKeyName: "monthly_scores_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      mood_ratings: {
+        Row: {
+          annee: number
+          commentaire: string | null
+          created_at: string
+          employee_id: string
+          id: string
+          mois: number
+          rating: number
+        }
+        Insert: {
+          annee: number
+          commentaire?: string | null
+          created_at?: string
+          employee_id: string
+          id?: string
+          mois: number
+          rating: number
+        }
+        Update: {
+          annee?: number
+          commentaire?: string | null
+          created_at?: string
+          employee_id?: string
+          id?: string
+          mois?: number
+          rating?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "mood_ratings_employee_id_fkey"
             columns: ["employee_id"]
             isOneToOne: false
             referencedRelation: "employees"

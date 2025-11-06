@@ -10,6 +10,7 @@ import { Loader2, Save } from "lucide-react";
 interface ConfigValues {
   objectifs_points_total: number;
   meilleur_mois_bonus: number;
+  colleague_vote_bonus: number;
   tier1_max: number;
   tier1_malus: number;
   tier2_min: number;

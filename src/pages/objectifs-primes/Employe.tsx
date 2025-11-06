@@ -8,13 +8,20 @@ import { Trophy, Target, Clock, AlertCircle, ChevronLeft, Star } from "lucide-re
 import { MonthCalendar } from "@/components/objectifs-primes/MonthCalendar";
 import { EmployeeMonthlyScore } from "@/components/objectifs-primes/EmployeeMonthlyScore";
 import { AnnualCagnotteWidget } from "@/components/objectifs-primes/AnnualCagnotteWidget";
-import { ObjectiveDeclarationDialog } from "@/components/objectifs-primes/ObjectiveDeclarationDialog";
+import { EmployeeObjectivesWidget } from "@/components/objectifs-primes/EmployeeObjectivesWidget";
+import { ColleagueVoteDialog } from "@/components/objectifs-primes/ColleagueVoteDialog";
 import { supabase } from "@/integrations/supabase/client";
+import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 
 const Employe = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const [employeeId, setEmployeeId] = useState<string | null>(null);
+  const [moodRating, setMoodRating] = useState<number | null>(null);
+  const [savedMoodRating, setSavedMoodRating] = useState<number | null>(null);
+  const [quiz, setQuiz] = useState<any>(null);
+  const [hasRespondedToQuiz, setHasRespondedToQuiz] = useState(false);
 
   const currentMonth = new Date().getMonth() + 1;
   const currentYear = new Date().getFullYear();
@@ -24,6 +31,13 @@ const Employe = () => {
       fetchEmployeeId();
     }
   }, [user]);
+
+  useEffect(() => {
+    if (employeeId) {
+      fetchMoodRating();
+      fetchQuiz();
+    }
+  }, [employeeId]);
 
   const fetchEmployeeId = async () => {
     if (!user) return;
@@ -36,6 +50,64 @@ const Employe = () => {
 
     if (data) {
       setEmployeeId(data.id);
+    }
+  };
+
+  const fetchMoodRating = async () => {
+    const { data } = await supabase
+      .from('mood_ratings')
+      .select('rating')
+      .eq('employee_id', employeeId)
+      .eq('mois', currentMonth)
+      .eq('annee', currentYear)
+      .maybeSingle();
+    
+    if (data) {
+      setSavedMoodRating(data.rating);
+      setMoodRating(data.rating);
+    }
+  };
+
+  const fetchQuiz = async () => {
+    const { data: quizData } = await supabase
+      .from('quiz_monthly')
+      .select('*')
+      .eq('mois', currentMonth)
+      .eq('annee', currentYear)
+      .eq('is_active', true)
+      .maybeSingle();
+    
+    if (quizData) {
+      setQuiz(quizData);
+      
+      const { data: responseData } = await supabase
+        .from('quiz_responses')
+        .select('id')
+        .eq('employee_id', employeeId)
+        .eq('quiz_id', quizData.id)
+        .maybeSingle();
+      
+      setHasRespondedToQuiz(!!responseData);
+    }
+  };
+
+  const handleMoodRating = async (rating: number) => {
+    setMoodRating(rating);
+    
+    const { error } = await supabase
+      .from('mood_ratings')
+      .upsert({
+        employee_id: employeeId,
+        mois: currentMonth,
+        annee: currentYear,
+        rating
+      });
+    
+    if (!error) {
+      setSavedMoodRating(rating);
+      toast.success("Votre mood a été enregistré !");
+    } else {
+      toast.error("Erreur lors de l'enregistrement");
     }
   };
 
@@ -82,85 +154,86 @@ const Employe = () => {
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
           {/* Objectifs du mois */}
-          <Card className="p-6">
-            <div className="flex items-center gap-3 mb-4">
+          <div className="space-y-3">
+            <div className="flex items-center gap-3 mb-3">
               <Target className="h-5 w-5 text-primary" />
               <h3 className="text-lg font-semibold">Objectifs du mois</h3>
             </div>
-            
-            <div className="space-y-4">
-              <div>
-                <div className="flex justify-between mb-2">
-                  <span className="text-sm font-medium">Production</span>
-                  <span className="text-sm text-muted-foreground">8/10</span>
-                </div>
-                <Progress value={80} className="h-2" />
-              </div>
+            <EmployeeObjectivesWidget employeeId={employeeId} />
+          </div>
 
-              <div>
-                <div className="flex justify-between mb-2">
-                  <span className="text-sm font-medium">Qualité</span>
-                  <span className="text-sm text-muted-foreground">15/15</span>
-                </div>
-                <Progress value={100} className="h-2" />
-              </div>
-
-              <div>
-                <div className="flex justify-between mb-2">
-                  <span className="text-sm font-medium">Formation</span>
-                  <span className="text-sm text-muted-foreground">3/5</span>
-                </div>
-                <Progress value={60} className="h-2" />
-              </div>
-            </div>
-
-            <div className="mt-6">
-              <ObjectiveDeclarationDialog employeeId={employeeId} />
-            </div>
-          </Card>
-
-          {/* Quiz du mois */}
-          <Card className="p-6">
-            <div className="flex items-center gap-3 mb-4">
+          {/* Quiz, Vote, Mood */}
+          <div className="space-y-4">
+            <div className="flex items-center gap-3 mb-3">
               <Star className="h-5 w-5 text-primary" />
-              <h3 className="text-lg font-semibold">Quiz du mois</h3>
+              <h3 className="text-lg font-semibold">Engagement</h3>
             </div>
 
-            <div className="space-y-4">
-              <div className="p-4 border rounded-lg">
-                <p className="font-medium mb-2">Quiz technique - Janvier 2025</p>
-                <p className="text-sm text-muted-foreground mb-3">
-                  10 questions sur les protocoles de stérilisation
-                </p>
-                <Button className="w-full">Répondre au quiz</Button>
-              </div>
-
-              <div className="p-4 border rounded-lg">
-                <p className="font-medium mb-2">Vote collègue du mois</p>
-                <p className="text-sm text-muted-foreground mb-3">
-                  Qui mérite d'être collègue du mois ?
-                </p>
-                <Button className="w-full" variant="outline">Voter</Button>
-              </div>
-
-              <div className="p-4 border rounded-lg">
-                <p className="font-medium mb-2">Mood Bar</p>
-                <p className="text-sm text-muted-foreground mb-3">
-                  Comment vous sentez-vous ce mois-ci ?
-                </p>
-                <div className="flex gap-2 justify-center">
-                  {[1, 2, 3, 4, 5].map((star) => (
-                    <button
-                      key={star}
-                      className="p-2 hover:scale-110 transition-transform"
-                    >
-                      <Star className="h-6 w-6 text-muted-foreground hover:text-yellow-500" />
-                    </button>
-                  ))}
+            {/* Quiz du mois */}
+            <Card className="p-4">
+              <p className="font-medium mb-2">Quiz du mois</p>
+              {!quiz ? (
+                <div className="text-center py-6 text-muted-foreground">
+                  <AlertCircle className="h-8 w-8 mx-auto mb-2 opacity-30" />
+                  <p className="text-sm">Pas de quiz en cours</p>
                 </div>
+              ) : hasRespondedToQuiz ? (
+                <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-lg">
+                  <Trophy className="h-5 w-5 text-green-600" />
+                  <p className="text-sm text-green-700">✓ Quiz complété</p>
+                </div>
+              ) : (
+                <div>
+                  <p className="text-sm text-muted-foreground mb-3">
+                    {quiz.titre}
+                  </p>
+                  <Button className="w-full" size="sm">
+                    Répondre au quiz
+                  </Button>
+                </div>
+              )}
+            </Card>
+
+            {/* Vote collègue du mois */}
+            <Card className="p-4">
+              <p className="font-medium mb-2">Vote collègue du mois</p>
+              <p className="text-sm text-muted-foreground mb-3">
+                Qui mérite d'être collègue du mois ?
+              </p>
+              <ColleagueVoteDialog employeeId={employeeId} />
+            </Card>
+
+            {/* Mood Bar */}
+            <Card className="p-4">
+              <p className="font-medium mb-2">Mood Bar</p>
+              <p className="text-sm text-muted-foreground mb-3">
+                Comment vous sentez-vous ce mois-ci ?
+              </p>
+              <div className="flex gap-2 justify-center">
+                {[1, 2, 3, 4, 5].map((star) => (
+                  <button
+                    key={star}
+                    onClick={() => handleMoodRating(star)}
+                    className="p-2 hover:scale-110 transition-transform"
+                  >
+                    <Star 
+                      className={cn(
+                        "h-6 w-6",
+                        moodRating && star <= moodRating 
+                          ? "text-yellow-500 fill-yellow-500" 
+                          : "text-muted-foreground"
+                      )}
+                    />
+                  </button>
+                ))}
               </div>
-            </div>
-          </Card>
+              {savedMoodRating && (
+                <p className="text-xs text-center text-muted-foreground mt-2">
+                  ✓ Mood enregistré
+                </p>
+              )}
+            </Card>
+          </div>
         </div>
 
         {/* Cagnotte annuelle */}
