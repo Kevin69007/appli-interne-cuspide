@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -7,10 +7,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { Badge } from "@/components/ui/badge";
-import { Search, Calendar as CalendarIcon, X, Flame, Clock, Target, Calendar as CalendarCheck, CheckCircle2 } from "lucide-react";
-import { format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, subDays, isAfter, startOfToday } from "date-fns";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Search, Calendar as CalendarIcon, X, Flame, Clock, Target, Calendar as CalendarCheck, CheckCircle2, AlertCircle } from "lucide-react";
+import { format, startOfWeek, endOfWeek, subDays, startOfToday } from "date-fns";
 import { fr } from "date-fns/locale";
-import { cn } from "@/lib/utils";
 
 export interface TaskFilters {
   searchTerm: string;
@@ -30,7 +30,18 @@ interface TaskFiltersProps {
 }
 
 export const TaskFilters = ({ onFilterChange, taskCount }: TaskFiltersProps) => {
-  const [filters, setFilters] = useState<TaskFilters>({
+  // Filtres en cours de configuration (pas encore appliqués)
+  const [pendingFilters, setPendingFilters] = useState<TaskFilters>({
+    searchTerm: "",
+    statut: null,
+    priorite: null,
+    dateDebut: null,
+    dateFin: null,
+    hideCompleted: false,
+  });
+
+  // Filtres actuellement appliqués
+  const [appliedFilters, setAppliedFilters] = useState<TaskFilters>({
     searchTerm: "",
     statut: null,
     priorite: null,
@@ -41,31 +52,17 @@ export const TaskFilters = ({ onFilterChange, taskCount }: TaskFiltersProps) => 
 
   const [showDatePicker, setShowDatePicker] = useState(false);
 
-  // Load filters from localStorage on mount
-  useEffect(() => {
-    const savedFilters = localStorage.getItem("taskFilters");
-    if (savedFilters) {
-      try {
-        const parsed = JSON.parse(savedFilters);
-        // Convert date strings back to Date objects
-        if (parsed.dateDebut) parsed.dateDebut = new Date(parsed.dateDebut);
-        if (parsed.dateFin) parsed.dateFin = new Date(parsed.dateFin);
-        setFilters(parsed);
-        onFilterChange(parsed);
-      } catch (e) {
-        console.error("Error loading filters:", e);
-      }
-    }
-  }, []);
+  // Check if filters have been modified but not applied
+  const hasUnappliedChanges = JSON.stringify(pendingFilters) !== JSON.stringify(appliedFilters);
 
-  // Save filters to localStorage and notify parent
-  useEffect(() => {
-    localStorage.setItem("taskFilters", JSON.stringify(filters));
-    onFilterChange(filters);
-  }, [filters, onFilterChange]);
+  const updatePendingFilter = (key: keyof TaskFilters, value: any) => {
+    setPendingFilters((prev) => ({ ...prev, [key]: value }));
+  };
 
-  const updateFilter = (key: keyof TaskFilters, value: any) => {
-    setFilters((prev) => ({ ...prev, [key]: value }));
+  const applyFilters = () => {
+    setAppliedFilters(pendingFilters);
+    onFilterChange(pendingFilters);
+    localStorage.setItem("taskFilters", JSON.stringify(pendingFilters));
   };
 
   const resetFilters = () => {
@@ -77,75 +74,93 @@ export const TaskFilters = ({ onFilterChange, taskCount }: TaskFiltersProps) => 
       dateFin: null,
       hideCompleted: false,
     };
-    setFilters(emptyFilters);
+    setPendingFilters(emptyFilters);
+    setAppliedFilters(emptyFilters);
+    onFilterChange(emptyFilters);
     localStorage.removeItem("taskFilters");
   };
 
-  // Quick filter presets
+  // Quick filter presets - apply immediately
   const applyPreset = (preset: string) => {
     const today = startOfToday();
+    let newFilters: TaskFilters;
+    
     switch (preset) {
       case "urgent":
-        setFilters({
+        newFilters = {
           searchTerm: "",
           statut: "en_cours",
           priorite: "haute",
           dateDebut: null,
           dateFin: endOfWeek(today, { locale: fr }),
           hideCompleted: true,
-        });
+        };
         break;
       case "overdue":
-        setFilters({
+        newFilters = {
           searchTerm: "",
           statut: "en_cours",
           priorite: null,
           dateDebut: null,
           dateFin: subDays(today, 1),
           hideCompleted: true,
-        });
+        };
         break;
       case "today":
-        setFilters({
+        newFilters = {
           searchTerm: "",
           statut: null,
           priorite: null,
           dateDebut: today,
           dateFin: today,
           hideCompleted: false,
-        });
+        };
         break;
       case "thisWeek":
-        setFilters({
+        newFilters = {
           searchTerm: "",
           statut: null,
           priorite: null,
           dateDebut: startOfWeek(today, { locale: fr }),
           dateFin: endOfWeek(today, { locale: fr }),
           hideCompleted: false,
-        });
+        };
         break;
       case "completed":
-        setFilters({
+        newFilters = {
           searchTerm: "",
           statut: "terminee",
           priorite: null,
           dateDebut: subDays(today, 7),
           dateFin: today,
           hideCompleted: false,
-        });
+        };
         break;
+      default:
+        return;
     }
+    
+    // Presets apply immediately
+    setPendingFilters(newFilters);
+    setAppliedFilters(newFilters);
+    onFilterChange(newFilters);
   };
 
   const activeFilterCount = [
-    filters.searchTerm,
-    filters.statut,
-    filters.priorite,
-    filters.dateDebut,
-    filters.dateFin,
-    filters.hideCompleted,
+    appliedFilters.searchTerm && appliedFilters.searchTerm.length > 0,
+    appliedFilters.statut !== null,
+    appliedFilters.priorite !== null,
+    appliedFilters.dateDebut !== null,
+    appliedFilters.dateFin !== null,
+    appliedFilters.hideCompleted === true,
   ].filter(Boolean).length;
+
+  // Handle Enter key in search input
+  const handleSearchKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
+    if (e.key === 'Enter') {
+      applyFilters();
+    }
+  };
 
   return (
     <Card className="p-4 mb-6 bg-accent/50">
@@ -208,8 +223,9 @@ export const TaskFilters = ({ onFilterChange, taskCount }: TaskFiltersProps) => 
             <Input
               id="search"
               placeholder="Titre ou description..."
-              value={filters.searchTerm}
-              onChange={(e) => updateFilter("searchTerm", e.target.value)}
+              value={pendingFilters.searchTerm}
+              onChange={(e) => updatePendingFilter("searchTerm", e.target.value)}
+              onKeyDown={handleSearchKeyDown}
               className="pl-8"
             />
           </div>
@@ -219,8 +235,8 @@ export const TaskFilters = ({ onFilterChange, taskCount }: TaskFiltersProps) => 
         <div className="space-y-2">
           <Label className="text-xs">Statut</Label>
           <Select
-            value={filters.statut || "all"}
-            onValueChange={(value) => updateFilter("statut", value === "all" ? null : value)}
+            value={pendingFilters.statut || "all"}
+            onValueChange={(value) => updatePendingFilter("statut", value === "all" ? null : value)}
           >
             <SelectTrigger>
               <SelectValue placeholder="Tous les statuts" />
@@ -238,8 +254,8 @@ export const TaskFilters = ({ onFilterChange, taskCount }: TaskFiltersProps) => 
         <div className="space-y-2">
           <Label className="text-xs">Priorité</Label>
           <Select
-            value={filters.priorite || "all"}
-            onValueChange={(value) => updateFilter("priorite", value === "all" ? null : value)}
+            value={pendingFilters.priorite || "all"}
+            onValueChange={(value) => updatePendingFilter("priorite", value === "all" ? null : value)}
           >
             <SelectTrigger>
               <SelectValue placeholder="Toutes priorités" />
@@ -260,13 +276,13 @@ export const TaskFilters = ({ onFilterChange, taskCount }: TaskFiltersProps) => 
             <PopoverTrigger asChild>
               <Button variant="outline" className="w-full justify-start text-left font-normal">
                 <CalendarIcon className="mr-2 h-4 w-4" />
-                {filters.dateDebut ? (
-                  filters.dateFin ? (
+                {pendingFilters.dateDebut ? (
+                  pendingFilters.dateFin ? (
                     <>
-                      {format(filters.dateDebut, "dd/MM/yy")} - {format(filters.dateFin, "dd/MM/yy")}
+                      {format(pendingFilters.dateDebut, "dd/MM/yy")} - {format(pendingFilters.dateFin, "dd/MM/yy")}
                     </>
                   ) : (
-                    format(filters.dateDebut, "dd/MM/yyyy")
+                    format(pendingFilters.dateDebut, "dd/MM/yyyy")
                   )
                 ) : (
                   <span>Toutes les dates</span>
@@ -279,21 +295,21 @@ export const TaskFilters = ({ onFilterChange, taskCount }: TaskFiltersProps) => 
                   <Label className="text-xs">Date de début</Label>
                   <Calendar
                     mode="single"
-                    selected={filters.dateDebut || undefined}
-                    onSelect={(date) => updateFilter("dateDebut", date || null)}
+                    selected={pendingFilters.dateDebut || undefined}
+                    onSelect={(date) => updatePendingFilter("dateDebut", date || null)}
                     locale={fr}
                     className="pointer-events-auto"
                   />
                 </div>
-                {filters.dateDebut && (
+                {pendingFilters.dateDebut && (
                   <div className="space-y-1">
                     <Label className="text-xs">Date de fin (optionnel)</Label>
                     <Calendar
                       mode="single"
-                      selected={filters.dateFin || undefined}
-                      onSelect={(date) => updateFilter("dateFin", date || null)}
+                      selected={pendingFilters.dateFin || undefined}
+                      onSelect={(date) => updatePendingFilter("dateFin", date || null)}
                       locale={fr}
-                      disabled={(date) => filters.dateDebut ? date < filters.dateDebut : false}
+                      disabled={(date) => pendingFilters.dateDebut ? date < pendingFilters.dateDebut : false}
                       className="pointer-events-auto"
                     />
                   </div>
@@ -303,8 +319,8 @@ export const TaskFilters = ({ onFilterChange, taskCount }: TaskFiltersProps) => 
                     size="sm"
                     variant="outline"
                     onClick={() => {
-                      updateFilter("dateDebut", null);
-                      updateFilter("dateFin", null);
+                      updatePendingFilter("dateDebut", null);
+                      updatePendingFilter("dateFin", null);
                       setShowDatePicker(false);
                     }}
                   >
@@ -320,8 +336,35 @@ export const TaskFilters = ({ onFilterChange, taskCount }: TaskFiltersProps) => 
         </div>
       </div>
 
+      {/* Hide Completed Checkbox */}
+      <div className="mb-4">
+        <div className="flex items-center space-x-2">
+          <Checkbox
+            id="hideCompleted"
+            checked={pendingFilters.hideCompleted}
+            onCheckedChange={(checked) => updatePendingFilter("hideCompleted", checked)}
+          />
+          <label
+            htmlFor="hideCompleted"
+            className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
+          >
+            Masquer les tâches terminées
+          </label>
+        </div>
+      </div>
+
+      {/* Warning for unapplied changes */}
+      {hasUnappliedChanges && (
+        <div className="flex items-center gap-2 p-3 mb-4 bg-orange-500/10 border border-orange-500/20 rounded-lg">
+          <AlertCircle className="h-4 w-4 text-orange-500 flex-shrink-0" />
+          <span className="text-sm text-orange-600 dark:text-orange-400">
+            Filtres modifiés - Cliquez sur <strong>Rechercher</strong> pour appliquer
+          </span>
+        </div>
+      )}
+
       {/* Bottom Bar: Active Filters + Reset */}
-      <div className="flex items-center justify-between pt-3 border-t">
+      <div className="flex items-center justify-between pt-3 border-t gap-4 flex-wrap">
         <div className="flex items-center gap-2 flex-wrap">
           {activeFilterCount > 0 && (
             <Badge variant="secondary" className="text-xs">
@@ -332,12 +375,24 @@ export const TaskFilters = ({ onFilterChange, taskCount }: TaskFiltersProps) => 
             {taskCount.filtered} sur {taskCount.total} tâche{taskCount.total > 1 ? "s" : ""}
           </span>
         </div>
-        {activeFilterCount > 0 && (
-          <Button variant="ghost" size="sm" onClick={resetFilters}>
-            <X className="h-3 w-3 mr-1" />
-            Réinitialiser
+        <div className="flex gap-2">
+          <Button 
+            variant="default" 
+            size="sm" 
+            onClick={applyFilters}
+            disabled={!hasUnappliedChanges}
+            className="gap-1"
+          >
+            <Search className="h-3 w-3" />
+            Rechercher
           </Button>
-        )}
+          {activeFilterCount > 0 && (
+            <Button variant="ghost" size="sm" onClick={resetFilters} className="gap-1">
+              <X className="h-3 w-3" />
+              Réinitialiser
+            </Button>
+          )}
+        </div>
       </div>
     </Card>
   );
