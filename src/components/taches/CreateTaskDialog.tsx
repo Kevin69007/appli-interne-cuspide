@@ -63,6 +63,13 @@ export const CreateTaskDialog = ({
     }
   }, [currentEmployeeId]);
 
+  // Lier automatiquement "tâche prioritaire" → "priorité haute"
+  useEffect(() => {
+    if (formData.is_priority) {
+      setFormData((prev) => ({ ...prev, priorite: "haute" }));
+    }
+  }, [formData.is_priority]);
+
   const fetchEmployees = async () => {
     const { data, error } = await supabase
       .from("employees")
@@ -252,10 +259,18 @@ export const CreateTaskDialog = ({
           </div>
 
           <div>
-            <Label htmlFor="priorite">Priorité</Label>
+            <Label htmlFor="priorite">
+              Priorité
+              {formData.is_priority && (
+                <span className="text-xs text-orange-500 ml-2">
+                  (Automatiquement "Haute" pour les tâches prioritaires)
+                </span>
+              )}
+            </Label>
             <Select
               value={formData.priorite}
               onValueChange={(v: any) => setFormData({ ...formData, priorite: v })}
+              disabled={formData.is_priority}
             >
               <SelectTrigger>
                 <SelectValue />

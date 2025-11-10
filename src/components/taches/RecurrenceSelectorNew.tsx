@@ -3,6 +3,7 @@ import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface RecurrenceSelectorProps {
   value: any;
@@ -38,14 +39,17 @@ export const RecurrenceSelectorNew = ({ value, onChange }: RecurrenceSelectorPro
   return (
     <div className="space-y-4">
       <div className="flex items-center gap-2">
-        <input
-          type="checkbox"
+        <Checkbox
           id="enable-recurrence"
           checked={enabled}
-          onChange={(e) => setEnabled(e.target.checked)}
-          className="h-4 w-4"
+          onCheckedChange={(checked) => setEnabled(checked as boolean)}
         />
-        <Label htmlFor="enable-recurrence">Activer la récurrence</Label>
+        <Label htmlFor="enable-recurrence" className="font-medium cursor-pointer">
+          Activer la récurrence
+          <p className="text-xs text-muted-foreground font-normal">
+            Créer automatiquement des tâches récurrentes
+          </p>
+        </Label>
       </div>
 
       {enabled && (
