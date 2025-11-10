@@ -52,7 +52,10 @@ export const TaskComments = ({ taskId, comments, currentEmployeeId, onUpdate }: 
 
       const { error } = await supabase
         .from("tasks")
-        .update({ commentaires: updatedComments })
+        .update({ 
+          commentaires: updatedComments,
+          last_progress_comment_at: new Date().toISOString()
+        })
         .eq("id", taskId);
 
       if (error) throw error;

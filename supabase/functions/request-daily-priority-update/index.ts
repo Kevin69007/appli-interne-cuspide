@@ -16,28 +16,26 @@ serve(async (req) => {
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')!;
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    console.log('Starting priority task reminders check...');
+    console.log('Starting daily priority task update request...');
 
-    // Get priority tasks without recent progress
-    const twoDaysAgo = new Date();
-    twoDaysAgo.setDate(twoDaysAgo.getDate() - 2);
+    const today = new Date().toISOString().split('T')[0];
 
+    // Get priority tasks that are active
     const { data: tasks, error: tasksError } = await supabase
       .from('tasks')
       .select(`
         id,
         titre,
-        date_echeance,
         assigned_employee:employees!tasks_assigned_to_fkey(id, nom, prenom, user_id),
+        commentaires,
         project_tasks(project:projects!project_tasks_project_id_fkey(id, titre))
       `)
       .eq('is_priority', true)
-      .in('statut', ['a_venir', 'en_cours'])
-      .or(`last_progress_comment_at.is.null,last_progress_comment_at.lt.${twoDaysAgo.toISOString()}`);
+      .in('statut', ['a_venir', 'en_cours']);
 
     if (tasksError) throw tasksError;
 
-    console.log(`Found ${tasks?.length || 0} tasks needing reminders`);
+    console.log(`Found ${tasks?.length || 0} priority tasks`);
 
     let notificationsSent = 0;
 
@@ -48,24 +46,36 @@ serve(async (req) => {
       
       if (!assignedEmployee || Array.isArray(assignedEmployee)) continue;
 
+      // Check if employee commented today
+      const comments = task.commentaires || [];
+      const hasCommentToday = comments.some((comment: any) => {
+        const commentDate = new Date(comment.date).toISOString().split('T')[0];
+        return commentDate === today;
+      });
+
+      if (hasCommentToday) {
+        console.log(`Employee ${assignedEmployee.id} already commented on task ${task.id} today`);
+        continue;
+      }
+
       const projectData = task.project_tasks?.[0]?.project;
       const projectInfo = Array.isArray(projectData) && projectData.length > 0 
         ? projectData[0] 
         : projectData;
       
-      if (!projectInfo || Array.isArray(projectInfo)) continue;
-      
-      const projectTitle = projectInfo ? ` (Projet: ${projectInfo.titre})` : '';
+      const projectTitle = projectInfo && !Array.isArray(projectInfo) 
+        ? ` (Projet: ${projectInfo.titre})` 
+        : '';
 
       // Create notification
       const { error: notifError } = await supabase
         .from('notifications')
         .insert({
           employee_id: assignedEmployee.id,
-          type: 'priority_task_no_progress',
-          titre: 'Tâche prioritaire sans avancement',
-          message: `La tâche prioritaire "${task.titre}"${projectTitle} n'a pas eu de commentaire d'avancement depuis plus de 2 jours.`,
-          url: projectInfo.id 
+          type: 'priority_task_daily_update',
+          titre: '🔥 Point d\'avancement requis',
+          message: `Merci d'ajouter un commentaire sur l'avancement de la tâche prioritaire : "${task.titre}"${projectTitle}`,
+          url: projectInfo && !Array.isArray(projectInfo) && projectInfo.id
             ? `/projets/${projectInfo.id}` 
             : '/taches',
         });
@@ -77,7 +87,7 @@ serve(async (req) => {
       }
     }
 
-    console.log(`Sent ${notificationsSent} notifications`);
+    console.log(`Sent ${notificationsSent} daily update requests`);
 
     return new Response(
       JSON.stringify({ 
@@ -89,7 +99,7 @@ serve(async (req) => {
     );
 
   } catch (error) {
-    console.error('Error in send-priority-task-reminders:', error);
+    console.error('Error in request-daily-priority-update:', error);
     return new Response(
       JSON.stringify({ error: error instanceof Error ? error.message : 'Unknown error' }),
       { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }

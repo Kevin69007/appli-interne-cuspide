@@ -73,29 +73,6 @@ export const TaskDetailsDialog = ({
     }
   };
 
-  const handleCancel = async () => {
-    if (!confirm("Êtes-vous sûr de vouloir annuler cette tâche ? Elle restera visible dans l'historique.")) return;
-
-    setLoading(true);
-    try {
-      const { error } = await supabase
-        .from("tasks")
-        .update({ statut: "annulee" })
-        .eq("id", task.id);
-
-      if (error) throw error;
-
-      toast.success("Tâche annulée");
-      onOpenChange(false);
-      onUpdate();
-    } catch (error) {
-      console.error("Error canceling task:", error);
-      toast.error("Erreur lors de l'annulation");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   const handleReturnBoomerang = async () => {
     setLoading(true);
     try {
@@ -217,11 +194,6 @@ export const TaskDetailsDialog = ({
                   <p className="text-muted-foreground mt-2">{task.description}</p>
                 )}
               </div>
-              {task.statut !== "annulee" && task.statut !== "terminee" && !task.boomerang_active && (
-                <Button variant="ghost" size="icon" onClick={handleCancel} title="Annuler la tâche">
-                  <XCircle className="h-4 w-4 text-destructive" />
-                </Button>
-              )}
             </div>
           </DialogHeader>
 

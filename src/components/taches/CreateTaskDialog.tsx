@@ -9,6 +9,8 @@ import { toast } from "sonner";
 import { RecurrenceSelector } from "./RecurrenceSelector";
 import { RecurrenceSelectorNew } from "./RecurrenceSelectorNew";
 import { Textarea } from "@/components/ui/textarea";
+import { Combobox } from "@/components/ui/combobox";
+import { Checkbox } from "@/components/ui/checkbox";
 
 interface Employee {
   id: string;
@@ -46,6 +48,7 @@ export const CreateTaskDialog = ({
     recurrence: null as any,
     machine_piece: "",
     maintenance_type: "" as "machine" | "piece" | "",
+    is_priority: false,
   });
 
   useEffect(() => {
@@ -72,16 +75,8 @@ export const CreateTaskDialog = ({
       .order("nom");
 
     if (!error && data) {
-      // Filtrer les admins
-      const { data: adminUsers } = await supabase
-        .from("user_roles")
-        .select("user_id")
-        .eq("role", "admin");
-
-      const adminIds = new Set(adminUsers?.map(u => u.user_id) || []);
-      const nonAdminEmployees = data.filter(emp => !adminIds.has(emp.user_id));
-      
-      setEmployees(nonAdminEmployees);
+      // Tous les employés, y compris les admins
+      setEmployees(data);
     }
   };
 
@@ -109,6 +104,7 @@ export const CreateTaskDialog = ({
         priorite: formData.priorite,
         recurrence: formData.recurrence,
         statut: "en_cours",
+        is_priority: formData.is_priority,
       };
 
       if (isMaintenance && formData.machine_piece && formData.maintenance_type) {
@@ -141,6 +137,7 @@ export const CreateTaskDialog = ({
         recurrence: null,
         machine_piece: "",
         maintenance_type: "",
+        is_priority: false,
       });
       onOpenChange(false);
       onTaskCreated();
@@ -230,21 +227,16 @@ export const CreateTaskDialog = ({
           {canAssignOthers && (
             <div>
               <Label htmlFor="assigned_to">Assigner à *</Label>
-              <Select
+              <Combobox
                 value={formData.assigned_to}
                 onValueChange={(v) => setFormData({ ...formData, assigned_to: v })}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Sélectionner un employé" />
-                </SelectTrigger>
-                <SelectContent>
-                  {employees.map((emp) => (
-                    <SelectItem key={emp.id} value={emp.id}>
-                      {emp.prenom} {emp.nom}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+                options={employees.map((emp) => ({
+                  value: emp.id,
+                  label: `${emp.prenom} ${emp.nom}`,
+                }))}
+                placeholder="Sélectionner un employé"
+                searchPlaceholder="Rechercher un employé..."
+              />
             </div>
           )}
 
@@ -274,6 +266,22 @@ export const CreateTaskDialog = ({
                 <SelectItem value="haute">Haute</SelectItem>
               </SelectContent>
             </Select>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <Checkbox
+              id="is_priority"
+              checked={formData.is_priority}
+              onCheckedChange={(checked) =>
+                setFormData({ ...formData, is_priority: checked as boolean })
+              }
+            />
+            <Label htmlFor="is_priority" className="font-medium cursor-pointer">
+              Tâche prioritaire
+              <p className="text-xs text-muted-foreground font-normal">
+                Un suivi quotidien sera demandé
+              </p>
+            </Label>
           </div>
 
           <RecurrenceSelectorNew

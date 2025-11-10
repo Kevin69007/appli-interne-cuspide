@@ -39,3 +39,6 @@ verify_jwt = false
 
 [functions.send-priority-task-reminders]
 verify_jwt = false
+
+[functions.request-daily-priority-update]
+verify_jwt = false

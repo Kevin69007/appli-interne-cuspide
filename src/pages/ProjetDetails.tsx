@@ -17,6 +17,8 @@ import { CreateTaskDialog } from "@/components/taches/CreateTaskDialog";
 import { LinkTaskToProjectDialog } from "@/components/projects/LinkTaskToProjectDialog";
 import { ProjectTimeline } from "@/components/projects/ProjectTimeline";
 import { ProjectStats } from "@/components/projects/ProjectStats";
+import { EditProjectDialog } from "@/components/projects/EditProjectDialog";
+import { Pencil } from "lucide-react";
 
 interface Project {
   id: string;
@@ -42,6 +44,7 @@ const ProjetDetails = () => {
   const [currentEmployeeId, setCurrentEmployeeId] = useState<string | null>(null);
   const [showCreateTaskDialog, setShowCreateTaskDialog] = useState(false);
   const [showLinkTaskDialog, setShowLinkTaskDialog] = useState(false);
+  const [showEditProjectDialog, setShowEditProjectDialog] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -153,11 +156,19 @@ const ProjetDetails = () => {
   return (
     <div className="min-h-screen bg-background p-4">
       <div className="max-w-7xl mx-auto">
-        <div className="flex items-center gap-4 mb-6">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/projets")}>
-            <ArrowLeft className="h-5 w-5" />
-          </Button>
-          <h1 className="text-3xl font-bold">{project.titre}</h1>
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-4">
+            <Button variant="ghost" size="icon" onClick={() => navigate("/projets")}>
+              <ArrowLeft className="h-5 w-5" />
+            </Button>
+            <h1 className="text-3xl font-bold">{project.titre}</h1>
+          </div>
+          {(isAdmin || isManager || project.responsable_id === currentEmployeeId) && (
+            <Button variant="outline" onClick={() => setShowEditProjectDialog(true)}>
+              <Pencil className="h-4 w-4 mr-2" />
+              Modifier le projet
+            </Button>
+          )}
         </div>
 
         <Card className="p-6 mb-6">
@@ -305,6 +316,16 @@ const ProjetDetails = () => {
         onTaskLinked={() => {
           fetchProjectTasks();
           fetchProjectDetails();
+        }}
+      />
+
+      <EditProjectDialog
+        open={showEditProjectDialog}
+        onOpenChange={setShowEditProjectDialog}
+        project={project}
+        onProjectUpdated={() => {
+          fetchProjectDetails();
+          fetchProjectTasks();
         }}
       />
     </div>

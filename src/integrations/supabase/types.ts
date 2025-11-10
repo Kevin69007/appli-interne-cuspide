@@ -3128,6 +3128,7 @@ export type Database = {
           description: string | null
           id: string
           is_priority: boolean | null
+          last_progress_comment_at: string | null
           machine_piece: string | null
           maintenance_type: string | null
           parent_task_id: string | null
@@ -3157,6 +3158,7 @@ export type Database = {
           description?: string | null
           id?: string
           is_priority?: boolean | null
+          last_progress_comment_at?: string | null
           machine_piece?: string | null
           maintenance_type?: string | null
           parent_task_id?: string | null
@@ -3186,6 +3188,7 @@ export type Database = {
           description?: string | null
           id?: string
           is_priority?: boolean | null
+          last_progress_comment_at?: string | null
           machine_piece?: string | null
           maintenance_type?: string | null
           parent_task_id?: string | null
