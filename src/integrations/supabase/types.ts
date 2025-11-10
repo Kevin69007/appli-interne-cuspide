@@ -1472,6 +1472,61 @@ export type Database = {
           },
         ]
       }
+      meeting_timestamps: {
+        Row: {
+          created_at: string | null
+          id: string
+          meeting_id: string
+          note: string | null
+          project_id: string | null
+          task_id: string | null
+          timestamp_seconds: number
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          id?: string
+          meeting_id: string
+          note?: string | null
+          project_id?: string | null
+          task_id?: string | null
+          timestamp_seconds: number
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          id?: string
+          meeting_id?: string
+          note?: string | null
+          project_id?: string | null
+          task_id?: string | null
+          timestamp_seconds?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meeting_timestamps_meeting_id_fkey"
+            columns: ["meeting_id"]
+            isOneToOne: false
+            referencedRelation: "project_meetings"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meeting_timestamps_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "meeting_timestamps_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       monthly_scores: {
         Row: {
           annee: number

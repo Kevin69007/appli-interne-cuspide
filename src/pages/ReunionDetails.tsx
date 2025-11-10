@@ -6,6 +6,7 @@ import { ArrowLeft, Calendar, Clock, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { MeetingTranscription } from "@/components/reunions/MeetingTranscription";
 import { MeetingDecisions } from "@/components/reunions/MeetingDecisions";
+import { AudioPlayerWithTimestamps } from "@/components/reunions/AudioPlayerWithTimestamps";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 
@@ -32,10 +33,12 @@ const ReunionDetails = () => {
   const { toast } = useToast();
   const [meeting, setMeeting] = useState<Meeting | null>(null);
   const [loading, setLoading] = useState(true);
+  const [timestamps, setTimestamps] = useState<any[]>([]);
 
   useEffect(() => {
     if (id) {
       fetchMeeting();
+      fetchTimestamps();
     }
   }, [id]);
 
@@ -62,6 +65,44 @@ const ReunionDetails = () => {
       navigate("/reunions");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchTimestamps = async () => {
+    if (!id) return;
+
+    try {
+      const { data, error } = await supabase
+        .from("meeting_timestamps")
+        .select(`
+          id,
+          timestamp_seconds,
+          note,
+          projects (
+            id,
+            titre
+          ),
+          tasks (
+            id,
+            titre
+          )
+        `)
+        .eq("meeting_id", id)
+        .order("timestamp_seconds");
+
+      if (error) throw error;
+
+      const formattedTimestamps = data?.map((ts: any) => ({
+        id: ts.id,
+        timestamp_seconds: ts.timestamp_seconds,
+        note: ts.note,
+        project_titre: ts.projects?.titre,
+        task_titre: ts.tasks?.titre,
+      })) || [];
+
+      setTimestamps(formattedTimestamps);
+    } catch (error) {
+      console.error("Error fetching timestamps:", error);
     }
   };
 
@@ -140,12 +181,21 @@ const ReunionDetails = () => {
 
         {/* Audio player */}
         {(meeting.audio_url || meeting.fichier_audio_url) && (
-          <div className="bg-card rounded-lg border border-border p-6 mb-6">
-            <h3 className="font-semibold mb-4">Enregistrement audio</h3>
-            <audio controls className="w-full">
-              <source src={meeting.audio_url || meeting.fichier_audio_url} type="audio/mpeg" />
-              Votre navigateur ne supporte pas la lecture audio.
-            </audio>
+          <div className="mb-6">
+            <h2 className="text-xl font-semibold mb-4">Enregistrement audio</h2>
+            {timestamps.length > 0 ? (
+              <AudioPlayerWithTimestamps
+                audioUrl={meeting.audio_url || meeting.fichier_audio_url}
+                timestamps={timestamps}
+              />
+            ) : (
+              <div className="bg-card rounded-lg border border-border p-6">
+                <audio controls className="w-full">
+                  <source src={meeting.audio_url || meeting.fichier_audio_url} type="audio/mpeg" />
+                  Votre navigateur ne supporte pas la lecture audio.
+                </audio>
+              </div>
+            )}
           </div>
         )}
 

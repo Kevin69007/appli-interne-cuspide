@@ -18,6 +18,7 @@ import { LinkTaskToProjectDialog } from "@/components/projects/LinkTaskToProject
 import { ProjectTimeline } from "@/components/projects/ProjectTimeline";
 import { ProjectStats } from "@/components/projects/ProjectStats";
 import { EditProjectDialog } from "@/components/projects/EditProjectDialog";
+import { ProjectMeetingsTab } from "@/components/reunions/ProjectMeetingsTab";
 import { Pencil } from "lucide-react";
 
 interface Project {
@@ -276,11 +277,7 @@ const ProjetDetails = () => {
           </TabsContent>
 
           <TabsContent value="meetings" className="mt-6">
-            <Card className="p-8 text-center">
-              <p className="text-muted-foreground">
-                Fonctionnalité de réunions à venir
-              </p>
-            </Card>
+            <ProjectMeetingsTab projectId={id!} />
           </TabsContent>
 
           <TabsContent value="timeline" className="mt-6">
