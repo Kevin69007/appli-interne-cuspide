@@ -49,7 +49,7 @@ const Taches = () => {
     priorite: null,
     dateDebut: null,
     dateFin: null,
-    hideCompleted: false,
+    hideCompleted: true,
   });
 
   useEffect(() => {

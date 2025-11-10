@@ -37,7 +37,7 @@ export const TaskFilters = ({ onFilterChange, taskCount }: TaskFiltersProps) => 
     priorite: null,
     dateDebut: null,
     dateFin: null,
-    hideCompleted: false,
+    hideCompleted: true,
   });
 
   // Filtres actuellement appliqués
@@ -47,7 +47,7 @@ export const TaskFilters = ({ onFilterChange, taskCount }: TaskFiltersProps) => 
     priorite: null,
     dateDebut: null,
     dateFin: null,
-    hideCompleted: false,
+    hideCompleted: true,
   });
 
   const [showDatePicker, setShowDatePicker] = useState(false);

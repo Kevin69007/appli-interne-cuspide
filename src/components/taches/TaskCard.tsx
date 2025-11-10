@@ -2,7 +2,9 @@ import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, Circle, Clock, MessageSquare } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { CheckCircle2, Circle, Clock, MessageSquare, Calendar, Bell } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { TaskDetailsDialog } from "./TaskDetailsDialog";
@@ -21,6 +23,8 @@ interface TaskCardProps {
 export const TaskCard = ({ task, currentEmployeeId, onUpdate, isHelpRequest, isMaintenance, highlightTerm }: TaskCardProps) => {
   const [showDetails, setShowDetails] = useState(false);
   const [subTasksCount, setSubTasksCount] = useState({ total: 0, completed: 0 });
+  const [activeAction, setActiveAction] = useState<string | null>(null);
+  const [actionInput, setActionInput] = useState<string>("");
 
   useEffect(() => {
     fetchSubTasksCount();
@@ -90,6 +94,153 @@ export const TaskCard = ({ task, currentEmployeeId, onUpdate, isHelpRequest, isM
 
     toast.success(newStatut === "terminee" ? "Tâche terminée !" : "Tâche réouverte");
     onUpdate();
+  };
+
+  const handleAddComment = async () => {
+    const comment = actionInput;
+    if (!comment?.trim() || !currentEmployeeId) return;
+
+    const { data: currentTask } = await supabase
+      .from("tasks")
+      .select("commentaires")
+      .eq("id", task.id)
+      .single();
+
+    if (!currentTask) return;
+
+    const { data: employee } = await supabase
+      .from("employees")
+      .select("nom, prenom")
+      .eq("id", currentEmployeeId)
+      .single();
+
+    const employeeName = employee ? `${employee.prenom} ${employee.nom}` : "Employé";
+
+    const existingComments = Array.isArray(currentTask.commentaires) ? currentTask.commentaires : [];
+    const updatedComments = [
+      ...existingComments,
+      {
+        auteur_id: currentEmployeeId,
+        auteur_nom: employeeName,
+        texte: comment,
+        date: new Date().toISOString(),
+      },
+    ];
+
+    const { error } = await supabase
+      .from("tasks")
+      .update({ 
+        commentaires: updatedComments,
+        last_progress_comment_at: new Date().toISOString()
+      })
+      .eq("id", task.id);
+
+    if (!error) {
+      toast.success("Commentaire ajouté");
+      setActiveAction(null);
+      setActionInput("");
+      onUpdate();
+    }
+  };
+
+  const handleUpdateDeadline = async () => {
+    const newDate = actionInput;
+    if (!newDate) return;
+
+    const { error } = await supabase
+      .from("tasks")
+      .update({ date_echeance: newDate })
+      .eq("id", task.id);
+
+    if (!error) {
+      toast.success("Date mise à jour");
+      setActiveAction(null);
+      setActionInput("");
+      onUpdate();
+    }
+  };
+
+  const handleAddReminder = async () => {
+    const reminderDate = actionInput;
+    if (!reminderDate) return;
+
+    const { data: currentTask } = await supabase
+      .from("tasks")
+      .select("rappels")
+      .eq("id", task.id)
+      .single();
+
+    if (!currentTask) return;
+
+    const existingRappels = Array.isArray(currentTask.rappels) ? currentTask.rappels : [];
+    const updatedRappels = [
+      ...existingRappels,
+      {
+        date: reminderDate,
+        envoye: false,
+      },
+    ];
+
+    const { error } = await supabase
+      .from("tasks")
+      .update({ rappels: updatedRappels })
+      .eq("id", task.id);
+
+    if (!error) {
+      toast.success("Rappel ajouté");
+      setActiveAction(null);
+      setActionInput("");
+      onUpdate();
+    }
+  };
+
+  const renderActionInput = () => {
+    if (!activeAction) return null;
+
+    switch (activeAction) {
+      case "comment":
+        return (
+          <div className="flex gap-2 mt-2 ml-8" onClick={(e) => e.stopPropagation()}>
+            <Textarea
+              placeholder="Votre commentaire..."
+              value={actionInput}
+              onChange={(e) => setActionInput(e.target.value)}
+              className="min-h-[60px]"
+            />
+            <Button size="sm" onClick={handleAddComment}>
+              Envoyer
+            </Button>
+          </div>
+        );
+      case "date":
+        return (
+          <div className="flex gap-2 mt-2 ml-8" onClick={(e) => e.stopPropagation()}>
+            <Input
+              type="date"
+              value={actionInput}
+              onChange={(e) => setActionInput(e.target.value)}
+            />
+            <Button size="sm" onClick={handleUpdateDeadline}>
+              OK
+            </Button>
+          </div>
+        );
+      case "reminder":
+        return (
+          <div className="flex gap-2 mt-2 ml-8" onClick={(e) => e.stopPropagation()}>
+            <Input
+              type="datetime-local"
+              value={actionInput}
+              onChange={(e) => setActionInput(e.target.value)}
+            />
+            <Button size="sm" onClick={handleAddReminder}>
+              OK
+            </Button>
+          </div>
+        );
+      default:
+        return null;
+    }
   };
 
   const isOverdue = new Date(task.date_echeance) < new Date() && task.statut !== "terminee";
@@ -170,10 +321,58 @@ export const TaskCard = ({ task, currentEmployeeId, onUpdate, isHelpRequest, isM
               )}
             </div>
 
+            {/* Quick Actions */}
+            <div className="flex gap-1 ml-8 mt-2" onClick={(e) => e.stopPropagation()}>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-8 px-3"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveAction(activeAction === "comment" ? null : "comment");
+                  setActionInput("");
+                }}
+              >
+                <MessageSquare className="h-4 w-4 mr-1" />
+                Commenter
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-8 px-3"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveAction(activeAction === "date" ? null : "date");
+                  setActionInput("");
+                }}
+              >
+                <Calendar className="h-4 w-4 mr-1" />
+                Modifier date
+              </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-8 px-3"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setActiveAction(activeAction === "reminder" ? null : "reminder");
+                  setActionInput("");
+                }}
+              >
+                <Bell className="h-4 w-4 mr-1" />
+                Rappel
+              </Button>
+            </div>
+
+            {/* Action Input */}
+            {renderActionInput()}
+
             {subTasksCount.total > 0 && (
               <QuickSubTasksPanel
                 parentTaskId={task.id}
                 currentEmployeeId={currentEmployeeId}
+                totalCount={subTasksCount.total}
+                completedCount={subTasksCount.completed}
                 onUpdate={() => {
                   fetchSubTasksCount();
                   onUpdate();

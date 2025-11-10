@@ -11,10 +11,12 @@ import { Badge } from "@/components/ui/badge";
 interface QuickSubTasksPanelProps {
   parentTaskId: string;
   currentEmployeeId: string | null;
+  totalCount: number;
+  completedCount: number;
   onUpdate: () => void;
 }
 
-export const QuickSubTasksPanel = ({ parentTaskId, currentEmployeeId, onUpdate }: QuickSubTasksPanelProps) => {
+export const QuickSubTasksPanel = ({ parentTaskId, currentEmployeeId, totalCount, completedCount, onUpdate }: QuickSubTasksPanelProps) => {
   const [subTasks, setSubTasks] = useState<any[]>([]);
   const [isExpanded, setIsExpanded] = useState(false);
   const [activeActions, setActiveActions] = useState<{[key: string]: string}>({});
@@ -205,8 +207,6 @@ export const QuickSubTasksPanel = ({ parentTaskId, currentEmployeeId, onUpdate }
     }
   };
 
-  const completedCount = subTasks.filter((st) => st.statut === "terminee").length;
-  const totalCount = subTasks.length;
 
   return (
     <div className="mt-2 border rounded-lg" onClick={(e) => e.stopPropagation()}>
