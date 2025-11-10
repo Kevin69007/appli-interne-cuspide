@@ -37,10 +37,24 @@ export function MultiSelectCombobox({
 }: MultiSelectComboboxProps) {
   const [open, setOpen] = React.useState(false);
 
+  // Log des options et valeurs sélectionnées
+  React.useEffect(() => {
+    console.log("=== MULTI SELECT COMBOBOX ===");
+    console.log("Options:", options);
+    console.log("Selected values:", selectedValues);
+  }, [options, selectedValues]);
+
   const handleSelect = (value: string) => {
+    console.log("=== MULTI SELECT DEBUG ===");
+    console.log("Selected value (from CommandItem):", value);
+    console.log("Current selectedValues:", selectedValues);
+    console.log("All options:", options);
+    
     const newValues = selectedValues.includes(value)
       ? selectedValues.filter((v) => v !== value)
       : [...selectedValues, value];
+    
+    console.log("New values:", newValues);
     onSelectedValuesChange(newValues);
   };
 

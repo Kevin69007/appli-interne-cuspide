@@ -57,6 +57,14 @@ export const CreateMeetingDialog = ({ open, onOpenChange, onSuccess }: CreateMee
       .select("id, titre")
       .order("titre");
     
+    console.log("=== PROJETS CHARGÉS ===", data);
+    if (!data || data.length === 0) {
+      toast({
+        title: "Attention",
+        description: "Aucun projet disponible. Créez d'abord des projets.",
+        variant: "destructive",
+      });
+    }
     setProjects(data || []);
   };
 
@@ -66,11 +74,24 @@ export const CreateMeetingDialog = ({ open, onOpenChange, onSuccess }: CreateMee
       .select("id, nom, prenom")
       .order("nom, prenom");
     
+    console.log("=== EMPLOYÉS CHARGÉS ===", data);
+    if (!data || data.length === 0) {
+      toast({
+        title: "Attention",
+        description: "Aucun employé disponible.",
+        variant: "destructive",
+      });
+    }
     setEmployees(data || []);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    console.log("=== FORM SUBMIT ===");
+    console.log("Form data:", formData);
+    console.log("Audio file:", audioFile);
+    
     setLoading(true);
 
     try {
@@ -93,15 +114,41 @@ export const CreateMeetingDialog = ({ open, onOpenChange, onSuccess }: CreateMee
         audio_url = publicUrl;
       }
 
+      // Validation des données avant insertion
+      console.log("=== DEBUG CREATE MEETING ===");
+      console.log("project_ids:", formData.project_ids, "Type:", typeof formData.project_ids, "Array:", Array.isArray(formData.project_ids));
+      console.log("participant_ids:", formData.participant_ids, "Type:", typeof formData.participant_ids, "Array:", Array.isArray(formData.participant_ids));
+      console.log("titre:", formData.titre);
+      console.log("date_reunion:", formData.date_reunion);
+      console.log("notes:", formData.notes);
+      console.log("audio_url:", audio_url);
+
+      if (!formData.project_ids || formData.project_ids.length === 0) {
+        throw new Error("Veuillez sélectionner au moins un projet");
+      }
+      if (!formData.participant_ids || formData.participant_ids.length === 0) {
+        throw new Error("Veuillez sélectionner au moins un participant");
+      }
+      if (!formData.titre || formData.titre.trim() === "") {
+        throw new Error("Le titre est obligatoire");
+      }
+      if (!formData.date_reunion) {
+        throw new Error("La date est obligatoire");
+      }
+
       // Create meeting
-      const { error } = await supabase.from("project_meetings").insert({
+      const { data: insertData, error } = await supabase.from("project_meetings").insert({
         project_ids: formData.project_ids,
         titre: formData.titre,
         date_reunion: formData.date_reunion,
         participants: formData.participant_ids,
         notes: formData.notes,
         audio_url,
-      });
+      }).select();
+
+      console.log("=== INSERT RESULT ===");
+      console.log("Data:", insertData);
+      console.log("Error:", error);
 
       if (error) throw error;
 
@@ -115,10 +162,14 @@ export const CreateMeetingDialog = ({ open, onOpenChange, onSuccess }: CreateMee
       onSuccess();
       resetForm();
     } catch (error) {
-      console.error("Error creating meeting:", error);
+      console.error("=== ERROR CREATING MEETING ===");
+      console.error("Full error:", error);
+      console.error("Error message:", error instanceof Error ? error.message : "Unknown error");
+      console.error("Error details:", JSON.stringify(error, null, 2));
+      
       toast({
-        title: "Erreur",
-        description: "Impossible de créer la réunion",
+        title: "Erreur lors de la création",
+        description: error instanceof Error ? error.message : "Erreur inconnue - vérifiez la console",
         variant: "destructive",
       });
     } finally {
