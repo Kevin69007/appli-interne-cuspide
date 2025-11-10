@@ -9,7 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Mic, Square, Plus, Trash2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { MultiSelectCombobox } from "@/components/ui/multi-select-combobox";
+import { MultiSelect } from "@/components/ui/multi-select";
 
 interface LiveMeetingRecorderProps {
   open: boolean;
@@ -370,7 +370,7 @@ export const LiveMeetingRecorder = ({ open, onOpenChange, onSuccess }: LiveMeeti
 
             <div className="grid gap-2">
               <Label htmlFor="participants">Participants *</Label>
-              <MultiSelectCombobox
+              <MultiSelect
                 selectedValues={participantIds}
                 onSelectedValuesChange={setParticipantIds}
                 options={employees.map((emp) => ({
