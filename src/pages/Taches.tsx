@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -84,7 +84,7 @@ const Taches = () => {
     }
   };
 
-  const fetchTasks = async () => {
+  const fetchTasks = useCallback(async () => {
     if (!currentEmployeeId) {
       console.log("No currentEmployeeId, skipping task fetch");
       return;
@@ -93,61 +93,62 @@ const Taches = () => {
     console.log("Fetching tasks for employee ID:", currentEmployeeId);
     setLoading(true);
     try {
-      // Mes tâches (assignées à moi, pas en mode boomerang actif)
-      const { data: myTasks, error: myError } = await supabase
-        .from("tasks")
-        .select(`
-          *,
-          assigned_employee:employees!tasks_assigned_to_fkey(nom, prenom),
-          creator_employee:employees!tasks_created_by_fkey(nom, prenom)
-        `)
-        .eq("assigned_to", currentEmployeeId)
-        .eq("boomerang_active", false)
-        .neq("statut", "annulee")
-        .order("date_echeance");
+      // ✅ Exécuter les 3 requêtes EN PARALLÈLE avec Promise.all
+      const [myTasksResult, sentBoomerangsResult, receivedBoomerangsResult] = await Promise.all([
+        // Mes tâches (assignées à moi, pas en mode boomerang actif)
+        supabase
+          .from("tasks")
+          .select(`
+            *,
+            assigned_employee:employees!tasks_assigned_to_fkey(nom, prenom),
+            creator_employee:employees!tasks_created_by_fkey(nom, prenom)
+          `)
+          .eq("assigned_to", currentEmployeeId)
+          .eq("boomerang_active", false)
+          .neq("statut", "annulee")
+          .order("date_echeance"),
+        
+        // Boomerangs envoyés (je suis le propriétaire original)
+        supabase
+          .from("tasks")
+          .select(`
+            *,
+            assigned_employee:employees!tasks_assigned_to_fkey(nom, prenom),
+            creator_employee:employees!tasks_created_by_fkey(nom, prenom),
+            boomerang_holder:employees!tasks_boomerang_current_holder_fkey(nom, prenom)
+          `)
+          .eq("boomerang_original_owner", currentEmployeeId)
+          .eq("boomerang_active", true)
+          .order("boomerang_deadline"),
+        
+        // Boomerangs reçus (je suis le détenteur actuel)
+        supabase
+          .from("tasks")
+          .select(`
+            *,
+            assigned_employee:employees!tasks_assigned_to_fkey(nom, prenom),
+            creator_employee:employees!tasks_created_by_fkey(nom, prenom),
+            boomerang_owner:employees!tasks_boomerang_original_owner_fkey(nom, prenom)
+          `)
+          .eq("boomerang_current_holder", currentEmployeeId)
+          .eq("boomerang_active", true)
+          .order("boomerang_deadline")
+      ]);
 
-      if (myError) throw myError;
+      if (myTasksResult.error) throw myTasksResult.error;
+      if (sentBoomerangsResult.error) throw sentBoomerangsResult.error;
+      if (receivedBoomerangsResult.error) throw receivedBoomerangsResult.error;
 
-      // Boomerangs envoyés (je suis le propriétaire original)
-      const { data: sentBoomerangs, error: sentError } = await supabase
-        .from("tasks")
-        .select(`
-          *,
-          assigned_employee:employees!tasks_assigned_to_fkey(nom, prenom),
-          creator_employee:employees!tasks_created_by_fkey(nom, prenom),
-          boomerang_holder:employees!tasks_boomerang_current_holder_fkey(nom, prenom)
-        `)
-        .eq("boomerang_original_owner", currentEmployeeId)
-        .eq("boomerang_active", true)
-        .order("boomerang_deadline");
-
-      if (sentError) throw sentError;
-
-      // Boomerangs reçus (je suis le détenteur actuel)
-      const { data: receivedBoomerangs, error: receivedError } = await supabase
-        .from("tasks")
-        .select(`
-          *,
-          assigned_employee:employees!tasks_assigned_to_fkey(nom, prenom),
-          creator_employee:employees!tasks_created_by_fkey(nom, prenom),
-          boomerang_owner:employees!tasks_boomerang_original_owner_fkey(nom, prenom)
-        `)
-        .eq("boomerang_current_holder", currentEmployeeId)
-        .eq("boomerang_active", true)
-        .order("boomerang_deadline");
-
-      if (receivedError) throw receivedError;
-
-      setTasks(myTasks || []);
-      setBoomerangsSent(sentBoomerangs || []);
-      setBoomerangsReceived(receivedBoomerangs || []);
+      setTasks(myTasksResult.data || []);
+      setBoomerangsSent(sentBoomerangsResult.data || []);
+      setBoomerangsReceived(receivedBoomerangsResult.data || []);
     } catch (error) {
       console.error("Error fetching tasks:", error);
       toast.error("Erreur lors du chargement des tâches");
     } finally {
       setLoading(false);
     }
-  };
+  }, [currentEmployeeId]);
 
   // Filter tasks based on active filters
   const filterTasks = (tasks: Task[]) => {

@@ -19,14 +19,15 @@ interface QuickSubTasksPanelProps {
 export const QuickSubTasksPanel = ({ parentTaskId, currentEmployeeId, totalCount, completedCount, onUpdate }: QuickSubTasksPanelProps) => {
   const [subTasks, setSubTasks] = useState<any[]>([]);
   const [isExpanded, setIsExpanded] = useState(false);
+  const [hasFetched, setHasFetched] = useState(false);
   const [activeActions, setActiveActions] = useState<{[key: string]: string}>({});
   const [actionInputs, setActionInputs] = useState<{[key: string]: string}>({});
 
   useEffect(() => {
-    if (isExpanded) {
+    if (isExpanded && !hasFetched) {
       fetchSubTasks();
     }
-  }, [parentTaskId, isExpanded]);
+  }, [parentTaskId, isExpanded, hasFetched]);
 
   const fetchSubTasks = async () => {
     const { data, error } = await supabase
@@ -38,6 +39,7 @@ export const QuickSubTasksPanel = ({ parentTaskId, currentEmployeeId, totalCount
 
     if (!error && data) {
       setSubTasks(data);
+      setHasFetched(true);
     }
   };
 
