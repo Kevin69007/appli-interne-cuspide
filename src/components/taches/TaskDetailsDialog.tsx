@@ -329,10 +329,36 @@ export const TaskDetailsDialog = ({
 
             {/* Send Boomerang Button */}
             {canSendBoomerang && task.statut !== "annulee" && task.statut !== "terminee" && (
-              <Button onClick={() => setShowBoomerangDialog(true)} variant="secondary" className="w-full">
-                <Send className="h-4 w-4 mr-2" />
-                🪃 Envoyer en mode Boomerang
-              </Button>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button 
+                      onClick={() => setShowBoomerangDialog(true)} 
+                      variant="secondary" 
+                      className="w-full"
+                    >
+                      <Send className="h-4 w-4 mr-2" />
+                      🪃 Envoyer en mode Boomerang
+                      <Info className="h-4 w-4 ml-2 opacity-70" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="max-w-sm">
+                    <div className="space-y-2 text-xs">
+                      <p><strong>🪃 Le mode Boomerang, c'est quoi ?</strong></p>
+                      <p>
+                        Déléguez temporairement cette tâche à un collègue pour obtenir de l'aide, 
+                        des informations ou une validation.
+                      </p>
+                      <p className="text-orange-600 dark:text-orange-300 font-medium">
+                        ⏱️ La tâche reviendra automatiquement dans votre liste après le délai que vous définirez.
+                      </p>
+                      <p className="text-muted-foreground italic">
+                        Parfait pour ne pas perdre le fil d'une tâche tout en sollicitant un collègue !
+                      </p>
+                    </div>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             )}
 
             <Tabs defaultValue="subtasks" className="w-full">
