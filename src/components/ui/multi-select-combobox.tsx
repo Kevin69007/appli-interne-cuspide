@@ -37,33 +37,37 @@ export function MultiSelectCombobox({
 }: MultiSelectComboboxProps) {
   const [open, setOpen] = React.useState(false);
 
+  // Sécuriser les valeurs pour éviter undefined
+  const safeOptions = options || [];
+  const safeSelectedValues = selectedValues || [];
+
   // Log des options et valeurs sélectionnées
   React.useEffect(() => {
     console.log("=== MULTI SELECT COMBOBOX ===");
-    console.log("Options:", options);
-    console.log("Selected values:", selectedValues);
-  }, [options, selectedValues]);
+    console.log("Options:", safeOptions);
+    console.log("Selected values:", safeSelectedValues);
+  }, [safeOptions, safeSelectedValues]);
 
   const handleSelect = (value: string) => {
     console.log("=== MULTI SELECT DEBUG ===");
     console.log("Selected value (from CommandItem):", value);
-    console.log("Current selectedValues:", selectedValues);
-    console.log("All options:", options);
+    console.log("Current selectedValues:", safeSelectedValues);
+    console.log("All options:", safeOptions);
     
-    const newValues = selectedValues.includes(value)
-      ? selectedValues.filter((v) => v !== value)
-      : [...selectedValues, value];
+    const newValues = safeSelectedValues.includes(value)
+      ? safeSelectedValues.filter((v) => v !== value)
+      : [...safeSelectedValues, value];
     
     console.log("New values:", newValues);
     onSelectedValuesChange(newValues);
   };
 
   const handleRemove = (value: string) => {
-    onSelectedValuesChange(selectedValues.filter((v) => v !== value));
+    onSelectedValuesChange(safeSelectedValues.filter((v) => v !== value));
   };
 
   const getLabel = (value: string) => {
-    return options.find((opt) => opt.value === value)?.label || value;
+    return safeOptions.find((opt) => opt.value === value)?.label || value;
   };
 
   return (
@@ -77,8 +81,8 @@ export function MultiSelectCombobox({
             className="w-full justify-between"
           >
             <span className="truncate">
-              {selectedValues.length > 0
-                ? `${selectedValues.length} sélectionné(s)`
+              {safeSelectedValues.length > 0
+                ? `${safeSelectedValues.length} sélectionné(s)`
                 : placeholder}
             </span>
             <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -89,7 +93,7 @@ export function MultiSelectCombobox({
             <CommandInput placeholder={searchPlaceholder} />
             <CommandEmpty>{emptyMessage}</CommandEmpty>
             <CommandGroup className="max-h-64 overflow-auto">
-              {options.map((option) => (
+              {safeOptions.map((option) => (
                 <CommandItem
                   key={option.value}
                   value={option.label}
@@ -98,7 +102,7 @@ export function MultiSelectCombobox({
                   <Check
                     className={cn(
                       "mr-2 h-4 w-4",
-                      selectedValues.includes(option.value)
+                      safeSelectedValues.includes(option.value)
                         ? "opacity-100"
                         : "opacity-0"
                     )}
@@ -111,9 +115,9 @@ export function MultiSelectCombobox({
         </PopoverContent>
       </Popover>
 
-      {selectedValues.length > 0 && (
+      {safeSelectedValues.length > 0 && (
         <div className="flex flex-wrap gap-2">
-          {selectedValues.map((value) => (
+          {safeSelectedValues.map((value) => (
             <Badge
               key={value}
               variant="secondary"

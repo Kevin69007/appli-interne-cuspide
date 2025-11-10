@@ -207,11 +207,11 @@ export const CreateMeetingDialog = ({ open, onOpenChange, onSuccess }: CreateMee
                 <div className="space-y-2">
                   <Label htmlFor="projects">Projets *</Label>
                   <MultiSelectCombobox
-                    selectedValues={formData.project_ids}
+                    selectedValues={formData.project_ids || []}
                     onSelectedValuesChange={(values) =>
-                      setFormData({ ...formData, project_ids: values })
+                      setFormData({ ...formData, project_ids: values || [] })
                     }
-                    options={projects.map((p) => ({
+                    options={(projects || []).map((p) => ({
                       value: p.id,
                       label: p.titre,
                     }))}
@@ -245,11 +245,11 @@ export const CreateMeetingDialog = ({ open, onOpenChange, onSuccess }: CreateMee
                 <div className="space-y-2">
                   <Label htmlFor="participants">Participants *</Label>
                   <MultiSelectCombobox
-                    selectedValues={formData.participant_ids}
+                    selectedValues={formData.participant_ids || []}
                     onSelectedValuesChange={(values) =>
-                      setFormData({ ...formData, participant_ids: values })
+                      setFormData({ ...formData, participant_ids: values || [] })
                     }
-                    options={employees.map((emp) => ({
+                    options={(employees || []).map((emp) => ({
                       value: emp.id,
                       label: `${emp.prenom} ${emp.nom}`,
                     }))}
