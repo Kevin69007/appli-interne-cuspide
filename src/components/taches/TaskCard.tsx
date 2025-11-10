@@ -24,7 +24,7 @@ export const TaskCard = ({ task, currentEmployeeId, onUpdate, isHelpRequest, isM
 
   useEffect(() => {
     fetchSubTasksCount();
-  }, [task.id]);
+  }, [task.id, onUpdate]);
 
   const fetchSubTasksCount = async () => {
     const { data, error } = await supabase

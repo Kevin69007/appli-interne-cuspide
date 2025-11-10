@@ -135,6 +135,7 @@ const Projets = () => {
                     key={project.id}
                     project={project}
                     onUpdate={fetchProjects}
+                    currentEmployeeId={currentEmployeeId}
                   />
                 ))}
               </div>
@@ -155,6 +156,7 @@ const Projets = () => {
                     key={project.id}
                     project={project}
                     onUpdate={fetchProjects}
+                    currentEmployeeId={currentEmployeeId}
                   />
                 ))}
               </div>
@@ -175,6 +177,7 @@ const Projets = () => {
                     key={project.id}
                     project={project}
                     onUpdate={fetchProjects}
+                    currentEmployeeId={currentEmployeeId}
                   />
                 ))}
               </div>
@@ -195,6 +198,7 @@ const Projets = () => {
                     key={project.id}
                     project={project}
                     onUpdate={fetchProjects}
+                    currentEmployeeId={currentEmployeeId}
                   />
                 ))}
               </div>

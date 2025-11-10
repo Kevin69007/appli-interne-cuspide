@@ -1,10 +1,14 @@
+import { useState } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Calendar, User, AlertCircle } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Calendar, User, AlertCircle, Pencil } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";
+import { useUserRole } from "@/hooks/useUserRole";
+import { EditProjectDialog } from "./EditProjectDialog";
 
 interface ProjectCardProps {
   project: {
@@ -15,13 +19,19 @@ interface ProjectCardProps {
     date_echeance: string;
     progression: number;
     is_priority: boolean;
+    responsable_id: string;
     responsable?: { nom: string; prenom: string };
   };
   onUpdate: () => void;
+  currentEmployeeId: string | null;
 }
 
-export const ProjectCard = ({ project }: ProjectCardProps) => {
+export const ProjectCard = ({ project, onUpdate, currentEmployeeId }: ProjectCardProps) => {
   const navigate = useNavigate();
+  const { isAdmin, isManager } = useUserRole();
+  const [showEditDialog, setShowEditDialog] = useState(false);
+
+  const canEdit = isAdmin || isManager || project.responsable_id === currentEmployeeId;
 
   const getStatutColor = (statut: string) => {
     switch (statut) {
@@ -54,16 +64,30 @@ export const ProjectCard = ({ project }: ProjectCardProps) => {
   };
 
   return (
-    <Card
-      className="p-6 cursor-pointer hover:shadow-lg transition-all"
-      onClick={() => navigate(`/projets/${project.id}`)}
-    >
-      <div className="space-y-4">
-        <div className="flex items-start justify-between gap-2">
-          <div className="flex-1">
-            <h3 className="text-lg font-semibold line-clamp-2">
-              {project.titre}
-            </h3>
+    <>
+      <Card
+        className="p-6 cursor-pointer hover:shadow-lg transition-all relative"
+        onClick={() => navigate(`/projets/${project.id}`)}
+      >
+        {canEdit && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="absolute top-2 right-2 h-8 w-8"
+            onClick={(e) => {
+              e.stopPropagation();
+              setShowEditDialog(true);
+            }}
+          >
+            <Pencil className="h-4 w-4" />
+          </Button>
+        )}
+        <div className="space-y-4">
+          <div className="flex items-start justify-between gap-2 pr-10">
+            <div className="flex-1">
+              <h3 className="text-lg font-semibold line-clamp-2">
+                {project.titre}
+              </h3>
             {project.description && (
               <p className="text-sm text-muted-foreground mt-1 line-clamp-2">
                 {project.description}
@@ -110,5 +134,13 @@ export const ProjectCard = ({ project }: ProjectCardProps) => {
         )}
       </div>
     </Card>
+
+    <EditProjectDialog
+      open={showEditDialog}
+      onOpenChange={setShowEditDialog}
+      project={project}
+      onProjectUpdated={onUpdate}
+    />
+    </>
   );
 };

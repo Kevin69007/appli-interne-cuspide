@@ -8,7 +8,7 @@ import { Card } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { ArrowLeft, Calendar, User, AlertCircle, Plus, Link as LinkIcon } from "lucide-react";
+import { ArrowLeft, Calendar, User, AlertCircle, Plus, Link as LinkIcon, CheckCircle2, Pause, Play } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { toast } from "sonner";
@@ -20,6 +20,16 @@ import { ProjectStats } from "@/components/projects/ProjectStats";
 import { EditProjectDialog } from "@/components/projects/EditProjectDialog";
 import { ProjectMeetingsTab } from "@/components/reunions/ProjectMeetingsTab";
 import { Pencil } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface Project {
   id: string;
@@ -46,6 +56,8 @@ const ProjetDetails = () => {
   const [showCreateTaskDialog, setShowCreateTaskDialog] = useState(false);
   const [showLinkTaskDialog, setShowLinkTaskDialog] = useState(false);
   const [showEditProjectDialog, setShowEditProjectDialog] = useState(false);
+  const [showCloseConfirm, setShowCloseConfirm] = useState(false);
+  const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -144,6 +156,30 @@ const ProjetDetails = () => {
     }
   };
 
+  const handleQuickStatusChange = async (newStatus: string) => {
+    if (!project) return;
+    
+    setIsUpdatingStatus(true);
+    try {
+      const { error } = await supabase
+        .from("projects")
+        .update({ statut: newStatus as "en_cours" | "en_pause" | "termine" | "a_venir" })
+        .eq("id", project.id);
+
+      if (error) throw error;
+
+      toast.success(`Projet ${getStatutLabel(newStatus).toLowerCase()}`);
+      await fetchProjectDetails();
+      await fetchProjectTasks();
+    } catch (error) {
+      console.error("Error updating project status:", error);
+      toast.error("Erreur lors de la mise à jour du statut");
+    } finally {
+      setIsUpdatingStatus(false);
+      setShowCloseConfirm(false);
+    }
+  };
+
   if (loading || !project) {
     return (
       <div className="min-h-screen bg-background p-4">
@@ -165,10 +201,43 @@ const ProjetDetails = () => {
             <h1 className="text-3xl font-bold">{project.titre}</h1>
           </div>
           {(isAdmin || isManager || project.responsable_id === currentEmployeeId) && (
-            <Button variant="outline" onClick={() => setShowEditProjectDialog(true)}>
-              <Pencil className="h-4 w-4 mr-2" />
-              Modifier le projet
-            </Button>
+            <div className="flex items-center gap-2">
+              {project.statut !== "termine" && (
+                <Button
+                  variant="default"
+                  onClick={() => setShowCloseConfirm(true)}
+                  disabled={isUpdatingStatus}
+                  className="bg-green-600 hover:bg-green-700"
+                >
+                  <CheckCircle2 className="h-4 w-4 mr-2" />
+                  Clôturer le projet
+                </Button>
+              )}
+              {project.statut === "en_cours" && (
+                <Button
+                  variant="outline"
+                  onClick={() => handleQuickStatusChange("en_pause")}
+                  disabled={isUpdatingStatus}
+                >
+                  <Pause className="h-4 w-4 mr-2" />
+                  Mettre en pause
+                </Button>
+              )}
+              {project.statut === "en_pause" && (
+                <Button
+                  variant="outline"
+                  onClick={() => handleQuickStatusChange("en_cours")}
+                  disabled={isUpdatingStatus}
+                >
+                  <Play className="h-4 w-4 mr-2" />
+                  Reprendre
+                </Button>
+              )}
+              <Button variant="outline" onClick={() => setShowEditProjectDialog(true)}>
+                <Pencil className="h-4 w-4 mr-2" />
+                Modifier le projet
+              </Button>
+            </div>
           )}
         </div>
 
@@ -325,6 +394,27 @@ const ProjetDetails = () => {
           fetchProjectTasks();
         }}
       />
+
+      <AlertDialog open={showCloseConfirm} onOpenChange={setShowCloseConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Clôturer le projet ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Êtes-vous sûr de vouloir clôturer ce projet ? Le projet sera marqué
+              comme terminé. Vous pourrez toujours le réouvrir ultérieurement.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => handleQuickStatusChange("termine")}
+              className="bg-green-600 hover:bg-green-700"
+            >
+              Clôturer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };
