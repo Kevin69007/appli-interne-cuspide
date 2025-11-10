@@ -48,15 +48,26 @@ export function MultiSelectCombobox({
     console.log("Selected values:", safeSelectedValues);
   }, [safeOptions, safeSelectedValues]);
 
-  const handleSelect = (value: string) => {
+  const handleSelect = (labelValue: string) => {
     console.log("=== MULTI SELECT DEBUG ===");
-    console.log("Selected value (from CommandItem):", value);
+    console.log("Selected label (from CommandItem):", labelValue);
     console.log("Current selectedValues:", safeSelectedValues);
     console.log("All options:", safeOptions);
     
-    const newValues = safeSelectedValues.includes(value)
-      ? safeSelectedValues.filter((v) => v !== value)
-      : [...safeSelectedValues, value];
+    // Trouver l'option correspondante par son label
+    const selectedOption = safeOptions.find((opt) => opt.label === labelValue);
+    
+    if (!selectedOption) {
+      console.error("Option non trouvée pour le label:", labelValue);
+      return;
+    }
+    
+    const actualValue = selectedOption.value;
+    console.log("Actual value (ID):", actualValue);
+    
+    const newValues = safeSelectedValues.includes(actualValue)
+      ? safeSelectedValues.filter((v) => v !== actualValue)
+      : [...safeSelectedValues, actualValue];
     
     console.log("New values:", newValues);
     onSelectedValuesChange(newValues);
@@ -97,7 +108,7 @@ export function MultiSelectCombobox({
                 <CommandItem
                   key={option.value}
                   value={option.label}
-                  onSelect={() => handleSelect(option.value)}
+                  onSelect={(selectedLabel) => handleSelect(selectedLabel)}
                 >
                   <Check
                     className={cn(
