@@ -78,7 +78,7 @@ export const EditProjectDialog = ({
           titre: formData.titre,
           description: formData.description,
           responsable_id: formData.responsable_id,
-          date_echeance: formData.date_echeance,
+          date_echeance: formData.date_echeance || null,
           statut: formData.statut,
           is_priority: formData.is_priority,
           updated_at: new Date().toISOString(),
