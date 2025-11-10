@@ -98,7 +98,7 @@ export const CreateMeetingDialog = ({ open, onOpenChange, onSuccess }: CreateMee
         project_ids: formData.project_ids,
         titre: formData.titre,
         date_reunion: formData.date_reunion,
-        participants: JSON.stringify(formData.participant_ids),
+        participants: formData.participant_ids,
         notes: formData.notes,
         audio_url,
       });

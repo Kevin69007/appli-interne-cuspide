@@ -271,7 +271,7 @@ export const LiveMeetingRecorder = ({ open, onOpenChange, onSuccess }: LiveMeeti
         .from("project_meetings")
         .insert({
           titre,
-          participants: JSON.stringify(participantIds),
+          participants: participantIds,
           notes,
           audio_url: urlData.publicUrl,
           date_reunion: new Date().toISOString(),
