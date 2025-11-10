@@ -9,7 +9,7 @@ import { useToast } from "@/hooks/use-toast";
 import { AudioUploader } from "./AudioUploader";
 import { LiveMeetingRecorder } from "./LiveMeetingRecorder";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { MultiSelectCombobox } from "@/components/ui/multi-select-combobox";
+import { MultiSelect } from "@/components/ui/multi-select";
 
 interface CreateMeetingDialogProps {
   open: boolean;
@@ -206,7 +206,7 @@ export const CreateMeetingDialog = ({ open, onOpenChange, onSuccess }: CreateMee
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
                   <Label htmlFor="projects">Projets *</Label>
-                  <MultiSelectCombobox
+                  <MultiSelect
                     selectedValues={formData.project_ids || []}
                     onSelectedValuesChange={(values) =>
                       setFormData({ ...formData, project_ids: values || [] })
@@ -244,7 +244,7 @@ export const CreateMeetingDialog = ({ open, onOpenChange, onSuccess }: CreateMee
 
                 <div className="space-y-2">
                   <Label htmlFor="participants">Participants *</Label>
-                  <MultiSelectCombobox
+                  <MultiSelect
                     selectedValues={formData.participant_ids || []}
                     onSelectedValuesChange={(values) =>
                       setFormData({ ...formData, participant_ids: values || [] })
