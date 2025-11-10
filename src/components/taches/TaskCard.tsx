@@ -4,7 +4,8 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import { CheckCircle2, Circle, Clock, MessageSquare, Calendar, Bell } from "lucide-react";
+import { CheckCircle2, Circle, Clock, MessageSquare, Calendar, Bell, Plus, Info } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { TaskDetailsDialog } from "./TaskDetailsDialog";
@@ -25,6 +26,8 @@ export const TaskCard = ({ task, currentEmployeeId, onUpdate, isHelpRequest, isM
   const [subTasksCount, setSubTasksCount] = useState({ total: 0, completed: 0 });
   const [activeAction, setActiveAction] = useState<string | null>(null);
   const [actionInput, setActionInput] = useState<string>("");
+  const [showQuickSubTaskInput, setShowQuickSubTaskInput] = useState(false);
+  const [quickSubTaskTitle, setQuickSubTaskTitle] = useState("");
 
   useEffect(() => {
     fetchSubTasksCount();
@@ -194,6 +197,42 @@ export const TaskCard = ({ task, currentEmployeeId, onUpdate, isHelpRequest, isM
     }
   };
 
+  const handleAddQuickSubTask = async () => {
+    if (!quickSubTaskTitle.trim() || !currentEmployeeId) return;
+
+    try {
+      const { data: parentTask } = await supabase
+        .from("tasks")
+        .select("assigned_to, date_echeance")
+        .eq("id", task.id)
+        .single();
+
+      if (!parentTask) throw new Error("Parent task not found");
+
+      const { error } = await supabase.from("tasks").insert([
+        {
+          titre: quickSubTaskTitle,
+          created_by: currentEmployeeId,
+          assigned_to: parentTask.assigned_to,
+          date_echeance: parentTask.date_echeance,
+          parent_task_id: task.id,
+          statut: "en_cours",
+        },
+      ]);
+
+      if (error) throw error;
+
+      toast.success("Sous-tâche ajoutée");
+      setQuickSubTaskTitle("");
+      setShowQuickSubTaskInput(false);
+      fetchSubTasksCount();
+      onUpdate();
+    } catch (error) {
+      console.error("Error adding subtask:", error);
+      toast.error("Erreur lors de l'ajout de la sous-tâche");
+    }
+  };
+
   const renderActionInput = () => {
     if (!activeAction) return null;
 
@@ -241,6 +280,39 @@ export const TaskCard = ({ task, currentEmployeeId, onUpdate, isHelpRequest, isM
       default:
         return null;
     }
+  };
+
+  const renderQuickSubTaskInput = () => {
+    if (!showQuickSubTaskInput) return null;
+
+    return (
+      <div className="flex gap-2 mt-2 ml-8" onClick={(e) => e.stopPropagation()}>
+        <Input
+          placeholder="Titre de la sous-tâche..."
+          value={quickSubTaskTitle}
+          onChange={(e) => setQuickSubTaskTitle(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") {
+              handleAddQuickSubTask();
+            }
+          }}
+          className="flex-1"
+        />
+        <Button size="sm" onClick={handleAddQuickSubTask} disabled={!quickSubTaskTitle.trim()}>
+          Ajouter
+        </Button>
+        <Button 
+          size="sm" 
+          variant="ghost" 
+          onClick={() => {
+            setShowQuickSubTaskInput(false);
+            setQuickSubTaskTitle("");
+          }}
+        >
+          Annuler
+        </Button>
+      </div>
+    );
   };
 
   const isOverdue = new Date(task.date_echeance) < new Date() && task.statut !== "terminee";
@@ -305,9 +377,24 @@ export const TaskCard = ({ task, currentEmployeeId, onUpdate, isHelpRequest, isM
               )}
 
               {task.boomerang_active && (
-                <Badge className="bg-orange-500/20 text-orange-700 dark:text-orange-400">
-                  🪃 Boomerang
-                </Badge>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex items-center gap-1 cursor-help">
+                        <Badge className="bg-orange-500/20 text-orange-700 dark:text-orange-400">
+                          🪃 Boomerang
+                        </Badge>
+                        <Info className="h-3 w-3 text-orange-700 dark:text-orange-400" />
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="max-w-xs">
+                      <p className="text-xs">
+                        <strong>Mode Boomerang :</strong> Cette tâche a été déléguée temporairement à un collègue.
+                        Elle reviendra automatiquement à son propriétaire après le délai défini.
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               )}
 
               {task.boomerang_active && task.boomerang_deadline && (
@@ -362,10 +449,26 @@ export const TaskCard = ({ task, currentEmployeeId, onUpdate, isHelpRequest, isM
                 <Bell className="h-4 w-4 mr-1" />
                 Rappel
               </Button>
+              <Button
+                size="sm"
+                variant="ghost"
+                className="h-8 px-3"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowQuickSubTaskInput(!showQuickSubTaskInput);
+                  setActiveAction(null);
+                }}
+              >
+                <Plus className="h-4 w-4 mr-1" />
+                Sous-tâche
+              </Button>
             </div>
 
             {/* Action Input */}
             {renderActionInput()}
+
+            {/* Quick SubTask Input */}
+            {renderQuickSubTaskInput()}
 
             {subTasksCount.total > 0 && (
               <QuickSubTasksPanel

@@ -7,7 +7,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Calendar, User, CheckCircle2, XCircle, RotateCcw, Send } from "lucide-react";
+import { Calendar, User, CheckCircle2, XCircle, RotateCcw, Send, Info } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { TaskCommentsHierarchical } from "./TaskCommentsHierarchical";
 import { SubTasksList } from "./SubTasksList";
 import { RappelsList } from "./RappelsList";
@@ -212,9 +213,27 @@ export const TaskDetailsDialog = ({
                 <Badge variant="outline">En cours</Badge>
               )}
               {task.boomerang_active && (
-                <Badge className="bg-orange-500/20 text-orange-700 dark:text-orange-400">
-                  🪃 Mode Boomerang
-                </Badge>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div className="flex items-center gap-1 cursor-help">
+                        <Badge className="bg-orange-500/20 text-orange-700 dark:text-orange-400">
+                          🪃 Mode Boomerang
+                        </Badge>
+                        <Info className="h-3 w-3 text-orange-700 dark:text-orange-400" />
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="max-w-xs">
+                      <div className="space-y-1 text-xs">
+                        <p><strong>Mode Boomerang :</strong></p>
+                        <p>Cette tâche a été déléguée temporairement à un collègue pour obtenir de l'aide ou des informations.</p>
+                        <p className="text-orange-600 dark:text-orange-300 font-medium">
+                          ⏱️ Elle reviendra automatiquement à son propriétaire après le délai défini.
+                        </p>
+                      </div>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
               )}
             </div>
 
