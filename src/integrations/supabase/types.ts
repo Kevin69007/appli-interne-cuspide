@@ -2247,6 +2247,8 @@ export type Database = {
           created_by: string | null
           date_reunion: string
           decisions: Json | null
+          deleted_at: string | null
+          deleted_by: string | null
           duree_minutes: number | null
           fichier_audio_url: string | null
           id: string
@@ -2266,6 +2268,8 @@ export type Database = {
           created_by?: string | null
           date_reunion: string
           decisions?: Json | null
+          deleted_at?: string | null
+          deleted_by?: string | null
           duree_minutes?: number | null
           fichier_audio_url?: string | null
           id?: string
@@ -2285,6 +2289,8 @@ export type Database = {
           created_by?: string | null
           date_reunion?: string
           decisions?: Json | null
+          deleted_at?: string | null
+          deleted_by?: string | null
           duree_minutes?: number | null
           fichier_audio_url?: string | null
           id?: string

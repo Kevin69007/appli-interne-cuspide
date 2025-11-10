@@ -137,6 +137,7 @@ export const CreateMeetingDialog = ({ open, onOpenChange, onSuccess }: CreateMee
       }
 
       // Create meeting
+      const { data: { user } } = await supabase.auth.getUser();
       const { data: insertData, error } = await supabase.from("project_meetings").insert({
         project_ids: formData.project_ids,
         titre: formData.titre,
@@ -144,6 +145,7 @@ export const CreateMeetingDialog = ({ open, onOpenChange, onSuccess }: CreateMee
         participants: formData.participant_ids,
         notes: formData.notes,
         audio_url,
+        created_by: user?.id,
       }).select();
 
       console.log("=== INSERT RESULT ===");

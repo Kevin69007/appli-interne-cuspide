@@ -20,9 +20,10 @@ interface Meeting {
 interface MeetingsListProps {
   meetings: Meeting[];
   onMeetingClick: (id: string) => void;
+  onRefresh?: () => void;
 }
 
-export const MeetingsList = ({ meetings, onMeetingClick }: MeetingsListProps) => {
+export const MeetingsList = ({ meetings, onMeetingClick, onRefresh }: MeetingsListProps) => {
   if (meetings.length === 0) {
     return (
       <div className="text-center py-12 bg-card rounded-lg border border-border">
@@ -38,6 +39,8 @@ export const MeetingsList = ({ meetings, onMeetingClick }: MeetingsListProps) =>
           key={meeting.id}
           meeting={meeting}
           onClick={() => onMeetingClick(meeting.id)}
+          onDeleted={onRefresh}
+          onEdited={onRefresh}
         />
       ))}
     </div>

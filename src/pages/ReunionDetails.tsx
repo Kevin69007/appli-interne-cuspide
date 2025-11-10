@@ -3,13 +3,24 @@ import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useUserRole } from "@/hooks/useUserRole";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, Calendar, Clock, Users } from "lucide-react";
+import { ArrowLeft, Calendar, Clock, Users, Pencil, Trash2 } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { MeetingTranscription } from "@/components/reunions/MeetingTranscription";
 import { MeetingDecisions } from "@/components/reunions/MeetingDecisions";
 import { AudioPlayerWithTimestamps } from "@/components/reunions/AudioPlayerWithTimestamps";
+import { EditMeetingDialog } from "@/components/reunions/EditMeetingDialog";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 
 interface Meeting {
   id: string;
@@ -24,6 +35,7 @@ interface Meeting {
   resume_ia?: string;
   audio_url?: string;
   fichier_audio_url?: string;
+  created_by?: string;
   project?: {
     titre: string;
   };
@@ -38,6 +50,10 @@ const ReunionDetails = () => {
   const [loading, setLoading] = useState(true);
   const [timestamps, setTimestamps] = useState<any[]>([]);
   const [participantNames, setParticipantNames] = useState<string[]>([]);
+  const [canEdit, setCanEdit] = useState(false);
+  const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
     if (id) {
@@ -45,6 +61,54 @@ const ReunionDetails = () => {
       fetchTimestamps();
     }
   }, [id]);
+
+  useEffect(() => {
+    if (meeting) {
+      checkEditPermission();
+    }
+  }, [meeting, isAdmin]);
+
+  const checkEditPermission = async () => {
+    if (!meeting) return;
+    const { data: { user } } = await supabase.auth.getUser();
+    if (user) {
+      setCanEdit(isAdmin || meeting.created_by === user.id);
+    }
+  };
+
+  const handleDelete = async () => {
+    if (!meeting) return;
+    setDeleting(true);
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      const { error } = await supabase
+        .from("project_meetings")
+        .update({
+          deleted_at: new Date().toISOString(),
+          deleted_by: user?.id,
+        })
+        .eq("id", meeting.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Réunion archivée",
+        description: "La réunion sera supprimée définitivement dans 30 jours",
+      });
+
+      navigate("/reunions");
+    } catch (error: any) {
+      console.error("Error deleting meeting:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de supprimer la réunion",
+        variant: "destructive",
+      });
+    } finally {
+      setDeleting(false);
+      setShowDeleteDialog(false);
+    }
+  };
 
   const fetchMeeting = async () => {
     try {
@@ -168,16 +232,35 @@ const ReunionDetails = () => {
     <div className="min-h-screen bg-gradient-to-br from-primary/5 via-background to-accent/5">
       <div className="max-w-5xl mx-auto px-6 py-8">
         {/* Header */}
-        <div className="flex items-center gap-4 mb-8">
-          <Button variant="outline" size="icon" onClick={() => navigate("/reunions")}>
-            <ArrowLeft className="w-4 h-4" />
-          </Button>
-          <div>
-            <h1 className="text-3xl font-bold">{meeting.titre}</h1>
-            {meeting.project && (
-              <p className="text-muted-foreground">Projet: {meeting.project.titre}</p>
-            )}
+        <div className="flex items-center justify-between mb-8">
+          <div className="flex items-center gap-4 flex-1">
+            <Button variant="outline" size="icon" onClick={() => navigate("/reunions")}>
+              <ArrowLeft className="w-4 h-4" />
+            </Button>
+            <div>
+              <h1 className="text-3xl font-bold">{meeting.titre}</h1>
+              {meeting.project && (
+                <p className="text-muted-foreground">Projet: {meeting.project.titre}</p>
+              )}
+            </div>
           </div>
+          {canEdit && (
+            <div className="flex gap-2">
+              <Button variant="outline" onClick={() => setShowEditDialog(true)}>
+                <Pencil className="w-4 h-4 mr-2" />
+                Modifier
+              </Button>
+              <Button 
+                variant="outline" 
+                onClick={() => setShowDeleteDialog(true)}
+                className="text-destructive hover:text-destructive"
+                disabled={deleting}
+              >
+                <Trash2 className="w-4 h-4 mr-2" />
+                Supprimer
+              </Button>
+            </div>
+          )}
         </div>
 
         {/* Meeting info */}
@@ -277,6 +360,40 @@ const ReunionDetails = () => {
 
         {/* AI Decisions */}
         <MeetingDecisions meetingId={meeting.id} />
+
+        {/* Delete Dialog */}
+        <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Supprimer cette réunion ?</AlertDialogTitle>
+              <AlertDialogDescription>
+                La réunion sera archivée et supprimée définitivement dans 30 jours.
+                Vous pourrez la récupérer avant cette date.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Annuler</AlertDialogCancel>
+              <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">
+                Supprimer
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
+
+        {/* Edit Dialog */}
+        <EditMeetingDialog
+          open={showEditDialog}
+          onOpenChange={setShowEditDialog}
+          meetingId={meeting.id}
+          onSuccess={() => {
+            setShowEditDialog(false);
+            fetchMeeting();
+            toast({
+              title: "Réunion modifiée",
+              description: "Les modifications ont été enregistrées",
+            });
+          }}
+        />
       </div>
     </div>
   );

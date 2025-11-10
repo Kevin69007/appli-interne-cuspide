@@ -118,6 +118,7 @@ const Reunions = () => {
         <MeetingsList 
           meetings={meetings} 
           onMeetingClick={(id) => navigate(`/reunions/${id}`)}
+          onRefresh={fetchMeetings}
         />
 
         {/* Create dialog */}
