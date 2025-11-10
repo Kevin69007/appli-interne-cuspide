@@ -28,6 +28,7 @@ import Projets from "./pages/Projets";
 import ProjetDetails from "./pages/ProjetDetails";
 import Reunions from "./pages/Reunions";
 import ReunionDetails from "./pages/ReunionDetails";
+import AdminReunions from "./pages/reunions/Admin";
 import CalendrierProjets from "./pages/CalendrierProjets";
 
 const queryClient = new QueryClient({
@@ -75,6 +76,7 @@ const App = () => (
           <Route path="/projets/:id" element={<ProjetDetails />} />
           <Route path="/reunions" element={<Reunions />} />
           <Route path="/reunions/:id" element={<ReunionDetails />} />
+          <Route path="/reunions/admin" element={<AdminReunions />} />
           <Route path="/calendrier-projets" element={<CalendrierProjets />} />
           <Route path="*" element={<NotFound />} />
           </Routes>

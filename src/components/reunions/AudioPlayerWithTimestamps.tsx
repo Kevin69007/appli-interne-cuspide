@@ -15,11 +15,13 @@ interface Timestamp {
 interface AudioPlayerWithTimestampsProps {
   audioUrl: string;
   timestamps: Timestamp[];
+  canDownload?: boolean;
 }
 
 export const AudioPlayerWithTimestamps = ({
   audioUrl,
   timestamps,
+  canDownload = false,
 }: AudioPlayerWithTimestampsProps) => {
   const [isPlaying, setIsPlaying] = useState(false);
   const [currentTime, setCurrentTime] = useState(0);
@@ -100,7 +102,19 @@ export const AudioPlayerWithTimestamps = ({
   return (
     <div className="space-y-4">
       <Card className="p-6">
-        <audio ref={audioRef} src={audioUrl} preload="metadata" />
+        <audio 
+          ref={audioRef} 
+          src={audioUrl} 
+          preload="metadata"
+          controlsList={canDownload ? undefined : "nodownload"}
+          onContextMenu={canDownload ? undefined : (e) => e.preventDefault()}
+        />
+
+        {!canDownload && (
+          <p className="text-xs text-muted-foreground mb-4">
+            Téléchargement réservé aux administrateurs
+          </p>
+        )}
 
         {/* Progress bar */}
         <div className="mb-4">

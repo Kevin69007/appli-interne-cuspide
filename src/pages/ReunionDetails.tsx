@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
+import { useUserRole } from "@/hooks/useUserRole";
 import { Button } from "@/components/ui/button";
 import { ArrowLeft, Calendar, Clock, Users } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
@@ -32,6 +33,7 @@ const ReunionDetails = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { isAdmin } = useUserRole();
   const [meeting, setMeeting] = useState<Meeting | null>(null);
   const [loading, setLoading] = useState(true);
   const [timestamps, setTimestamps] = useState<any[]>([]);
@@ -237,13 +239,24 @@ const ReunionDetails = () => {
               <AudioPlayerWithTimestamps
                 audioUrl={meeting.audio_url || meeting.fichier_audio_url}
                 timestamps={timestamps}
+                canDownload={isAdmin}
               />
             ) : (
               <div className="bg-card rounded-lg border border-border p-6">
-                <audio controls className="w-full">
+                <audio 
+                  controls 
+                  className="w-full"
+                  controlsList={isAdmin ? undefined : "nodownload"}
+                  onContextMenu={isAdmin ? undefined : (e) => e.preventDefault()}
+                >
                   <source src={meeting.audio_url || meeting.fichier_audio_url} type="audio/mpeg" />
                   Votre navigateur ne supporte pas la lecture audio.
                 </audio>
+                {!isAdmin && (
+                  <p className="text-xs text-muted-foreground mt-2">
+                    Téléchargement réservé aux administrateurs
+                  </p>
+                )}
               </div>
             )}
           </div>

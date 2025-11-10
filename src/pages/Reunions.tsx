@@ -2,8 +2,9 @@ import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { useUserRole } from "@/hooks/useUserRole";
 import { Button } from "@/components/ui/button";
-import { Plus, ArrowLeft } from "lucide-react";
+import { Plus, ArrowLeft, Settings } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { MeetingsList } from "@/components/reunions/MeetingsList";
 import { CreateMeetingDialog } from "@/components/reunions/CreateMeetingDialog";
@@ -28,6 +29,7 @@ interface Meeting {
 const Reunions = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { isAdmin } = useUserRole();
   const { toast } = useToast();
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [loading, setLoading] = useState(true);
@@ -96,10 +98,20 @@ const Reunions = () => {
               </p>
             </div>
           </div>
-          <Button onClick={() => setCreateDialogOpen(true)}>
-            <Plus className="w-4 h-4 mr-2" />
-            Nouvelle réunion
-          </Button>
+          <div className="flex gap-2">
+            {isAdmin && (
+              <Button variant="outline" onClick={() => navigate("/reunions/admin")}>
+                <Settings className="w-4 h-4 mr-2" />
+                Permissions
+              </Button>
+            )}
+            {isAdmin && (
+              <Button onClick={() => setCreateDialogOpen(true)}>
+                <Plus className="w-4 h-4 mr-2" />
+                Nouvelle réunion
+              </Button>
+            )}
+          </div>
         </div>
 
         {/* Meetings list */}

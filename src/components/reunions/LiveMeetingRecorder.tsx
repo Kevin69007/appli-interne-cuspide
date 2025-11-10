@@ -7,9 +7,11 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Mic, Square, Plus, Trash2 } from "lucide-react";
+import { useUserRole } from "@/hooks/useUserRole";
+import { Mic, Square, Plus, Trash2, AlertCircle } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { MultiSelect } from "@/components/ui/multi-select";
+import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
 
 interface LiveMeetingRecorderProps {
   open: boolean;
@@ -44,6 +46,7 @@ interface Timestamp {
 
 export const LiveMeetingRecorder = ({ open, onOpenChange, onSuccess }: LiveMeetingRecorderProps) => {
   const { toast } = useToast();
+  const { isAdmin, loading: roleLoading } = useUserRole();
   const [isRecording, setIsRecording] = useState(false);
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [projects, setProjects] = useState<Project[]>([]);
@@ -354,7 +357,18 @@ export const LiveMeetingRecorder = ({ open, onOpenChange, onSuccess }: LiveMeeti
           <DialogTitle>Enregistrer une réunion en direct</DialogTitle>
         </DialogHeader>
 
-        <div className="grid gap-6 py-4">
+        {!isAdmin && !roleLoading && (
+          <Alert variant="destructive">
+            <AlertCircle className="h-4 w-4" />
+            <AlertTitle>Accès refusé</AlertTitle>
+            <AlertDescription>
+              Seuls les administrateurs peuvent enregistrer des réunions en direct.
+            </AlertDescription>
+          </Alert>
+        )}
+
+        {(isAdmin || roleLoading) && (
+          <div className="grid gap-6 py-4">
           {/* Meeting info */}
           <div className="grid gap-4">
             <div className="grid gap-2">
@@ -521,7 +535,8 @@ export const LiveMeetingRecorder = ({ open, onOpenChange, onSuccess }: LiveMeeti
               </div>
             </div>
           )}
-        </div>
+          </div>
+        )}
       </DialogContent>
     </Dialog>
   );

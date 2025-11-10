@@ -1472,6 +1472,41 @@ export type Database = {
           },
         ]
       }
+      meeting_permissions: {
+        Row: {
+          can_access_meetings: boolean
+          employee_id: string
+          granted_at: string | null
+          granted_by: string | null
+          id: string
+          updated_at: string | null
+        }
+        Insert: {
+          can_access_meetings?: boolean
+          employee_id: string
+          granted_at?: string | null
+          granted_by?: string | null
+          id?: string
+          updated_at?: string | null
+        }
+        Update: {
+          can_access_meetings?: boolean
+          employee_id?: string
+          granted_at?: string | null
+          granted_by?: string | null
+          id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "meeting_permissions_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: true
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       meeting_timestamps: {
         Row: {
           created_at: string | null
