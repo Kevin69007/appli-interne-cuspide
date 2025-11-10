@@ -1,5 +1,5 @@
 import { Card } from "@/components/ui/card";
-import { Calendar, Clock, Users, FileAudio, Pencil, Trash2 } from "lucide-react";
+import { Calendar, Clock, Users, FileAudio, Pencil, Trash2, RotateCcw } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
@@ -30,6 +30,7 @@ interface Meeting {
   audio_url?: string;
   fichier_audio_url?: string;
   created_by?: string;
+  deleted_at?: string;
   project?: {
     titre: string;
   };
@@ -40,16 +41,19 @@ interface MeetingCardProps {
   onClick: () => void;
   onDeleted?: () => void;
   onEdited?: () => void;
+  isArchived?: boolean;
 }
 
-export const MeetingCard = ({ meeting, onClick, onDeleted, onEdited }: MeetingCardProps) => {
+export const MeetingCard = ({ meeting, onClick, onDeleted, onEdited, isArchived = false }: MeetingCardProps) => {
   const { toast } = useToast();
   const { isAdmin } = useUserRole();
   const [participantCount, setParticipantCount] = useState(0);
   const [canEdit, setCanEdit] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
+  const [showRestoreDialog, setShowRestoreDialog] = useState(false);
   const [showEditDialog, setShowEditDialog] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [restoring, setRestoring] = useState(false);
 
   useEffect(() => {
     const getParticipantCount = async () => {
@@ -113,6 +117,38 @@ export const MeetingCard = ({ meeting, onClick, onDeleted, onEdited }: MeetingCa
     }
   };
 
+  const handleRestore = async () => {
+    setRestoring(true);
+    try {
+      const { error } = await supabase
+        .from("project_meetings")
+        .update({
+          deleted_at: null,
+          deleted_by: null,
+        })
+        .eq("id", meeting.id);
+
+      if (error) throw error;
+
+      toast({
+        title: "Réunion restaurée",
+        description: "La réunion a été restaurée avec succès",
+      });
+
+      onDeleted?.();
+    } catch (error: any) {
+      console.error("Error restoring meeting:", error);
+      toast({
+        title: "Erreur",
+        description: "Impossible de restaurer la réunion",
+        variant: "destructive",
+      });
+    } finally {
+      setRestoring(false);
+      setShowRestoreDialog(false);
+    }
+  };
+
   const handleEdit = (e: React.MouseEvent) => {
     e.stopPropagation();
     setShowEditDialog(true);
@@ -129,25 +165,42 @@ export const MeetingCard = ({ meeting, onClick, onDeleted, onEdited }: MeetingCa
         className="p-6 hover:border-primary hover:shadow-lg hover:shadow-primary/20 transition-all cursor-pointer relative"
         onClick={onClick}
       >
-        {canEdit && (
+        {(canEdit || isArchived) && (
           <div className="absolute top-4 right-4 flex gap-2" onClick={(e) => e.stopPropagation()}>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleEdit}
-              className="h-8 w-8"
-            >
-              <Pencil className="h-4 w-4" />
-            </Button>
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={handleDeleteClick}
-              className="h-8 w-8 text-destructive hover:text-destructive"
-              disabled={deleting}
-            >
-              <Trash2 className="h-4 w-4" />
-            </Button>
+            {isArchived ? (
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setShowRestoreDialog(true);
+                }}
+                className="h-8 w-8"
+                disabled={restoring}
+              >
+                <RotateCcw className="h-4 w-4" />
+              </Button>
+            ) : (
+              <>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleEdit}
+                  className="h-8 w-8"
+                >
+                  <Pencil className="h-4 w-4" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  onClick={handleDeleteClick}
+                  className="h-8 w-8 text-destructive hover:text-destructive"
+                  disabled={deleting}
+                >
+                  <Trash2 className="h-4 w-4" />
+                </Button>
+              </>
+            )}
           </div>
         )}
 
@@ -196,8 +249,31 @@ export const MeetingCard = ({ meeting, onClick, onDeleted, onEdited }: MeetingCa
               ✓ Transcrite
             </Badge>
           )}
+
+          {isArchived && meeting.deleted_at && (
+            <Badge variant="destructive" className="text-xs">
+              Archivée le {format(new Date(meeting.deleted_at), "dd/MM/yyyy", { locale: fr })}
+            </Badge>
+          )}
         </div>
       </Card>
+
+      <AlertDialog open={showRestoreDialog} onOpenChange={setShowRestoreDialog}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Restaurer cette réunion ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              La réunion sera restaurée dans les réunions actives.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction onClick={handleRestore}>
+              Restaurer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
 
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>

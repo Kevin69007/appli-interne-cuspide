@@ -21,9 +21,10 @@ interface MeetingsListProps {
   meetings: Meeting[];
   onMeetingClick: (id: string) => void;
   onRefresh?: () => void;
+  isArchived?: boolean;
 }
 
-export const MeetingsList = ({ meetings, onMeetingClick, onRefresh }: MeetingsListProps) => {
+export const MeetingsList = ({ meetings, onMeetingClick, onRefresh, isArchived = false }: MeetingsListProps) => {
   if (meetings.length === 0) {
     return (
       <div className="text-center py-12 bg-card rounded-lg border border-border">
@@ -41,6 +42,7 @@ export const MeetingsList = ({ meetings, onMeetingClick, onRefresh }: MeetingsLi
           onClick={() => onMeetingClick(meeting.id)}
           onDeleted={onRefresh}
           onEdited={onRefresh}
+          isArchived={isArchived}
         />
       ))}
     </div>

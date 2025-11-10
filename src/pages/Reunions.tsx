@@ -8,6 +8,8 @@ import { Plus, ArrowLeft, Settings } from "lucide-react";
 import { useToast } from "@/hooks/use-toast";
 import { MeetingsList } from "@/components/reunions/MeetingsList";
 import { CreateMeetingDialog } from "@/components/reunions/CreateMeetingDialog";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Badge } from "@/components/ui/badge";
 
 interface Meeting {
   id: string;
@@ -21,6 +23,7 @@ interface Meeting {
   audio_url?: string;
   fichier_audio_url?: string;
   created_at: string;
+  deleted_at?: string;
   project?: {
     titre: string;
   };
@@ -32,8 +35,10 @@ const Reunions = () => {
   const { isAdmin } = useUserRole();
   const { toast } = useToast();
   const [meetings, setMeetings] = useState<Meeting[]>([]);
+  const [archivedMeetings, setArchivedMeetings] = useState<Meeting[]>([]);
   const [loading, setLoading] = useState(true);
   const [createDialogOpen, setCreateDialogOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("active");
 
   useEffect(() => {
     if (user) {
@@ -43,16 +48,31 @@ const Reunions = () => {
 
   const fetchMeetings = async () => {
     try {
-      const { data, error } = await supabase
+      // Fetch active meetings (not deleted)
+      const { data: activeData, error: activeError } = await supabase
         .from("project_meetings")
         .select(`
           *,
           project:projects(titre)
         `)
+        .is("deleted_at", null)
         .order("date_reunion", { ascending: false });
 
-      if (error) throw error;
-      setMeetings(data || []);
+      if (activeError) throw activeError;
+      setMeetings(activeData || []);
+
+      // Fetch archived meetings (deleted but not permanently removed)
+      const { data: archivedData, error: archivedError } = await supabase
+        .from("project_meetings")
+        .select(`
+          *,
+          project:projects(titre)
+        `)
+        .not("deleted_at", "is", null)
+        .order("deleted_at", { ascending: false });
+
+      if (archivedError) throw archivedError;
+      setArchivedMeetings(archivedData || []);
     } catch (error) {
       console.error("Error fetching meetings:", error);
       toast({
@@ -115,11 +135,36 @@ const Reunions = () => {
         </div>
 
         {/* Meetings list */}
-        <MeetingsList 
-          meetings={meetings} 
-          onMeetingClick={(id) => navigate(`/reunions/${id}`)}
-          onRefresh={fetchMeetings}
-        />
+        <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+          <TabsList className="mb-6">
+            <TabsTrigger value="active" className="flex items-center gap-2">
+              Réunions actives
+              <Badge variant="secondary">{meetings.length}</Badge>
+            </TabsTrigger>
+            <TabsTrigger value="archived" className="flex items-center gap-2">
+              Archives
+              <Badge variant="secondary">{archivedMeetings.length}</Badge>
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="active">
+            <MeetingsList 
+              meetings={meetings} 
+              onMeetingClick={(id) => navigate(`/reunions/${id}`)}
+              onRefresh={fetchMeetings}
+              isArchived={false}
+            />
+          </TabsContent>
+
+          <TabsContent value="archived">
+            <MeetingsList 
+              meetings={archivedMeetings} 
+              onMeetingClick={(id) => navigate(`/reunions/${id}`)}
+              onRefresh={fetchMeetings}
+              isArchived={true}
+            />
+          </TabsContent>
+        </Tabs>
 
         {/* Create dialog */}
         <CreateMeetingDialog

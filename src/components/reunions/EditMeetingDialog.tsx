@@ -35,7 +35,7 @@ export const EditMeetingDialog = ({ open, onOpenChange, meetingId, onSuccess }: 
   const [employees, setEmployees] = useState<Employee[]>([]);
   
   const [titre, setTitre] = useState("");
-  const [projectId, setProjectId] = useState<string>("");
+  const [selectedProjects, setSelectedProjects] = useState<string[]>([]);
   const [dateReunion, setDateReunion] = useState("");
   const [notes, setNotes] = useState("");
   const [selectedParticipants, setSelectedParticipants] = useState<string[]>([]);
@@ -59,7 +59,18 @@ export const EditMeetingDialog = ({ open, onOpenChange, meetingId, onSuccess }: 
       if (meetingError) throw meetingError;
 
       setTitre(meeting.titre);
-      setProjectId(meeting.project_id || "");
+      
+      // Parse project_ids
+      let projectIds: string[] = [];
+      if (meeting.project_ids) {
+        if (Array.isArray(meeting.project_ids)) {
+          projectIds = meeting.project_ids.map(p => String(p));
+        }
+      } else if (meeting.project_id) {
+        projectIds = [String(meeting.project_id)];
+      }
+      setSelectedProjects(projectIds);
+      
       setDateReunion(meeting.date_reunion?.split('T')[0] || "");
       setNotes(meeting.notes || "");
       
@@ -120,7 +131,7 @@ export const EditMeetingDialog = ({ open, onOpenChange, meetingId, onSuccess }: 
         .from("project_meetings")
         .update({
           titre: titre.trim(),
-          project_id: projectId || null,
+          project_ids: selectedProjects.length > 0 ? selectedProjects : null,
           date_reunion: dateReunion || null,
           notes: notes.trim() || null,
           participants: selectedParticipants,
@@ -152,6 +163,11 @@ export const EditMeetingDialog = ({ open, onOpenChange, meetingId, onSuccess }: 
   const participantOptions = employees.map(emp => ({
     value: emp.id,
     label: `${emp.prenom} ${emp.nom}`
+  }));
+
+  const projectOptions = projects.map(project => ({
+    value: project.id,
+    label: project.titre
   }));
 
   if (loadingData) {
@@ -186,20 +202,13 @@ export const EditMeetingDialog = ({ open, onOpenChange, meetingId, onSuccess }: 
           </div>
 
           <div className="space-y-2">
-            <Label htmlFor="project">Projet lié</Label>
-            <select
-              id="project"
-              value={projectId}
-              onChange={(e) => setProjectId(e.target.value)}
-              className="w-full px-3 py-2 border border-input rounded-md bg-background"
-            >
-              <option value="">Aucun projet</option>
-              {projects.map((project) => (
-                <option key={project.id} value={project.id}>
-                  {project.titre}
-                </option>
-              ))}
-            </select>
+            <Label htmlFor="projects">Projets liés</Label>
+            <MultiSelect
+              options={projectOptions}
+              selectedValues={selectedProjects}
+              onSelectedValuesChange={setSelectedProjects}
+              placeholder="Sélectionner les projets"
+            />
           </div>
 
           <div className="space-y-2">
