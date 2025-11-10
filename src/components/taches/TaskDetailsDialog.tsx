@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Calendar, User, CheckCircle2, XCircle, RotateCcw, Send } from "lucide-react";
-import { TaskComments } from "./TaskComments";
+import { TaskCommentsHierarchical } from "./TaskCommentsHierarchical";
 import { SubTasksList } from "./SubTasksList";
 import { RappelsList } from "./RappelsList";
 import { BoomerangSendDialog } from "./BoomerangSendDialog";
@@ -31,9 +31,10 @@ export const TaskDetailsDialog = ({
   onUpdate,
 }: TaskDetailsDialogProps) => {
   const [loading, setLoading] = useState(false);
-  const [newDeadline, setNewDeadline] = useState(task.date_echeance);
   const [showBoomerangDialog, setShowBoomerangDialog] = useState(false);
   const [currentEmployeeName, setCurrentEmployeeName] = useState("");
+  const [isEditingDeadline, setIsEditingDeadline] = useState(false);
+  const [tempDeadline, setTempDeadline] = useState(task.date_echeance);
 
   useEffect(() => {
     fetchCurrentEmployeeName();
@@ -51,22 +52,19 @@ export const TaskDetailsDialog = ({
     }
   };
 
-  const handleUpdateDeadline = async () => {
-    if (!newDeadline) return;
-
+  const handleInlineDeadlineUpdate = async () => {
+    if (!tempDeadline) return;
     setLoading(true);
     try {
       const { error } = await supabase
         .from("tasks")
-        .update({ date_echeance: newDeadline })
+        .update({ date_echeance: tempDeadline })
         .eq("id", task.id);
-
       if (error) throw error;
-
-      toast.success("Date d'échéance mise à jour");
+      toast.success("Date mise à jour");
+      setIsEditingDeadline(false);
       onUpdate();
     } catch (error) {
-      console.error("Error updating deadline:", error);
       toast.error("Erreur lors de la mise à jour");
     } finally {
       setLoading(false);
@@ -223,9 +221,32 @@ export const TaskDetailsDialog = ({
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="flex items-center gap-2 text-sm">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
-                <span>
-                  Échéance : {new Date(task.date_echeance).toLocaleDateString("fr-FR")}
-                </span>
+                {isEditingDeadline ? (
+                  <div className="flex items-center gap-2">
+                    <Input
+                      type="date"
+                      value={tempDeadline}
+                      onChange={(e) => setTempDeadline(e.target.value)}
+                      className="h-8 w-auto"
+                    />
+                    <Button size="sm" onClick={handleInlineDeadlineUpdate} disabled={loading}>
+                      OK
+                    </Button>
+                    <Button size="sm" variant="ghost" onClick={() => {
+                      setIsEditingDeadline(false);
+                      setTempDeadline(task.date_echeance);
+                    }}>
+                      Annuler
+                    </Button>
+                  </div>
+                ) : (
+                  <button 
+                    onClick={() => setIsEditingDeadline(true)}
+                    className="hover:text-primary underline decoration-dotted cursor-pointer"
+                  >
+                    Échéance : {new Date(task.date_echeance).toLocaleDateString("fr-FR")}
+                  </button>
+                )}
               </div>
 
               {task.assigned_employee && (
@@ -295,24 +316,6 @@ export const TaskDetailsDialog = ({
               </Button>
             )}
 
-            {/* Deadline Update - Disabled for boomerang holders */}
-            {!isBoomerangOwner && task.statut !== "annulee" && (
-              <div className="space-y-2">
-                <Label htmlFor="new-deadline">Modifier la date d'échéance</Label>
-                <div className="flex gap-2">
-                  <Input
-                    id="new-deadline"
-                    type="date"
-                    value={newDeadline}
-                    onChange={(e) => setNewDeadline(e.target.value)}
-                  />
-                  <Button onClick={handleUpdateDeadline} disabled={loading || newDeadline === task.date_echeance}>
-                    Mettre à jour
-                  </Button>
-                </div>
-              </div>
-            )}
-
             <Tabs defaultValue="subtasks" className="w-full">
               <TabsList className="grid w-full grid-cols-3">
                 <TabsTrigger value="subtasks">Sous-tâches</TabsTrigger>
@@ -331,9 +334,8 @@ export const TaskDetailsDialog = ({
               </TabsContent>
 
               <TabsContent value="comments">
-                <TaskComments
-                  taskId={task.id}
-                  comments={task.commentaires || []}
+                <TaskCommentsHierarchical
+                  parentTask={task}
                   currentEmployeeId={currentEmployeeId}
                   onUpdate={onUpdate}
                 />
