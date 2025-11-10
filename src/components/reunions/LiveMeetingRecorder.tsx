@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Mic, Square, Plus, Trash2 } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { MultiSelectCombobox } from "@/components/ui/multi-select-combobox";
 
 interface LiveMeetingRecorderProps {
   open: boolean;
@@ -26,6 +27,12 @@ interface Task {
   titre: string;
 }
 
+interface Employee {
+  id: string;
+  nom: string;
+  prenom: string;
+}
+
 interface Timestamp {
   project_id: string;
   task_id?: string;
@@ -41,12 +48,13 @@ export const LiveMeetingRecorder = ({ open, onOpenChange, onSuccess }: LiveMeeti
   const [elapsedSeconds, setElapsedSeconds] = useState(0);
   const [projects, setProjects] = useState<Project[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
+  const [employees, setEmployees] = useState<Employee[]>([]);
   const [selectedProjectId, setSelectedProjectId] = useState<string>("");
   const [selectedTaskId, setSelectedTaskId] = useState<string>("");
   const [currentNote, setCurrentNote] = useState("");
   const [timestamps, setTimestamps] = useState<Timestamp[]>([]);
   const [titre, setTitre] = useState("");
-  const [participants, setParticipants] = useState("");
+  const [participantIds, setParticipantIds] = useState<string[]>([]);
   const [notes, setNotes] = useState("");
   const [saving, setSaving] = useState(false);
 
@@ -57,6 +65,7 @@ export const LiveMeetingRecorder = ({ open, onOpenChange, onSuccess }: LiveMeeti
   useEffect(() => {
     if (open) {
       fetchProjects();
+      fetchEmployees();
       resetForm();
     }
   }, [open]);
@@ -86,6 +95,24 @@ export const LiveMeetingRecorder = ({ open, onOpenChange, onSuccess }: LiveMeeti
     }
 
     setProjects(data || []);
+  };
+
+  const fetchEmployees = async () => {
+    const { data, error } = await supabase
+      .from("employees")
+      .select("id, nom, prenom")
+      .order("nom, prenom");
+
+    if (error) {
+      toast({
+        title: "Erreur",
+        description: "Impossible de charger les employés",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setEmployees(data || []);
   };
 
   const fetchTasks = async (projectId: string) => {
@@ -236,15 +263,19 @@ export const LiveMeetingRecorder = ({ open, onOpenChange, onSuccess }: LiveMeeti
         .from("meetings")
         .getPublicUrl(filePath);
 
+      // Collect unique project IDs from timestamps
+      const projectIds = [...new Set(timestamps.map(t => t.project_id).filter(Boolean))] as string[];
+
       // Create meeting record
       const { data: meetingData, error: meetingError } = await supabase
         .from("project_meetings")
         .insert({
           titre,
-          participants,
+          participants: JSON.stringify(participantIds),
           notes,
           audio_url: urlData.publicUrl,
           date_reunion: new Date().toISOString(),
+          project_ids: projectIds.length > 0 ? projectIds : null,
         })
         .select()
         .single();
@@ -297,7 +328,7 @@ export const LiveMeetingRecorder = ({ open, onOpenChange, onSuccess }: LiveMeeti
     setElapsedSeconds(0);
     setTimestamps([]);
     setTitre("");
-    setParticipants("");
+    setParticipantIds([]);
     setNotes("");
     setSelectedProjectId("");
     setSelectedTaskId("");
@@ -338,13 +369,17 @@ export const LiveMeetingRecorder = ({ open, onOpenChange, onSuccess }: LiveMeeti
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="participants">Participants</Label>
-              <Input
-                id="participants"
-                value={participants}
-                onChange={(e) => setParticipants(e.target.value)}
-                disabled={isRecording}
-                placeholder="Liste des participants"
+              <Label htmlFor="participants">Participants *</Label>
+              <MultiSelectCombobox
+                selectedValues={participantIds}
+                onSelectedValuesChange={setParticipantIds}
+                options={employees.map((emp) => ({
+                  value: emp.id,
+                  label: `${emp.prenom} ${emp.nom}`,
+                }))}
+                placeholder="Sélectionner les participants"
+                searchPlaceholder="Rechercher un employé..."
+                emptyMessage="Aucun employé trouvé."
               />
             </div>
 

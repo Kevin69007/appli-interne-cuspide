@@ -4,12 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { AudioUploader } from "./AudioUploader";
 import { LiveMeetingRecorder } from "./LiveMeetingRecorder";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { MultiSelectCombobox } from "@/components/ui/multi-select-combobox";
 
 interface CreateMeetingDialogProps {
   open: boolean;
@@ -22,25 +22,32 @@ interface Project {
   titre: string;
 }
 
+interface Employee {
+  id: string;
+  nom: string;
+  prenom: string;
+}
+
 export const CreateMeetingDialog = ({ open, onOpenChange, onSuccess }: CreateMeetingDialogProps) => {
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [projects, setProjects] = useState<Project[]>([]);
+  const [employees, setEmployees] = useState<Employee[]>([]);
   const [audioFile, setAudioFile] = useState<File | null>(null);
   const [showLiveRecorder, setShowLiveRecorder] = useState(false);
   
   const [formData, setFormData] = useState({
-    project_id: "",
+    project_ids: [] as string[],
     titre: "",
     date_reunion: "",
-    duree_minutes: "",
-    participants: "",
+    participant_ids: [] as string[],
     notes: "",
   });
 
   useEffect(() => {
     if (open) {
       fetchProjects();
+      fetchEmployees();
     }
   }, [open]);
 
@@ -51,6 +58,15 @@ export const CreateMeetingDialog = ({ open, onOpenChange, onSuccess }: CreateMee
       .order("titre");
     
     setProjects(data || []);
+  };
+
+  const fetchEmployees = async () => {
+    const { data } = await supabase
+      .from("employees")
+      .select("id, nom, prenom")
+      .order("nom, prenom");
+    
+    setEmployees(data || []);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -79,11 +95,10 @@ export const CreateMeetingDialog = ({ open, onOpenChange, onSuccess }: CreateMee
 
       // Create meeting
       const { error } = await supabase.from("project_meetings").insert({
-        project_id: formData.project_id,
+        project_ids: formData.project_ids,
         titre: formData.titre,
         date_reunion: formData.date_reunion,
-        duree_minutes: parseInt(formData.duree_minutes),
-        participants: formData.participants.split(",").map(p => p.trim()),
+        participants: JSON.stringify(formData.participant_ids),
         notes: formData.notes,
         audio_url,
       });
@@ -113,11 +128,10 @@ export const CreateMeetingDialog = ({ open, onOpenChange, onSuccess }: CreateMee
 
   const resetForm = () => {
     setFormData({
-      project_id: "",
+      project_ids: [],
       titre: "",
       date_reunion: "",
-      duree_minutes: "",
-      participants: "",
+      participant_ids: [],
       notes: "",
     });
     setAudioFile(null);
@@ -140,23 +154,20 @@ export const CreateMeetingDialog = ({ open, onOpenChange, onSuccess }: CreateMee
             <TabsContent value="upload" className="space-y-4 mt-4">
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div className="space-y-2">
-                  <Label htmlFor="project">Projet</Label>
-                  <Select
-                    value={formData.project_id}
-                    onValueChange={(value) => setFormData({ ...formData, project_id: value })}
-                    required
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Sélectionner un projet" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {projects.map((project) => (
-                        <SelectItem key={project.id} value={project.id}>
-                          {project.titre}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
+                  <Label htmlFor="projects">Projets *</Label>
+                  <MultiSelectCombobox
+                    selectedValues={formData.project_ids}
+                    onSelectedValuesChange={(values) =>
+                      setFormData({ ...formData, project_ids: values })
+                    }
+                    options={projects.map((p) => ({
+                      value: p.id,
+                      label: p.titre,
+                    }))}
+                    placeholder="Sélectionner des projets"
+                    searchPlaceholder="Rechercher un projet..."
+                    emptyMessage="Aucun projet trouvé."
+                  />
                 </div>
 
                 <div className="space-y-2">
@@ -169,38 +180,31 @@ export const CreateMeetingDialog = ({ open, onOpenChange, onSuccess }: CreateMee
                   />
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="date">Date</Label>
-                    <Input
-                      id="date"
-                      type="datetime-local"
-                      value={formData.date_reunion}
-                      onChange={(e) => setFormData({ ...formData, date_reunion: e.target.value })}
-                      required
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="duree">Durée (minutes)</Label>
-                    <Input
-                      id="duree"
-                      type="number"
-                      value={formData.duree_minutes}
-                      onChange={(e) => setFormData({ ...formData, duree_minutes: e.target.value })}
-                      required
-                    />
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="date">Date</Label>
+                  <Input
+                    id="date"
+                    type="datetime-local"
+                    value={formData.date_reunion}
+                    onChange={(e) => setFormData({ ...formData, date_reunion: e.target.value })}
+                    required
+                  />
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="participants">Participants (séparés par des virgules)</Label>
-                  <Input
-                    id="participants"
-                    value={formData.participants}
-                    onChange={(e) => setFormData({ ...formData, participants: e.target.value })}
-                    placeholder="Alice, Bob, Charlie"
-                    required
+                  <Label htmlFor="participants">Participants *</Label>
+                  <MultiSelectCombobox
+                    selectedValues={formData.participant_ids}
+                    onSelectedValuesChange={(values) =>
+                      setFormData({ ...formData, participant_ids: values })
+                    }
+                    options={employees.map((emp) => ({
+                      value: emp.id,
+                      label: `${emp.prenom} ${emp.nom}`,
+                    }))}
+                    placeholder="Sélectionner les participants"
+                    searchPlaceholder="Rechercher un employé..."
+                    emptyMessage="Aucun employé trouvé."
                   />
                 </div>
 

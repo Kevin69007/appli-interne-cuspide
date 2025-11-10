@@ -12,7 +12,8 @@ import { fr } from "date-fns/locale";
 
 interface Meeting {
   id: string;
-  project_id: string;
+  project_id?: string;
+  project_ids?: string[];
   titre: string;
   date_reunion: string;
   duree_minutes?: number;
@@ -34,6 +35,7 @@ const ReunionDetails = () => {
   const [meeting, setMeeting] = useState<Meeting | null>(null);
   const [loading, setLoading] = useState(true);
   const [timestamps, setTimestamps] = useState<any[]>([]);
+  const [participantNames, setParticipantNames] = useState<string[]>([]);
 
   useEffect(() => {
     if (id) {
@@ -54,7 +56,52 @@ const ReunionDetails = () => {
         .single();
 
       if (error) throw error;
-      setMeeting(data);
+      
+      // Convert Json types to proper types
+      const meetingData: Meeting = {
+        ...data,
+        project_ids: Array.isArray(data.project_ids) 
+          ? (data.project_ids as string[]) 
+          : null,
+      };
+      
+      setMeeting(meetingData);
+
+      // Fetch participant names if they are UUIDs
+      if (data.participants) {
+        try {
+          const participantsStr = typeof data.participants === 'string' 
+            ? data.participants 
+            : JSON.stringify(data.participants);
+          const participantIds = JSON.parse(participantsStr);
+          
+          if (Array.isArray(participantIds) && participantIds.length > 0) {
+            if (typeof participantIds[0] === 'string' && participantIds[0].match(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i)) {
+              const { data: employeesData } = await supabase
+                .from("employees")
+                .select("nom, prenom")
+                .in("id", participantIds);
+
+              if (employeesData) {
+                setParticipantNames(employeesData.map(emp => `${emp.prenom} ${emp.nom}`));
+              }
+            } else {
+              // Old format: names as strings
+              setParticipantNames(participantIds);
+            }
+          }
+        } catch (e) {
+          // Old format: comma-separated string - try converting to string first
+          const participantsStr = typeof data.participants === 'string' 
+            ? data.participants 
+            : String(data.participants);
+          if (participantsStr) {
+            setParticipantNames(participantsStr.split(",").map(p => p.trim()).filter(Boolean));
+          }
+        }
+      }
+
+      setLoading(false);
     } catch (error) {
       console.error("Error fetching meeting:", error);
       toast({
@@ -63,7 +110,6 @@ const ReunionDetails = () => {
         variant: "destructive",
       });
       navigate("/reunions");
-    } finally {
       setLoading(false);
     }
   };
@@ -151,7 +197,11 @@ const ReunionDetails = () => {
             
             <div className="flex items-center gap-2 text-muted-foreground">
               <Users className="w-4 h-4" />
-              <span>{Array.isArray(meeting.participants) ? meeting.participants.length : 0} participant(s)</span>
+              <span>
+                {participantNames.length > 0
+                  ? `${participantNames.length} participant(s)`
+                  : "Aucun participant"}
+              </span>
             </div>
           </div>
 
@@ -162,16 +212,16 @@ const ReunionDetails = () => {
             </div>
           )}
 
-          {Array.isArray(meeting.participants) && meeting.participants.length > 0 && (
+          {participantNames.length > 0 && (
             <div className="mt-4 pt-4 border-t border-border">
               <h3 className="font-semibold mb-2">Participants</h3>
               <div className="flex flex-wrap gap-2">
-                {meeting.participants.map((participant: string, index: number) => (
+                {participantNames.map((name, index) => (
                   <span
                     key={index}
                     className="px-3 py-1 bg-muted rounded-full text-sm"
                   >
-                    {participant}
+                    {name}
                   </span>
                 ))}
               </div>

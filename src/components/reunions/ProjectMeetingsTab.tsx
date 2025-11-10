@@ -35,8 +35,26 @@ export const ProjectMeetingsTab = ({ projectId }: ProjectMeetingsTabProps) => {
   }, [projectId]);
 
   const fetchMeetings = async () => {
+    setLoading(true);
     try {
-      // Fetch meetings that have timestamps for this project
+      // Fetch meetings where project_id matches OR project_ids contains this project
+      const { data: meetingsData, error: meetingsError } = await supabase
+        .from("project_meetings")
+        .select("id, titre, date_reunion, participants")
+        .or(`project_id.eq.${projectId},project_ids.cs.["${projectId}"]`)
+        .order("date_reunion", { ascending: false });
+
+      if (meetingsError) throw meetingsError;
+
+      if (!meetingsData || meetingsData.length === 0) {
+        setMeetings([]);
+        setLoading(false);
+        return;
+      }
+
+      const meetingIds = meetingsData.map(m => m.id);
+
+      // Fetch timestamps for these meetings that are related to this project
       const { data: timestampsData, error: timestampsError } = await supabase
         .from("meeting_timestamps")
         .select(`
@@ -49,31 +67,14 @@ export const ProjectMeetingsTab = ({ projectId }: ProjectMeetingsTabProps) => {
             titre
           )
         `)
+        .in("meeting_id", meetingIds)
         .eq("project_id", projectId)
         .order("timestamp_seconds");
 
       if (timestampsError) throw timestampsError;
 
-      // Group timestamps by meeting
-      const meetingIds = [...new Set(timestampsData?.map((t: any) => t.meeting_id) || [])];
-
-      if (meetingIds.length === 0) {
-        setMeetings([]);
-        setLoading(false);
-        return;
-      }
-
-      // Fetch meeting details
-      const { data: meetingsData, error: meetingsError } = await supabase
-        .from("project_meetings")
-        .select("id, titre, date_reunion, participants")
-        .in("id", meetingIds)
-        .order("date_reunion", { ascending: false });
-
-      if (meetingsError) throw meetingsError;
-
       // Combine data
-      const meetingsWithTimestamps = meetingsData?.map((meeting: any) => ({
+      const meetingsWithTimestamps = meetingsData.map((meeting: any) => ({
         ...meeting,
         timestamps: timestampsData
           ?.filter((t: any) => t.meeting_id === meeting.id)
@@ -83,7 +84,7 @@ export const ProjectMeetingsTab = ({ projectId }: ProjectMeetingsTabProps) => {
             note: t.note,
             task_titre: t.tasks?.titre,
           })) || [],
-      })) || [];
+      }));
 
       setMeetings(meetingsWithTimestamps);
     } catch (error) {

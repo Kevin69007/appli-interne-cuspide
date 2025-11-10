@@ -2218,6 +2218,7 @@ export type Database = {
           notes: string | null
           participants: Json | null
           project_id: string | null
+          project_ids: Json | null
           resume_ia: string | null
           task_id: string | null
           titre: string
@@ -2236,6 +2237,7 @@ export type Database = {
           notes?: string | null
           participants?: Json | null
           project_id?: string | null
+          project_ids?: Json | null
           resume_ia?: string | null
           task_id?: string | null
           titre: string
@@ -2254,6 +2256,7 @@ export type Database = {
           notes?: string | null
           participants?: Json | null
           project_id?: string | null
+          project_ids?: Json | null
           resume_ia?: string | null
           task_id?: string | null
           titre?: string
