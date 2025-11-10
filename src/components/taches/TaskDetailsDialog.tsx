@@ -313,27 +313,27 @@ export const TaskDetailsDialog = ({
               </div>
             )}
 
-            <Tabs defaultValue="comments" className="w-full">
+            <Tabs defaultValue="subtasks" className="w-full">
               <TabsList className="grid w-full grid-cols-3">
+                <TabsTrigger value="subtasks">Sous-tâches</TabsTrigger>
                 <TabsTrigger value="comments">
                   Commentaires ({task.commentaires?.length || 0})
                 </TabsTrigger>
-                <TabsTrigger value="subtasks">Sous-tâches</TabsTrigger>
                 <TabsTrigger value="reminders">Rappels</TabsTrigger>
               </TabsList>
 
-              <TabsContent value="comments">
-                <TaskComments
-                  taskId={task.id}
-                  comments={task.commentaires || []}
+              <TabsContent value="subtasks">
+                <SubTasksList
+                  parentTaskId={task.id}
                   currentEmployeeId={currentEmployeeId}
                   onUpdate={onUpdate}
                 />
               </TabsContent>
 
-              <TabsContent value="subtasks">
-                <SubTasksList
-                  parentTaskId={task.id}
+              <TabsContent value="comments">
+                <TaskComments
+                  taskId={task.id}
+                  comments={task.commentaires || []}
                   currentEmployeeId={currentEmployeeId}
                   onUpdate={onUpdate}
                 />

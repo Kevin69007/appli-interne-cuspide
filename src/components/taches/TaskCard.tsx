@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { TaskDetailsDialog } from "./TaskDetailsDialog";
 import { BoomerangTimer } from "./BoomerangTimer";
+import { QuickSubTasksPanel } from "./QuickSubTasksPanel";
 
 interface TaskCardProps {
   task: any;
@@ -19,6 +20,24 @@ interface TaskCardProps {
 
 export const TaskCard = ({ task, currentEmployeeId, onUpdate, isHelpRequest, isMaintenance, highlightTerm }: TaskCardProps) => {
   const [showDetails, setShowDetails] = useState(false);
+  const [subTasksCount, setSubTasksCount] = useState({ total: 0, completed: 0 });
+
+  useEffect(() => {
+    fetchSubTasksCount();
+  }, [task.id]);
+
+  const fetchSubTasksCount = async () => {
+    const { data, error } = await supabase
+      .from("tasks")
+      .select("id, statut")
+      .eq("parent_task_id", task.id)
+      .neq("statut", "annulee");
+
+    if (!error && data) {
+      const completed = data.filter((st) => st.statut === "terminee").length;
+      setSubTasksCount({ total: data.length, completed });
+    }
+  };
 
   // Highlight search terms in text
   const highlightText = (text: string) => {
@@ -143,7 +162,24 @@ export const TaskCard = ({ task, currentEmployeeId, onUpdate, isHelpRequest, isM
               {task.boomerang_active && task.boomerang_deadline && (
                 <BoomerangTimer deadline={task.boomerang_deadline} />
               )}
+
+              {subTasksCount.total > 0 && (
+                <Badge variant="outline" className="text-xs">
+                  ✓ {subTasksCount.completed}/{subTasksCount.total} sous-tâches
+                </Badge>
+              )}
             </div>
+
+            {subTasksCount.total > 0 && (
+              <QuickSubTasksPanel
+                parentTaskId={task.id}
+                currentEmployeeId={currentEmployeeId}
+                onUpdate={() => {
+                  fetchSubTasksCount();
+                  onUpdate();
+                }}
+              />
+            )}
           </div>
         </div>
       </Card>
