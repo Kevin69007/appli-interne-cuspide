@@ -25,8 +25,8 @@ export const calculateMonthlyScore = async (
     let malusPoints = 0;
 
     entries?.forEach(entry => {
-      if (entry.categorie === 'indicateurs' && entry.points_indicateur) {
-        scoreObjectifs += entry.points_indicateur;
+      if ((entry.categorie as any) === 'indicateurs' && (entry as any).points_indicateur) {
+        scoreObjectifs += (entry as any).points_indicateur;
       } else if (entry.points) {
         if (entry.points > 0) {
           bonusPoints += entry.points;

@@ -40,7 +40,7 @@ export const EmployeeMonthlyScore = ({ employeeId, month, year }: Props) => {
 
       if (error && error.code !== 'PGRST116') throw error;
       
-      setScore(data || {
+      setScore((data as any) || {
         score_indicateurs: 0,
         bonus_points: 0,
         malus_points: 0,

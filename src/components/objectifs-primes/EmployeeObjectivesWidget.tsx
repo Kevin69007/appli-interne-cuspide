@@ -43,7 +43,7 @@ export const EmployeeObjectivesWidget = ({ employeeId }: Props) => {
       .from('agenda_entries')
       .select('*')
       .eq('employee_id', employeeId)
-      .eq('categorie', 'indicateurs')
+      .eq('categorie', 'indicateurs' as any)
       .gte('date', firstDay)
       .lte('date', lastDay)
       .order('date', { ascending: true });
@@ -54,7 +54,7 @@ export const EmployeeObjectivesWidget = ({ employeeId }: Props) => {
       return;
     }
 
-    setObjectives(data || []);
+    setObjectives((data as any) || []);
     setLoading(false);
   };
 

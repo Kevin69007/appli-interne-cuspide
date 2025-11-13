@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Target, X } from "lucide-react";
-import { CreateObjectiveDialog } from "./CreateObjectiveDialog";
+import { CreateIndicatorDialog } from "./CreateIndicatorDialog";
 
 // Fonction helper pour générer les dates selon la récurrence
 const generateRecurringDates = (year: number, month: number, recurrence: "jour" | "semaine" | "mois"): string[] => {
@@ -49,19 +49,19 @@ interface Employee {
   prenom: string;
 }
 
-interface Objective {
+interface Indicator {
   nom: string;
   valeur_cible: number;
   indicateur: string;
   recurrence: "jour" | "semaine" | "mois";
-  points_objectif: number;
+  points_indicateur: number;
 }
 
 export const EmployeeObjectivesDialog = () => {
   const [open, setOpen] = useState(false);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [selectedEmployees, setSelectedEmployees] = useState<string[]>([]);
-  const [objectives, setObjectives] = useState<Objective[]>([]);
+  const [objectives, setObjectives] = useState<Indicator[]>([]);
   const [loading, setLoading] = useState(false);
   
   const [selectedMonths, setSelectedMonths] = useState<number[]>([new Date().getMonth() + 1]);
@@ -79,7 +79,7 @@ export const EmployeeObjectivesDialog = () => {
     const { data } = await supabase
       .from('configuration')
       .select('valeur')
-      .eq('cle', 'objectifs_points_total')
+      .eq('cle', 'indicateurs_points_total')
       .single();
 
     if (data?.valeur && typeof data.valeur === 'number') {
@@ -126,7 +126,7 @@ export const EmployeeObjectivesDialog = () => {
     );
   };
 
-  const handleAddObjective = (objective: Objective) => {
+  const handleAddObjective = (objective: Indicator) => {
     setObjectives([...objectives, objective]);
   };
 
@@ -135,7 +135,7 @@ export const EmployeeObjectivesDialog = () => {
   };
 
   const getTotalPoints = () => {
-    return objectives.reduce((sum, obj) => sum + obj.points_objectif, 0);
+    return objectives.reduce((sum, obj) => sum + obj.points_indicateur, 0);
   };
 
   const getPointsRemaining = () => {
@@ -213,12 +213,12 @@ export const EmployeeObjectivesDialog = () => {
       <DialogTrigger asChild>
         <Button variant="outline">
           <Target className="h-4 w-4 mr-2" />
-          Définir objectifs
+          Définir indicateurs
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Définir les objectifs</DialogTitle>
+          <DialogTitle>Définir les indicateurs</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-2 gap-4">
@@ -311,7 +311,11 @@ export const EmployeeObjectivesDialog = () => {
                   )}
                 </p>
               </div>
-              <CreateObjectiveDialog onObjectiveCreated={handleAddObjective} totalPointsConfig={totalPointsConfig} currentTotal={getTotalPoints()} />
+              <CreateIndicatorDialog 
+                onIndicatorCreated={handleAddObjective}
+                totalPointsConfig={totalPointsConfig}
+                currentTotal={getTotalPoints()}
+              />
             </div>
             
             {objectives.length === 0 ? (
@@ -332,7 +336,7 @@ export const EmployeeObjectivesDialog = () => {
                       </p>
                     </div>
                     <Badge variant="secondary" className="ml-2">
-                      {obj.points_objectif} pts
+                      {obj.points_indicateur} pts
                     </Badge>
                     <Button
                       type="button"

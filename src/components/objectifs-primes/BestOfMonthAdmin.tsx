@@ -124,12 +124,12 @@ export const BestOfMonthAdmin = () => {
         .insert({
           employee_id: employeeId,
           date: new Date().toISOString().split('T')[0],
-          categorie: 'indicateurs' as const,
+          categorie: 'indicateurs' as any,
           detail: `Meilleur employé du mois ${selectedMonth}/${selectedYear}`,
           points: bonusPoints,
           auteur_id: null,
           statut_validation: 'valide' as const
-        });
+        } as any);
 
       if (agendaError) throw agendaError;
 
