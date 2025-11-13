@@ -102,7 +102,7 @@ export const ColleagueVoteResults = () => {
         .insert({
           employee_id: employeeId,
           date: new Date(`${selectedYear}-${selectedMonth}-01`).toISOString().split('T')[0],
-          categorie: 'objectifs' as const,
+          categorie: 'indicateurs' as const,
           points: bonusPoints,
           detail: `Collègue du mois - Vote`,
           statut_validation: 'valide' as const

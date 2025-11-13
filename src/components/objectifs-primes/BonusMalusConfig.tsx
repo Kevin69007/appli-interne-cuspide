@@ -115,6 +115,17 @@ export const BonusMalusConfig = () => {
 
   return (
     <div className="space-y-4">
+      <div className="mb-4 p-4 border-l-4 border-blue-500 bg-blue-50">
+        <h4 className="font-semibold text-blue-700 mb-2">
+          📌 Règle de calcul des retards
+        </h4>
+        <p className="text-sm text-blue-600">
+          Une tâche est considérée <strong>en retard</strong> lorsque sa date d'échéance 
+          est dépassée de <strong>24 heures</strong> ou plus. Les pénalités configurées 
+          ci-dessous s'appliquent automatiquement à la clôture de la tâche.
+        </p>
+      </div>
+
       <div className="flex items-center justify-between">
         <div>
           <h3 className="text-lg font-semibold">Barèmes de points</h3>

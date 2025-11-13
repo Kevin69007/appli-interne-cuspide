@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 
 interface MonthlyScore {
-  score_objectifs: number;
+  score_indicateurs: number;
   bonus_points: number;
   malus_points: number;
   score_global: number;
@@ -41,7 +41,7 @@ export const EmployeeMonthlyScore = ({ employeeId, month, year }: Props) => {
       if (error && error.code !== 'PGRST116') throw error;
       
       setScore(data || {
-        score_objectifs: 0,
+        score_indicateurs: 0,
         bonus_points: 0,
         malus_points: 0,
         score_global: 0,
@@ -111,8 +111,8 @@ export const EmployeeMonthlyScore = ({ employeeId, month, year }: Props) => {
 
         <div className="grid grid-cols-3 gap-4">
           <div className="text-center">
-            <div className="text-sm text-muted-foreground">Objectifs</div>
-            <div className="text-xl font-semibold">{Math.round(score.score_objectifs)}</div>
+            <div className="text-sm text-muted-foreground">Indicateurs</div>
+            <div className="text-xl font-semibold">{Math.round(score.score_indicateurs)}</div>
           </div>
           <div className="text-center">
             <div className="text-sm text-muted-foreground">Bonus</div>

@@ -9,9 +9,9 @@ import NotFound from "./pages/NotFound";
 import JobDocuments from "./pages/JobDocuments";
 import Protocols from "./pages/Protocols";
 import Quiz from "./pages/Quiz";
-import ObjectifsPrimes from "./pages/ObjectifsPrimes";
-import ObjectifsPrimesEmploye from "./pages/objectifs-primes/Employe";
-import ObjectifsPrimesAdmin from "./pages/objectifs-primes/Admin";
+import IndicateursPrimes from "./pages/IndicateursPrimes";
+import IndicateursPrimesEmploye from "./pages/indicateurs-primes/Employe";
+import IndicateursPrimesAdmin from "./pages/indicateurs-primes/Admin";
 import CommunicationGenerale from "./pages/CommunicationGenerale";
 import Taches from "./pages/Taches";
 import CongesMoodBar from "./pages/CongesMoodBar";
@@ -58,9 +58,13 @@ const App = () => (
             <Route path="/fiches-de-poste" element={<JobDocuments />} />
             <Route path="/protocoles" element={<Protocols />} />
             <Route path="/quiz" element={<Quiz />} />
-            <Route path="/objectifs-primes" element={<ObjectifsPrimes />} />
-            <Route path="/objectifs-primes/employe" element={<ObjectifsPrimesEmploye />} />
-            <Route path="/objectifs-primes/admin" element={<ObjectifsPrimesAdmin />} />
+            <Route path="/indicateurs-primes" element={<IndicateursPrimes />} />
+            <Route path="/indicateurs-primes/employe" element={<IndicateursPrimesEmploye />} />
+            <Route path="/indicateurs-primes/admin" element={<IndicateursPrimesAdmin />} />
+            {/* Backwards compatibility */}
+            <Route path="/objectifs-primes" element={<IndicateursPrimes />} />
+            <Route path="/objectifs-primes/employe" element={<IndicateursPrimesEmploye />} />
+            <Route path="/objectifs-primes/admin" element={<IndicateursPrimesAdmin />} />
             <Route path="/communication-generale" element={<CommunicationGenerale />} />
             <Route path="/taches" element={<Taches />} />
             <Route path="/conges-mood-bar" element={<CongesMoodBar />} />
