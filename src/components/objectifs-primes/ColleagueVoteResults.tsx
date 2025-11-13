@@ -102,11 +102,11 @@ export const ColleagueVoteResults = () => {
         .insert({
           employee_id: employeeId,
           date: new Date(`${selectedYear}-${selectedMonth}-01`).toISOString().split('T')[0],
-          categorie: 'indicateurs' as const,
+          categorie: 'indicateurs' as any,
           points: bonusPoints,
           detail: `Collègue du mois - Vote`,
           statut_validation: 'valide' as const
-        });
+        } as any);
 
       if (agendaError) throw agendaError;
 

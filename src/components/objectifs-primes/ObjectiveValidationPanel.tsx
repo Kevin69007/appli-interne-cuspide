@@ -57,7 +57,7 @@ export const ObjectiveValidationPanel = () => {
         *,
         employee:employees(nom, prenom)
       `)
-      .eq('categorie', 'indicateurs')
+      .eq('categorie', 'indicateurs' as any)
       .eq('statut_validation', 'en_attente')
       .not('valeur_declaree', 'is', null)
       .order('date', { ascending: false });
@@ -67,7 +67,7 @@ export const ObjectiveValidationPanel = () => {
       return;
     }
 
-    setPendingObjectives(data || []);
+    setPendingObjectives((data as any) || []);
   };
 
   const calculateDiscrepancy = (declared: number, controlled: number): number => {

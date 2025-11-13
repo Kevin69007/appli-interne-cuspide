@@ -48,7 +48,7 @@ export const IndicatorDeclarationDialog = ({ employeeId }: Props) => {
       .from('agenda_entries')
       .select('*')
       .eq('employee_id', employeeId)
-      .eq('categorie', 'indicateurs')
+      .eq('categorie', 'indicateurs' as any)
       .gte('date', firstDay)
       .lte('date', lastDay)
       .is('valeur_declaree', null);
