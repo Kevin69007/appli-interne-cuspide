@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, memo, useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -26,42 +26,45 @@ interface ProjectCardProps {
   currentEmployeeId: string | null;
 }
 
-export const ProjectCard = ({ project, onUpdate, currentEmployeeId }: ProjectCardProps) => {
+const getStatutColor = (statut: string) => {
+  switch (statut) {
+    case "en_cours":
+      return "bg-blue-500/10 text-blue-600 border-blue-200";
+    case "a_venir":
+      return "bg-yellow-500/10 text-yellow-600 border-yellow-200";
+    case "termine":
+      return "bg-green-500/10 text-green-600 border-green-200";
+    case "en_pause":
+      return "bg-gray-500/10 text-gray-600 border-gray-200";
+    default:
+      return "";
+  }
+};
+
+const getStatutLabel = (statut: string) => {
+  switch (statut) {
+    case "en_cours":
+      return "En cours";
+    case "a_venir":
+      return "À venir";
+    case "termine":
+      return "Terminé";
+    case "en_pause":
+      return "En pause";
+    default:
+      return statut;
+  }
+};
+
+export const ProjectCard = memo(({ project, onUpdate, currentEmployeeId }: ProjectCardProps) => {
   const navigate = useNavigate();
   const { isAdmin, isManager } = useUserRole();
   const [showEditDialog, setShowEditDialog] = useState(false);
 
   const canEdit = isAdmin || isManager || project.responsable_id === currentEmployeeId;
 
-  const getStatutColor = (statut: string) => {
-    switch (statut) {
-      case "en_cours":
-        return "bg-blue-500/10 text-blue-600 border-blue-200";
-      case "a_venir":
-        return "bg-yellow-500/10 text-yellow-600 border-yellow-200";
-      case "termine":
-        return "bg-green-500/10 text-green-600 border-green-200";
-      case "en_pause":
-        return "bg-gray-500/10 text-gray-600 border-gray-200";
-      default:
-        return "";
-    }
-  };
-
-  const getStatutLabel = (statut: string) => {
-    switch (statut) {
-      case "en_cours":
-        return "En cours";
-      case "a_venir":
-        return "À venir";
-      case "termine":
-        return "Terminé";
-      case "en_pause":
-        return "En pause";
-      default:
-        return statut;
-    }
-  };
+  const statutColor = useMemo(() => getStatutColor(project.statut), [project.statut]);
+  const statutLabel = useMemo(() => getStatutLabel(project.statut), [project.statut]);
 
   return (
     <>
@@ -111,8 +114,8 @@ export const ProjectCard = ({ project, onUpdate, currentEmployeeId }: ProjectCar
         </div>
 
         <div className="flex flex-wrap items-center gap-2">
-          <Badge variant="outline" className={getStatutColor(project.statut)}>
-            {getStatutLabel(project.statut)}
+          <Badge variant="outline" className={statutColor}>
+            {statutLabel}
           </Badge>
           {project.date_echeance && (
             <Badge variant="outline" className="gap-1">
@@ -143,4 +146,4 @@ export const ProjectCard = ({ project, onUpdate, currentEmployeeId }: ProjectCar
     />
     </>
   );
-};
+});

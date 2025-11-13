@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -21,6 +21,26 @@ interface TaskCardProps {
   highlightTerm?: string;
 }
 
+const getPriorityColor = (priorite: string) => {
+  switch (priorite) {
+    case "haute":
+      return "bg-red-500/20 text-red-700 dark:text-red-400";
+    case "normale":
+      return "bg-blue-500/20 text-blue-700 dark:text-blue-400";
+    case "basse":
+      return "bg-green-500/20 text-green-700 dark:text-green-400";
+    default:
+      return "bg-gray-500/20 text-gray-700 dark:text-gray-400";
+  }
+};
+
+const getStatusIcon = (statut: string) => {
+  if (statut === "terminee") {
+    return <CheckCircle2 className="h-5 w-5 text-green-600" />;
+  }
+  return <Circle className="h-5 w-5 text-muted-foreground" />;
+};
+
 export const TaskCard = ({ task, currentEmployeeId, onUpdate, isHelpRequest, isMaintenance, highlightTerm }: TaskCardProps) => {
   const [showDetails, setShowDetails] = useState(false);
   const [subTasksCount, setSubTasksCount] = useState({ total: 0, completed: 0 });
@@ -29,11 +49,7 @@ export const TaskCard = ({ task, currentEmployeeId, onUpdate, isHelpRequest, isM
   const [showQuickSubTaskInput, setShowQuickSubTaskInput] = useState(false);
   const [quickSubTaskTitle, setQuickSubTaskTitle] = useState("");
 
-  useEffect(() => {
-    fetchSubTasksCount();
-  }, [task.id]);
-
-  const fetchSubTasksCount = async () => {
+  const fetchSubTasksCount = useCallback(async () => {
     const { data, error } = await supabase
       .from("tasks")
       .select("id, statut")
@@ -44,7 +60,11 @@ export const TaskCard = ({ task, currentEmployeeId, onUpdate, isHelpRequest, isM
       const completed = data.filter((st) => st.statut === "terminee").length;
       setSubTasksCount({ total: data.length, completed });
     }
-  };
+  }, [task.id]);
+
+  useEffect(() => {
+    fetchSubTasksCount();
+  }, [fetchSubTasksCount]);
 
   // Highlight search terms in text
   const highlightText = (text: string) => {
@@ -62,25 +82,8 @@ export const TaskCard = ({ task, currentEmployeeId, onUpdate, isHelpRequest, isM
     );
   };
 
-  const getPriorityColor = (priorite: string) => {
-    switch (priorite) {
-      case "haute":
-        return "bg-red-500/20 text-red-700 dark:text-red-400";
-      case "normale":
-        return "bg-blue-500/20 text-blue-700 dark:text-blue-400";
-      case "basse":
-        return "bg-green-500/20 text-green-700 dark:text-green-400";
-      default:
-        return "bg-gray-500/20 text-gray-700 dark:text-gray-400";
-    }
-  };
-
-  const getStatusIcon = () => {
-    if (task.statut === "terminee") {
-      return <CheckCircle2 className="h-5 w-5 text-green-600" />;
-    }
-    return <Circle className="h-5 w-5 text-muted-foreground" />;
-  };
+  const priorityColor = useMemo(() => getPriorityColor(task.priorite), [task.priorite]);
+  const statusIcon = useMemo(() => getStatusIcon(task.statut), [task.statut]);
 
   const toggleStatus = async () => {
     const newStatut = task.statut === "terminee" ? "en_cours" : "terminee";
@@ -338,7 +341,7 @@ export const TaskCard = ({ task, currentEmployeeId, onUpdate, isHelpRequest, isM
                 }}
                 className="hover:scale-110 transition-transform"
               >
-                {getStatusIcon()}
+                {statusIcon}
               </button>
               <h3 className={`font-semibold text-lg ${task.statut === "terminee" ? "line-through" : ""}`}>
                 {highlightText(task.titre)}
@@ -350,7 +353,7 @@ export const TaskCard = ({ task, currentEmployeeId, onUpdate, isHelpRequest, isM
             )}
 
             <div className="flex flex-wrap items-center gap-2 ml-8">
-              <Badge className={getPriorityColor(task.priorite)}>{task.priorite}</Badge>
+              <Badge className={priorityColor}>{task.priorite}</Badge>
 
               {isMaintenance && task.machine_piece && (
                 <Badge variant="outline" className="bg-purple-500/20 text-purple-700 dark:text-purple-400">

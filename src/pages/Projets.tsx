@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -58,7 +58,7 @@ const Projets = () => {
     }
   };
 
-  const fetchProjects = async () => {
+  const fetchProjects = useCallback(async () => {
     setLoading(true);
     try {
       const { data, error } = await supabase
@@ -77,12 +77,24 @@ const Projets = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, []);
 
-  const enCoursProjects = projects.filter((p) => p.statut === "en_cours");
-  const aVenirProjects = projects.filter((p) => p.statut === "a_venir");
-  const terminesProjects = projects.filter((p) => p.statut === "termine");
-  const enPauseProjects = projects.filter((p) => p.statut === "en_pause");
+  const enCoursProjects = useMemo(
+    () => projects.filter((p) => p.statut === "en_cours"),
+    [projects]
+  );
+  const aVenirProjects = useMemo(
+    () => projects.filter((p) => p.statut === "a_venir"),
+    [projects]
+  );
+  const terminesProjects = useMemo(
+    () => projects.filter((p) => p.statut === "termine"),
+    [projects]
+  );
+  const enPauseProjects = useMemo(
+    () => projects.filter((p) => p.statut === "en_pause"),
+    [projects]
+  );
 
   return (
     <div className="min-h-screen bg-background p-4">
