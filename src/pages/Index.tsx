@@ -73,7 +73,7 @@ const Index = () => {
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
               { title: "Formation & Documentation", icon: "📚", path: "/formation" },
-              { title: "Objectifs & Primes", icon: "🎯", path: "/objectifs-primes" },
+              { title: "Indicateurs & Primes", icon: "🎯", path: "/indicateurs-primes" },
               { title: "Tâches", icon: "✅", path: "/taches" },
               { title: "Communication Générale", icon: "📢", path: "/communication-generale" },
               { title: "Projets", icon: "🗂️", path: "/projets" },

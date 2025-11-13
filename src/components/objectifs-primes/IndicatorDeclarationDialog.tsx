@@ -149,7 +149,7 @@ export const IndicatorDeclarationDialog = ({ employeeId }: Props) => {
       const updateData: any = {
         valeur_declaree: parseFloat(valeurDeclaree),
         commentaire_validation: commentaire || null,
-        statut_validation: 'en_attente'
+        statut_validation: 'valide' as any
       };
 
       if (showJustification) {

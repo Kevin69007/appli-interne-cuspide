@@ -20,13 +20,42 @@ export const calculateMonthlyScore = async (
 
     if (entriesError) throw entriesError;
 
-    let scoreObjectifs = 0;
+    let scoreIndicateurs = 0;
     let bonusPoints = 0;
     let malusPoints = 0;
 
+    // Calculer les points des indicateurs validés
     entries?.forEach(entry => {
-      if ((entry.categorie as any) === 'indicateurs' && (entry as any).points_indicateur) {
-        scoreObjectifs += (entry as any).points_indicateur;
+      if (entry.categorie === 'indicateurs' as any) {
+        if (entry.valeur_declaree !== null) {
+          try {
+            const objectiveData = JSON.parse(entry.detail);
+            const data = Array.isArray(objectiveData) ? objectiveData[0] : objectiveData;
+            const valeurCible = data.valeur_cible;
+            const pointsMax = data.points_indicateur;
+            
+            // Prioriser valeur_controlee si elle existe, sinon utiliser valeur_declaree
+            const valeurFinale = entry.valeur_controlee !== null && entry.valeur_controlee !== undefined 
+              ? entry.valeur_controlee 
+              : entry.valeur_declaree;
+            
+            // Calculer les points proportionnellement à l'atteinte de l'objectif
+            const pointsObtenus = (valeurFinale / valeurCible) * pointsMax;
+            scoreIndicateurs += Math.min(pointsObtenus, pointsMax);
+            
+            // Ajouter malus si contrôle a révélé un écart
+            if (entry.valeur_controlee !== null && entry.valeur_controlee !== entry.valeur_declaree) {
+              const ecart = Math.abs((entry.valeur_declaree - entry.valeur_controlee) / entry.valeur_declaree) * 100;
+              let malusPenalty = 0;
+              if (ecart >= 10 && ecart < 20) malusPenalty = -2;
+              else if (ecart >= 20 && ecart < 30) malusPenalty = -5;
+              else if (ecart >= 30) malusPenalty = -10;
+              malusPoints += malusPenalty;
+            }
+          } catch (e) {
+            console.error('Error parsing indicator detail:', e);
+          }
+        }
       } else if (entry.points) {
         if (entry.points > 0) {
           bonusPoints += entry.points;
@@ -36,7 +65,7 @@ export const calculateMonthlyScore = async (
       }
     });
 
-    const scoreGlobal = scoreObjectifs + bonusPoints + malusPoints;
+    const scoreGlobal = scoreIndicateurs + bonusPoints + malusPoints;
 
     // Calculer la projection
     const totalDays = new Date(year, month, 0).getDate();
@@ -69,7 +98,7 @@ export const calculateMonthlyScore = async (
       employee_id: employeeId,
       mois: month,
       annee: year,
-      score_indicateurs: scoreObjectifs,
+      score_indicateurs: scoreIndicateurs,
       bonus_points: bonusPoints,
       malus_points: malusPoints,
       score_global: scoreGlobal,
