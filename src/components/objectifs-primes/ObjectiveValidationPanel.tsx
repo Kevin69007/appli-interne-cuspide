@@ -16,6 +16,9 @@ interface PendingObjective {
   detail: string;
   valeur_declaree: number;
   commentaire_validation: string | null;
+  raison_ecart: string | null;
+  detail_probleme: string | null;
+  manager_notifie: boolean;
   employee: {
     nom: string;
     prenom: string;
@@ -54,7 +57,7 @@ export const ObjectiveValidationPanel = () => {
         *,
         employee:employees(nom, prenom)
       `)
-      .eq('categorie', 'objectifs')
+      .eq('categorie', 'indicateurs')
       .eq('statut_validation', 'en_attente')
       .not('valeur_declaree', 'is', null)
       .order('date', { ascending: false });
@@ -102,9 +105,9 @@ export const ObjectiveValidationPanel = () => {
         throw new Error("Format d'objectif invalide");
       }
 
-      // Calculer les points de l'objectif (proportionnel à la valeur contrôlée)
-      const pointsObjectif = objectiveData.valeur_cible > 0
-        ? Math.round((controlled / objectiveData.valeur_cible) * (objectiveData.points_objectif || 0))
+      // Calculer les points de l'indicateur (proportionnel à la valeur contrôlée)
+      const pointsIndicateur = objectiveData.valeur_cible > 0
+        ? Math.round((controlled / objectiveData.valeur_cible) * (objectiveData.points_indicateur || 0))
         : 0;
 
       // Mettre à jour l'entrée agenda avec la valeur contrôlée
@@ -113,7 +116,7 @@ export const ObjectiveValidationPanel = () => {
         .update({
           valeur_controlee: controlled,
           ecart_pourcentage: discrepancy,
-          points_objectif: pointsObjectif,
+          points_indicateur: pointsIndicateur,
           statut_validation: 'valide',
           commentaire_validation: commentaireValidation || null,
           date_validation: new Date().toISOString()
@@ -142,8 +145,8 @@ export const ObjectiveValidationPanel = () => {
 
       toast.success(
         malusPoints < 0
-          ? `Objectif validé avec un écart de ${discrepancy.toFixed(1)}%. Malus de ${malusPoints} pts appliqué.`
-          : `Objectif validé ! +${pointsObjectif} pts`
+          ? `Indicateur validé avec un écart de ${discrepancy.toFixed(1)}%. Malus de ${malusPoints} pts appliqué.`
+          : `Indicateur validé ! +${pointsIndicateur} pts`
       );
 
       setSelectedObjective(null);
@@ -202,7 +205,7 @@ export const ObjectiveValidationPanel = () => {
         <CardContent>
           {pendingObjectives.length === 0 ? (
             <p className="text-center text-muted-foreground py-8">
-              Aucun objectif en attente de validation
+              Aucun indicateur en attente de validation
             </p>
           ) : (
             <div className="space-y-3">
@@ -222,7 +225,7 @@ export const ObjectiveValidationPanel = () => {
                         {obj.employee.prenom} {obj.employee.nom}
                       </p>
                       <p className="text-sm text-muted-foreground">
-                        {objectiveData?.nom || "Objectif"} - {new Date(obj.date).toLocaleDateString('fr-FR')}
+                        {objectiveData?.nom || "Indicateur"} - {new Date(obj.date).toLocaleDateString('fr-FR')}
                       </p>
                       <p className="text-sm">
                         Déclaré: <strong>{obj.valeur_declaree}</strong> {objectiveData?.indicateur}
@@ -242,7 +245,7 @@ export const ObjectiveValidationPanel = () => {
       <Dialog open={!!selectedObjective} onOpenChange={() => setSelectedObjective(null)}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Validation d'objectif</DialogTitle>
+            <DialogTitle>Validation d'indicateur</DialogTitle>
           </DialogHeader>
           {selectedObjective && (() => {
             let objectiveData: any = null;
@@ -257,13 +260,35 @@ export const ObjectiveValidationPanel = () => {
               <div className="space-y-4">
                 <div className="p-3 bg-muted rounded-lg text-sm">
                   <p><strong>Employé:</strong> {selectedObjective.employee.prenom} {selectedObjective.employee.nom}</p>
-                  <p><strong>Objectif:</strong> {objectiveData?.nom}</p>
+                  <p><strong>Indicateur:</strong> {objectiveData?.nom}</p>
                   <p><strong>Cible:</strong> {objectiveData?.valeur_cible} {objectiveData?.indicateur}</p>
                   <p><strong>Déclaré:</strong> {selectedObjective.valeur_declaree} {objectiveData?.indicateur}</p>
                   {selectedObjective.commentaire_validation && (
                     <p><strong>Commentaire:</strong> {selectedObjective.commentaire_validation}</p>
                   )}
                 </div>
+
+                {selectedObjective.raison_ecart && (
+                  <div className="space-y-2 border-l-4 border-orange-500 pl-4 py-2 bg-orange-50">
+                    <h4 className="font-semibold text-orange-700">Justification de l'écart :</h4>
+                    <p className="text-sm">
+                      <strong>Raison :</strong>{' '}
+                      {selectedObjective.raison_ecart === 'indicateur_trop_eleve' && 'Indicateur trop élevé'}
+                      {selectedObjective.raison_ecart === 'volume_travail_insuffisant' && 'Volume de travail insuffisant'}
+                      {selectedObjective.raison_ecart === 'probleme_exceptionnel' && 'Problème exceptionnel'}
+                    </p>
+                    {selectedObjective.detail_probleme && (
+                      <p className="text-sm">
+                        <strong>Détails :</strong> {selectedObjective.detail_probleme}
+                      </p>
+                    )}
+                    {selectedObjective.manager_notifie && (
+                      <Badge variant="outline" className="mt-2">
+                        ✓ Manager notifié
+                      </Badge>
+                    )}
+                  </div>
+                )}
 
                 <div>
                   <Label>Valeur contrôlée *</Label>

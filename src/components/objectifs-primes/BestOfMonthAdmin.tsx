@@ -124,7 +124,7 @@ export const BestOfMonthAdmin = () => {
         .insert({
           employee_id: employeeId,
           date: new Date().toISOString().split('T')[0],
-          categorie: 'objectifs' as const,
+          categorie: 'indicateurs' as const,
           detail: `Meilleur employé du mois ${selectedMonth}/${selectedYear}`,
           points: bonusPoints,
           auteur_id: null,

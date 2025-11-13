@@ -8,13 +8,13 @@ import { AlertCircle, Calendar, CheckCircle2, Clock, X } from "lucide-react";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 
-interface Objective {
+interface Indicator {
   id: string;
   date: string;
   detail: string;
   valeur_declaree: number | null;
   statut_validation: string;
-  points_objectif: number | null;
+  points_indicateur: number | null;
 }
 
 interface Props {
@@ -22,7 +22,7 @@ interface Props {
 }
 
 export const EmployeeObjectivesWidget = ({ employeeId }: Props) => {
-  const [objectives, setObjectives] = useState<Objective[]>([]);
+  const [objectives, setObjectives] = useState<Indicator[]>([]);
   const [declaringObjectiveId, setDeclaringObjectiveId] = useState<string | null>(null);
   const [valeurDeclaree, setValeurDeclaree] = useState("");
   const [loading, setLoading] = useState(true);
@@ -43,7 +43,7 @@ export const EmployeeObjectivesWidget = ({ employeeId }: Props) => {
       .from('agenda_entries')
       .select('*')
       .eq('employee_id', employeeId)
-      .eq('categorie', 'objectifs')
+      .eq('categorie', 'indicateurs')
       .gte('date', firstDay)
       .lte('date', lastDay)
       .order('date', { ascending: true });
@@ -106,11 +106,11 @@ export const EmployeeObjectivesWidget = ({ employeeId }: Props) => {
   };
 
   const categorizeObjectives = () => {
-    const overdue: Objective[] = [];
-    const todayObjs: Objective[] = [];
-    const upcoming: Objective[] = [];
-    const pending: Objective[] = [];
-    const validated: Objective[] = [];
+    const overdue: Indicator[] = [];
+    const todayObjs: Indicator[] = [];
+    const upcoming: Indicator[] = [];
+    const pending: Indicator[] = [];
+    const validated: Indicator[] = [];
 
     objectives.forEach(obj => {
       if (obj.statut_validation === 'valide') {
@@ -135,7 +135,7 @@ export const EmployeeObjectivesWidget = ({ employeeId }: Props) => {
 
   const { overdue, todayObjs, upcoming, pending, validated } = categorizeObjectives();
 
-  const ObjectiveItem = ({ obj, variant }: { obj: Objective; variant: 'overdue' | 'today' | 'upcoming' | 'pending' | 'validated' }) => {
+  const ObjectiveItem = ({ obj, variant }: { obj: Indicator; variant: 'overdue' | 'today' | 'upcoming' | 'pending' | 'validated' }) => {
     const data = getObjectiveData(obj.detail);
     const isExpanded = declaringObjectiveId === obj.id;
     const canDeclare = obj.date <= today; // Vérification de date
@@ -180,7 +180,7 @@ export const EmployeeObjectivesWidget = ({ employeeId }: Props) => {
           )}
           {variant === 'validated' && (
             <Badge variant="default" className="text-xs bg-green-600">
-              ✓ +{obj.points_objectif}pts
+              ✓ +{obj.points_indicateur}pts
             </Badge>
           )}
         </div>
