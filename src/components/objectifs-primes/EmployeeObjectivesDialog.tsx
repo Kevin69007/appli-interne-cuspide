@@ -114,6 +114,10 @@ export const EmployeeObjectivesDialog = () => {
     );
   };
 
+  const handleSelectAllMonths = () => {
+    setSelectedMonths(Array.from({ length: 12 }, (_, i) => i + 1));
+  };
+
   const handleYearToggle = (year: number) => {
     setSelectedYears(prev =>
       prev.includes(year)
@@ -219,7 +223,18 @@ export const EmployeeObjectivesDialog = () => {
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <Label>Mois (sélection multiple)</Label>
+              <div className="flex items-center justify-between mb-2">
+                <Label>Mois (sélection multiple)</Label>
+                <Button 
+                  type="button" 
+                  variant="ghost" 
+                  size="sm"
+                  onClick={handleSelectAllMonths}
+                  className="h-7 text-xs"
+                >
+                  Tout sélectionner
+                </Button>
+              </div>
               <div className="border rounded-md p-4 max-h-48 overflow-y-auto space-y-2">
                 {Array.from({ length: 12 }, (_, i) => {
                   const monthNum = i + 1;
