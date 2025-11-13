@@ -13,7 +13,8 @@ import { BonusMalusConfig } from "@/components/objectifs-primes/BonusMalusConfig
 import { GeneralConfig } from "@/components/objectifs-primes/GeneralConfig";
 import { BestOfMonthAdmin } from "@/components/objectifs-primes/BestOfMonthAdmin";
 import { RewardCatalogAdmin } from "@/components/objectifs-primes/RewardCatalogAdmin";
-import { ObjectiveValidationPanel } from "@/components/objectifs-primes/ObjectiveValidationPanel";
+import { MonthlyClosurePanel } from "@/components/objectifs-primes/MonthlyClosurePanel";
+import { TeamManagersConfig } from "@/components/objectifs-primes/TeamManagersConfig";
 import { ColleagueVoteResults } from "@/components/objectifs-primes/ColleagueVoteResults";
 import { MoodRatingsAdmin } from "@/components/objectifs-primes/MoodRatingsAdmin";
 
@@ -44,7 +45,7 @@ const Admin = () => {
               <div>
                 <h1 className="text-2xl font-bold">Administration</h1>
                 <p className="text-sm text-muted-foreground">
-                  Objectifs & Primes - {isAdmin ? "Administrateur" : "Manager"}
+                  Indicateurs & Primes - {isAdmin ? "Administrateur" : "Manager"}
                 </p>
               </div>
             </div>
@@ -72,7 +73,7 @@ const Admin = () => {
                 <Target className="h-6 w-6 text-green-600" />
               </div>
               <div>
-                <p className="text-sm text-muted-foreground">Objectifs atteints</p>
+                <p className="text-sm text-muted-foreground">Indicateurs atteints</p>
                 <p className="text-2xl font-bold">85%</p>
               </div>
             </div>
@@ -156,10 +157,6 @@ const Admin = () => {
               </div>
               <EmployeesList key={refreshKey} />
             </Card>
-            
-            <div className="mt-6">
-              <ObjectiveValidationPanel />
-            </div>
           </TabsContent>
 
           <TabsContent value="votes">

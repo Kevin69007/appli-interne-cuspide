@@ -22,6 +22,7 @@ const Employe = () => {
   const [savedMoodRating, setSavedMoodRating] = useState<number | null>(null);
   const [quiz, setQuiz] = useState<any>(null);
   const [hasRespondedToQuiz, setHasRespondedToQuiz] = useState(false);
+  const [monthStatus, setMonthStatus] = useState<'ouvert' | 'cloture' | 'publie'>('ouvert');
 
   const currentMonth = new Date().getMonth() + 1;
   const currentYear = new Date().getFullYear();
@@ -36,6 +37,7 @@ const Employe = () => {
     if (employeeId) {
       fetchMoodRating();
       fetchQuiz();
+      fetchMonthStatus();
     }
   }, [employeeId]);
 
@@ -89,6 +91,18 @@ const Employe = () => {
       
       setHasRespondedToQuiz(!!responseData);
     }
+  };
+
+  const fetchMonthStatus = async () => {
+    const { data } = await supabase
+      .from('monthly_scores')
+      .select('statut')
+      .eq('employee_id', employeeId)
+      .eq('mois', currentMonth)
+      .eq('annee', currentYear)
+      .maybeSingle();
+
+    setMonthStatus(data?.statut || 'ouvert');
   };
 
   const handleMoodRating = async (rating: number) => {
