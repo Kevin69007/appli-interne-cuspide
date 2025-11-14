@@ -71,11 +71,11 @@ export const TeamManagersConfig = () => {
 
     // Récupérer les affectations existantes
     const { data: assignmentsData } = await supabase
-      .from('team_managers')
+      .from('team_managers' as any)
       .select('*');
 
     if (assignmentsData) {
-      setAssignments(assignmentsData);
+      setAssignments(assignmentsData as any);
     }
   };
 
@@ -94,11 +94,11 @@ export const TeamManagersConfig = () => {
     setLoading(true);
     try {
       const { error } = await supabase
-        .from('team_managers')
+        .from('team_managers' as any)
         .insert({
           manager_employee_id: selectedManager,
           equipe: selectedTeam
-        });
+        } as any);
 
       if (error) throw error;
 
@@ -121,7 +121,7 @@ export const TeamManagersConfig = () => {
     setLoading(true);
     try {
       const { error } = await supabase
-        .from('team_managers')
+        .from('team_managers' as any)
         .delete()
         .eq('manager_employee_id', managerId)
         .eq('equipe', equipe);

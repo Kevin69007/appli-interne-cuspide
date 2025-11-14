@@ -20,11 +20,11 @@ export const closeMonth = async (
 
     // 2. Récupérer les équipes gérées par ce manager
     const { data: teamAssignments } = await supabase
-      .from('team_managers')
+      .from('team_managers' as any)
       .select('equipe')
       .eq('manager_employee_id', managerEmployee.id);
 
-    const managerTeams = teamAssignments?.map(t => t.equipe) || [];
+    const managerTeams = (teamAssignments as any)?.map((t: any) => t.equipe) || [];
 
     if (managerTeams.length === 0) {
       throw new Error("Aucune équipe assignée");
@@ -34,26 +34,34 @@ export const closeMonth = async (
     const firstDay = `${year}-${month.toString().padStart(2, '0')}-01`;
     const lastDay = new Date(year, month, 0).toISOString().split('T')[0];
 
-    const { data: uncheckedIndicators } = await supabase
+    // Récupérer tous les employés des équipes du manager
+    const { data: teamEmployees }: any = await supabase
+      .from('employees')
+      .select('id')
+      .in('equipe', managerTeams);
+    
+    if (!teamEmployees || teamEmployees.length === 0) {
+      throw new Error("Aucun employé trouvé dans les équipes");
+    }
+
+    const teamEmployeeIds = teamEmployees.map((emp: any) => emp.id);
+
+    // Vérifier les indicateurs non contrôlés
+    const supabaseClient: any = supabase;
+    const { data: uncheckedEntries, error: uncheckedError } = await supabaseClient
       .from('agenda_entries')
-      .select(`
-        id,
-        employee:employees!inner(equipe)
-      `)
-      .eq('categorie', 'indicateurs')
-      .eq('controle_effectue', false)
-      .not('valeur_declaree', 'is', null)
+      .select('id')
+      .in('employee_id', teamEmployeeIds)
       .gte('date', firstDay)
-      .lte('date', lastDay);
+      .lte('date', lastDay)
+      .eq('controle_effectue', false)
+      .not('valeur_declaree', 'is', null);
 
-    // Filtrer par équipes du manager
-    const teamUnchecked = uncheckedIndicators?.filter((ind: any) => 
-      managerTeams.includes(ind.employee?.equipe)
-    );
+    if (uncheckedError) throw uncheckedError;
 
-    if (teamUnchecked && teamUnchecked.length > 0) {
+    if (uncheckedEntries && uncheckedEntries.length > 0) {
       throw new Error(
-        `${teamUnchecked.length} indicateur(s) non contrôlé(s). Veuillez contrôler tous les indicateurs avant de clôturer.`
+        `${uncheckedEntries.length} indicateur(s) non contrôlé(s). Veuillez contrôler tous les indicateurs avant de clôturer.`
       );
     }
 

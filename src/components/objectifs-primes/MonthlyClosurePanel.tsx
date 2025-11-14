@@ -57,7 +57,7 @@ export const MonthlyClosurePanel = () => {
         *,
         employee:employees!inner(nom, prenom, equipe)
       `)
-      .eq('categorie', 'indicateurs')
+      .eq('categorie', 'objectifs' as any)
       .not('valeur_declaree', 'is', null)
       .gte('date', firstDay)
       .lte('date', lastDay)
@@ -68,7 +68,7 @@ export const MonthlyClosurePanel = () => {
       return;
     }
 
-    setIndicators(data || []);
+    setIndicators((data as any) || []);
 
     // Vérifier le statut du mois
     if (data && data.length > 0) {
