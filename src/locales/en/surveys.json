@@ -1,0 +1,11 @@
+{
+  "title": "Surveys",
+  "createSurvey": "Create survey",
+  "editSurvey": "Edit survey",
+  "deleteSurvey": "Delete survey",
+  "surveyTitle": "Survey title",
+  "surveyDescription": "Description",
+  "questions": "Questions",
+  "responses": "Responses",
+  "noSurveys": "No surveys found"
+}

@@ -1,0 +1,21 @@
+{
+  "title": "Projects",
+  "createProject": "Create project",
+  "editProject": "Edit project",
+  "deleteProject": "Delete project",
+  "projectName": "Project name",
+  "projectDescription": "Project description",
+  "startDate": "Start date",
+  "endDate": "End date",
+  "status": "Status",
+  "progress": "Progress",
+  "team": "Team",
+  "budget": "Budget",
+  "timeline": "Timeline",
+  "milestones": "Milestones",
+  "documents": "Documents",
+  "noProjects": "No projects found",
+  "projectCreated": "Project created successfully",
+  "projectUpdated": "Project updated successfully",
+  "projectDeleted": "Project deleted successfully"
+}

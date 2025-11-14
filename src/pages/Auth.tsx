@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { Sparkles, Loader2 } from "lucide-react";
 import { toast } from "sonner";
@@ -10,6 +11,7 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const [isSignUp, setIsSignUp] = useState(false);
   const navigate = useNavigate();
+  const { t } = useTranslation(['auth', 'common']);
 
   const handleAuth = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -24,8 +26,8 @@ const Auth = () => {
 
         if (error) throw error;
 
-        toast.success("Inscription réussie", {
-          description: "Vérifiez votre email pour confirmer votre compte.",
+        toast.success(t('signUpSuccess'), {
+          description: t('signUpSuccessDesc'),
         });
       } else {
         const { error } = await supabase.auth.signInWithPassword({
@@ -35,13 +37,13 @@ const Auth = () => {
 
         if (error) throw error;
 
-        toast.success("Connexion réussie", {
-          description: "Bienvenue sur Cuspide",
+        toast.success(t('signInSuccess'), {
+          description: t('welcomeMessage'),
         });
         navigate("/");
       }
     } catch (error: any) {
-      toast.error("Erreur", {
+      toast.error(t('error'), {
         description: error.message,
       });
     } finally {
@@ -60,10 +62,10 @@ const Auth = () => {
           </div>
 
           <h1 className="text-3xl font-bold text-center mb-2 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-            Cuspide
+            {t('common:appName')}
           </h1>
           <p className="text-center text-muted-foreground mb-8">
-            {isSignUp ? "Créer un compte" : "Connexion à votre espace"}
+            {isSignUp ? t('signUpTitle') : t('signInTitle')}
           </p>
 
           <form onSubmit={handleAuth} className="space-y-6">
@@ -121,8 +123,8 @@ const Auth = () => {
               className="text-sm text-muted-foreground hover:text-primary transition-colors"
             >
               {isSignUp
-                ? "Vous avez déjà un compte ? Se connecter"
-                : "Pas encore de compte ? S'inscrire"}
+                ? t('toggleSignIn')
+                : t('toggleSignUp')}
             </button>
           </div>
 
@@ -131,7 +133,7 @@ const Auth = () => {
               onClick={() => navigate("/")}
               className="w-full py-3 px-4 border border-border rounded-lg hover:bg-accent/10 transition-colors"
             >
-              Retour à l'accueil
+              {t('backToHome')}
             </button>
           </div>
         </div>

@@ -1,0 +1,21 @@
+{
+  "title": "Réunions",
+  "createMeeting": "Créer une réunion",
+  "editMeeting": "Modifier la réunion",
+  "deleteMeeting": "Supprimer la réunion",
+  "meetingTitle": "Titre de la réunion",
+  "meetingDate": "Date",
+  "meetingTime": "Heure",
+  "duration": "Durée",
+  "location": "Lieu",
+  "participants": "Participants",
+  "agenda": "Ordre du jour",
+  "notes": "Notes",
+  "decisions": "Décisions",
+  "recording": "Enregistrement",
+  "transcription": "Transcription",
+  "noMeetings": "Aucune réunion trouvée",
+  "meetingCreated": "Réunion créée avec succès",
+  "meetingUpdated": "Réunion mise à jour avec succès",
+  "meetingDeleted": "Réunion supprimée avec succès"
+}

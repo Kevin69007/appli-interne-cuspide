@@ -1,0 +1,21 @@
+{
+  "title": "Indicators & Bonuses",
+  "indicators": "Indicators",
+  "bonuses": "Bonuses",
+  "createIndicator": "Create indicator",
+  "editIndicator": "Edit indicator",
+  "deleteIndicator": "Delete indicator",
+  "indicatorName": "Indicator name",
+  "targetValue": "Target value",
+  "currentValue": "Current value",
+  "unit": "Unit",
+  "recurrence": "Recurrence",
+  "points": "Points",
+  "monthly": "Monthly",
+  "quarterly": "Quarterly",
+  "annual": "Annual",
+  "monthlyScore": "Monthly score",
+  "annualScore": "Annual score",
+  "bonusAmount": "Bonus amount",
+  "noIndicators": "No indicators found"
+}

@@ -1,0 +1,11 @@
+{
+  "title": "Sondages",
+  "createSurvey": "Créer un sondage",
+  "editSurvey": "Modifier le sondage",
+  "deleteSurvey": "Supprimer le sondage",
+  "surveyTitle": "Titre du sondage",
+  "surveyDescription": "Description",
+  "questions": "Questions",
+  "responses": "Réponses",
+  "noSurveys": "Aucun sondage trouvé"
+}

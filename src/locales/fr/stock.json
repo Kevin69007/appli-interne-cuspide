@@ -1,0 +1,16 @@
+{
+  "title": "Commandes & Stock",
+  "orders": "Commandes",
+  "stock": "Stock",
+  "createOrder": "Créer une commande",
+  "editOrder": "Modifier la commande",
+  "deleteOrder": "Supprimer la commande",
+  "orderNumber": "Numéro de commande",
+  "supplier": "Fournisseur",
+  "orderDate": "Date de commande",
+  "deliveryDate": "Date de livraison",
+  "status": "Statut",
+  "items": "Articles",
+  "totalAmount": "Montant total",
+  "noOrders": "Aucune commande trouvée"
+}
