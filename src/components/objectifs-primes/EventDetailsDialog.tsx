@@ -19,7 +19,7 @@ interface EventDetails {
   duree_minutes?: number;
   commentaire_validation?: string;
   gravite?: string;
-  statut_objectif?: string;
+  statut_indicateur?: string;
   employee_id: string;
   auteur_id?: string;
   created_at: string;
@@ -314,8 +314,8 @@ export const EventDetailsDialog = ({ open, onOpenChange, eventId, source, onUpda
             <Badge variant="secondary">{getCategoryLabel(event.categorie)}</Badge>
             {event.statut_validation && getStatusBadge(event.statut_validation)}
             {event.gravite && getGravityBadge(event.gravite)}
-            {event.statut_objectif && (
-              <Badge variant="outline">{event.statut_objectif}</Badge>
+            {event.statut_indicateur && (
+              <Badge variant="outline">{event.statut_indicateur}</Badge>
             )}
           </div>
 
