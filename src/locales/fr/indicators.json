@@ -94,6 +94,48 @@
     "importantInfo": {
       "title": "Informations importantes",
       "noInfo": "Aucune information"
+    },
+    "agenda": {
+      "title": "Aujourd'hui",
+      "today": "Aujourd'hui",
+      "thisWeek": "Cette semaine",
+      "loading": "Chargement...",
+      "noEvents": "Aucun événement aujourd'hui",
+      "viewFullCalendar": "Voir le calendrier complet →"
+    },
+    "tasks": {
+      "title": "Mes Tâches",
+      "myTasks": "Mes Tâches",
+      "loading": "Chargement...",
+      "noTasks": "Aucune tâche en cours",
+      "taskCompleted": "Tâche terminée !",
+      "taskReactivated": "Tâche réactivée",
+      "updateError": "Erreur lors de la mise à jour",
+      "overdue": "Retard",
+      "clickToViewAll": "Cliquez pour voir toutes les tâches"
+    },
+    "priorityTasks": {
+      "title": "Tâches Prioritaires",
+      "loading": "Chargement...",
+      "noPriorityTasks": "Aucune tâche prioritaire",
+      "needsUpdate": "Nécessite un point",
+      "project": "Projet",
+      "addProgress": "Ajouter un point d'avancement",
+      "progressPlaceholder": "Décrivez l'avancement...",
+      "send": "Envoyer",
+      "progressAdded": "Point d'avancement ajouté",
+      "addError": "Erreur lors de l'ajout du commentaire"
+    },
+    "importantInfoWidget": {
+      "title": "Informations Importantes",
+      "loading": "Chargement...",
+      "noInfo": "Aucune information à afficher",
+      "toConfirm": "À confirmer",
+      "markAsRead": "Marquer comme lu",
+      "markedAsRead": "Marqué comme lu",
+      "readDescription": "L'information a été marquée comme lue",
+      "error": "Erreur",
+      "markAsReadError": "Impossible de marquer comme lu"
     }
   }
 }

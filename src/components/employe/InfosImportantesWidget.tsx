@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Card } from "@/components/ui/card";
 import { Info, CheckCircle2 } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -17,6 +18,7 @@ interface Communication {
 }
 
 export const InfosImportantesWidget = () => {
+  const { t } = useTranslation('indicators');
   const [communications, setCommunications] = useState<Communication[]>([]);
   const [loading, setLoading] = useState(true);
   const [employeeId, setEmployeeId] = useState<string | null>(null);
@@ -83,16 +85,16 @@ export const InfosImportantesWidget = () => {
         });
 
       toast({
-        title: "Marqué comme lu",
-        description: "L'information a été marquée comme lue"
+        title: t('employee.importantInfoWidget.markedAsRead'),
+        description: t('employee.importantInfoWidget.readDescription')
       });
 
       fetchCommunications();
     } catch (error) {
       console.error("Erreur:", error);
       toast({
-        title: "Erreur",
-        description: "Impossible de marquer comme lu",
+        title: t('employee.importantInfoWidget.error'),
+        description: t('employee.importantInfoWidget.markAsReadError'),
         variant: "destructive"
       });
     }
@@ -102,7 +104,7 @@ export const InfosImportantesWidget = () => {
     <Card className="p-6">
       <div className="flex items-center gap-3 mb-4">
         <Info className="h-5 w-5 text-primary" />
-        <h3 className="text-lg font-semibold">Informations Importantes</h3>
+        <h3 className="text-lg font-semibold">{t('employee.importantInfoWidget.title')}</h3>
         {communications.length > 0 && (
           <Badge variant="destructive">{communications.length}</Badge>
         )}
@@ -110,16 +112,16 @@ export const InfosImportantesWidget = () => {
 
       <div className="space-y-4">
         {loading ? (
-          <p className="text-sm text-muted-foreground">Chargement...</p>
+          <p className="text-sm text-muted-foreground">{t('employee.importantInfoWidget.loading')}</p>
         ) : communications.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Aucune information à afficher</p>
+          <p className="text-sm text-muted-foreground">{t('employee.importantInfoWidget.noInfo')}</p>
         ) : (
           communications.map((comm) => (
             <div key={comm.id} className="p-4 border rounded-lg space-y-2">
               <div className="flex items-start justify-between gap-2">
                 <h4 className="font-semibold">{comm.titre}</h4>
                 {comm.require_confirmation && !comm.isRead && (
-                  <Badge variant="outline">À confirmer</Badge>
+                  <Badge variant="outline">{t('employee.importantInfoWidget.toConfirm')}</Badge>
                 )}
               </div>
               
@@ -134,7 +136,7 @@ export const InfosImportantesWidget = () => {
                   className="w-full mt-2"
                 >
                   <CheckCircle2 className="h-4 w-4 mr-2" />
-                  Marquer comme lu
+                  {t('employee.importantInfoWidget.markAsRead')}
                 </Button>
               )}
             </div>

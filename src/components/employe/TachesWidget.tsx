@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Card } from "@/components/ui/card";
 import { CheckSquare, ChevronRight, AlertCircle } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -19,6 +20,7 @@ interface Task {
 
 export const TachesWidget = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation('indicators');
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -74,11 +76,11 @@ export const TachesWidget = () => {
 
       if (error) throw error;
 
-      toast.success(newStatus === "terminee" ? "Tâche terminée !" : "Tâche réactivée");
+      toast.success(newStatus === "terminee" ? t('employee.tasks.taskCompleted') : t('employee.tasks.taskReactivated'));
       fetchUserTasks();
     } catch (error) {
       console.error("Error updating task:", error);
-      toast.error("Erreur lors de la mise à jour");
+      toast.error(t('employee.tasks.updateError'));
     }
   };
 
@@ -90,16 +92,16 @@ export const TachesWidget = () => {
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           <CheckSquare className="h-5 w-5 text-primary" />
-          <h3 className="text-lg font-semibold">Mes Tâches</h3>
+          <h3 className="text-lg font-semibold">{t('employee.tasks.myTasks')}</h3>
         </div>
         <ChevronRight className="h-5 w-5 text-muted-foreground" />
       </div>
 
       <div className="space-y-2">
         {loading ? (
-          <p className="text-sm text-muted-foreground">Chargement...</p>
+          <p className="text-sm text-muted-foreground">{t('employee.tasks.loading')}</p>
         ) : tasks.length === 0 ? (
-          <p className="text-sm text-muted-foreground">Aucune tâche en cours</p>
+          <p className="text-sm text-muted-foreground">{t('employee.tasks.noTasks')}</p>
         ) : (
           tasks.map((task) => (
             <div key={task.id} className="flex items-center gap-2 p-2 rounded border">
@@ -119,7 +121,7 @@ export const TachesWidget = () => {
               {isOverdue(task.date_echeance) && task.statut !== "terminee" && (
                 <Badge variant="destructive" className="ml-2">
                   <AlertCircle className="h-3 w-3 mr-1" />
-                  Retard
+                  {t('employee.tasks.overdue')}
                 </Badge>
               )}
             </div>
@@ -128,7 +130,7 @@ export const TachesWidget = () => {
       </div>
 
       <p className="text-xs text-muted-foreground mt-4 text-center">
-        Cliquez pour voir toutes les tâches
+        {t('employee.tasks.clickToViewAll')}
       </p>
     </Card>
   );

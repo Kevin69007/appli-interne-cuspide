@@ -94,6 +94,48 @@
     "importantInfo": {
       "title": "Important information",
       "noInfo": "No information"
+    },
+    "agenda": {
+      "title": "Today",
+      "today": "Today",
+      "thisWeek": "This week",
+      "loading": "Loading...",
+      "noEvents": "No events today",
+      "viewFullCalendar": "View full calendar →"
+    },
+    "tasks": {
+      "title": "My Tasks",
+      "myTasks": "My Tasks",
+      "loading": "Loading...",
+      "noTasks": "No tasks in progress",
+      "taskCompleted": "Task completed!",
+      "taskReactivated": "Task reactivated",
+      "updateError": "Error updating task",
+      "overdue": "Overdue",
+      "clickToViewAll": "Click to view all tasks"
+    },
+    "priorityTasks": {
+      "title": "Priority Tasks",
+      "loading": "Loading...",
+      "noPriorityTasks": "No priority tasks",
+      "needsUpdate": "Needs update",
+      "project": "Project",
+      "addProgress": "Add progress update",
+      "progressPlaceholder": "Describe progress...",
+      "send": "Send",
+      "progressAdded": "Progress update added",
+      "addError": "Error adding comment"
+    },
+    "importantInfoWidget": {
+      "title": "Important Information",
+      "loading": "Loading...",
+      "noInfo": "No information to display",
+      "toConfirm": "To confirm",
+      "markAsRead": "Mark as read",
+      "markedAsRead": "Marked as read",
+      "readDescription": "Information has been marked as read",
+      "error": "Error",
+      "markAsReadError": "Unable to mark as read"
     }
   }
 }
