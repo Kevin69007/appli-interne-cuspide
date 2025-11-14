@@ -19,19 +19,25 @@ export type Database = {
           auteur_id: string | null
           categorie: Database["public"]["Enums"]["categorie_agenda"]
           commentaire_validation: string | null
+          controle_effectue: boolean | null
+          controle_par: string | null
           created_at: string
           date: string
+          date_controle: string | null
           date_validation: string | null
           detail: string | null
+          detail_probleme: string | null
           duree_minutes: number | null
           ecart_pourcentage: number | null
           employee_id: string
           gravite: Database["public"]["Enums"]["gravite_erreur"] | null
           id: string
+          manager_notifie: boolean | null
           motif: string | null
           photos: string[] | null
           points: number | null
-          points_objectif: number | null
+          points_indicateur: number | null
+          raison_ecart: string | null
           statut_objectif: Database["public"]["Enums"]["statut_objectif"] | null
           statut_validation:
             | Database["public"]["Enums"]["statut_validation"]
@@ -50,19 +56,25 @@ export type Database = {
           auteur_id?: string | null
           categorie: Database["public"]["Enums"]["categorie_agenda"]
           commentaire_validation?: string | null
+          controle_effectue?: boolean | null
+          controle_par?: string | null
           created_at?: string
           date: string
+          date_controle?: string | null
           date_validation?: string | null
           detail?: string | null
+          detail_probleme?: string | null
           duree_minutes?: number | null
           ecart_pourcentage?: number | null
           employee_id: string
           gravite?: Database["public"]["Enums"]["gravite_erreur"] | null
           id?: string
+          manager_notifie?: boolean | null
           motif?: string | null
           photos?: string[] | null
           points?: number | null
-          points_objectif?: number | null
+          points_indicateur?: number | null
+          raison_ecart?: string | null
           statut_objectif?:
             | Database["public"]["Enums"]["statut_objectif"]
             | null
@@ -83,19 +95,25 @@ export type Database = {
           auteur_id?: string | null
           categorie?: Database["public"]["Enums"]["categorie_agenda"]
           commentaire_validation?: string | null
+          controle_effectue?: boolean | null
+          controle_par?: string | null
           created_at?: string
           date?: string
+          date_controle?: string | null
           date_validation?: string | null
           detail?: string | null
+          detail_probleme?: string | null
           duree_minutes?: number | null
           ecart_pourcentage?: number | null
           employee_id?: string
           gravite?: Database["public"]["Enums"]["gravite_erreur"] | null
           id?: string
+          manager_notifie?: boolean | null
           motif?: string | null
           photos?: string[] | null
           points?: number | null
-          points_objectif?: number | null
+          points_indicateur?: number | null
+          raison_ecart?: string | null
           statut_objectif?:
             | Database["public"]["Enums"]["statut_objectif"]
             | null
@@ -391,6 +409,41 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      closure_reminders: {
+        Row: {
+          acknowledged: boolean | null
+          annee: number
+          id: string
+          manager_employee_id: string
+          mois: number
+          sent_at: string | null
+        }
+        Insert: {
+          acknowledged?: boolean | null
+          annee: number
+          id?: string
+          manager_employee_id: string
+          mois: number
+          sent_at?: string | null
+        }
+        Update: {
+          acknowledged?: boolean | null
+          annee?: number
+          id?: string
+          manager_employee_id?: string
+          mois?: number
+          sent_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "closure_reminders_manager_employee_id_fkey"
+            columns: ["manager_employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       colleague_votes: {
         Row: {
@@ -1579,8 +1632,8 @@ export type Database = {
           score_attitude: number | null
           score_global: number | null
           score_horaires: number | null
+          score_indicateurs: number | null
           score_materiel: number | null
-          score_objectifs: number | null
           score_protocoles: number | null
           statut: Database["public"]["Enums"]["statut_score_mensuel"] | null
           updated_at: string
@@ -1601,8 +1654,8 @@ export type Database = {
           score_attitude?: number | null
           score_global?: number | null
           score_horaires?: number | null
+          score_indicateurs?: number | null
           score_materiel?: number | null
-          score_objectifs?: number | null
           score_protocoles?: number | null
           statut?: Database["public"]["Enums"]["statut_score_mensuel"] | null
           updated_at?: string
@@ -1623,8 +1676,8 @@ export type Database = {
           score_attitude?: number | null
           score_global?: number | null
           score_horaires?: number | null
+          score_indicateurs?: number | null
           score_materiel?: number | null
-          score_objectifs?: number | null
           score_protocoles?: number | null
           statut?: Database["public"]["Enums"]["statut_score_mensuel"] | null
           updated_at?: string
@@ -3344,6 +3397,38 @@ export type Database = {
           },
         ]
       }
+      team_managers: {
+        Row: {
+          created_at: string | null
+          created_by: string | null
+          equipe: string
+          id: string
+          manager_employee_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          created_by?: string | null
+          equipe: string
+          id?: string
+          manager_employee_id: string
+        }
+        Update: {
+          created_at?: string | null
+          created_by?: string | null
+          equipe?: string
+          id?: string
+          manager_employee_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "team_managers_manager_employee_id_fkey"
+            columns: ["manager_employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       test_results: {
         Row: {
           candidate_email: string | null
@@ -3642,6 +3727,7 @@ export type Database = {
     }
     Functions: {
       can_auto_declare: { Args: { p_categorie: string }; Returns: boolean }
+      can_close_project: { Args: { project_id: string }; Returns: boolean }
       generate_order_number: { Args: never; Returns: string }
       get_current_user_role: {
         Args: never
@@ -3659,6 +3745,8 @@ export type Database = {
         Returns: boolean
       }
       is_manager: { Args: never; Returns: boolean }
+      is_project_creator: { Args: { project_id: string }; Returns: boolean }
+      is_team_manager: { Args: { p_equipe: string }; Returns: boolean }
       match_response_blocks: {
         Args: {
           match_count: number
@@ -3695,7 +3783,7 @@ export type Database = {
       app_role: "admin" | "user" | "manager"
       categorie_agenda:
         | "protocoles"
-        | "objectifs"
+        | "indicateurs"
         | "horaires"
         | "materiel"
         | "attitude"
@@ -3876,7 +3964,7 @@ export const Constants = {
       app_role: ["admin", "user", "manager"],
       categorie_agenda: [
         "protocoles",
-        "objectifs",
+        "indicateurs",
         "horaires",
         "materiel",
         "attitude",

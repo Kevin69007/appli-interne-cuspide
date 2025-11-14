@@ -40,6 +40,7 @@ interface Project {
   progression: number;
   is_priority: boolean;
   responsable_id: string;
+  created_by?: string;
   created_at: string;
   responsable?: { nom: string; prenom: string };
 }
@@ -200,18 +201,22 @@ const ProjetDetails = () => {
             </Button>
             <h1 className="text-3xl font-bold">{project.titre}</h1>
           </div>
-          {(isAdmin || isManager || project.responsable_id === currentEmployeeId) && (
+          {(isAdmin || isManager) && (
             <div className="flex items-center gap-2">
               {project.statut !== "termine" && (
-                <Button
-                  variant="default"
-                  onClick={() => setShowCloseConfirm(true)}
-                  disabled={isUpdatingStatus}
-                  className="bg-green-600 hover:bg-green-700"
-                >
-                  <CheckCircle2 className="h-4 w-4 mr-2" />
-                  Clôturer le projet
-                </Button>
+                <>
+                  {(isAdmin || project.created_by === currentEmployeeId) && (
+                    <Button
+                      variant="default"
+                      onClick={() => setShowCloseConfirm(true)}
+                      disabled={isUpdatingStatus}
+                      className="bg-green-600 hover:bg-green-700"
+                    >
+                      <CheckCircle2 className="h-4 w-4 mr-2" />
+                      Clôturer le projet
+                    </Button>
+                  )}
+                </>
               )}
               {project.statut === "en_cours" && (
                 <Button
