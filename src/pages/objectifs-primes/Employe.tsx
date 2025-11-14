@@ -135,7 +135,7 @@ const Employe = () => {
               </Button>
               <div>
                 <h1 className="text-2xl font-bold">Mon Tableau de Bord</h1>
-                <p className="text-sm text-muted-foreground">Objectifs & Primes</p>
+                <p className="text-sm text-muted-foreground">Indicateurs & Primes</p>
               </div>
             </div>
           </div>
@@ -157,7 +157,7 @@ const Employe = () => {
           <div className="space-y-3">
             <div className="flex items-center gap-3 mb-3">
               <Target className="h-5 w-5 text-primary" />
-              <h3 className="text-lg font-semibold">Objectifs du mois</h3>
+              <h3 className="text-lg font-semibold">Indicateurs du mois</h3>
             </div>
             <EmployeeObjectivesWidget employeeId={employeeId} />
           </div>

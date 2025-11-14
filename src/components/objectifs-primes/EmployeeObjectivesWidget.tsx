@@ -82,7 +82,7 @@ export const EmployeeObjectivesWidget = ({ employeeId }: Props) => {
 
       if (error) throw error;
 
-      toast.success("Objectif déclaré ! En attente de validation.");
+      toast.success("Indicateur déclaré ! En attente de validation.");
       setDeclaringObjectiveId(null);
       setValeurDeclaree("");
       
