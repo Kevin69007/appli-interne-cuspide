@@ -67,40 +67,57 @@ export const EmployeeManagerAssignment = () => {
       setManagers(managersData || []);
     }
 
-    // Récupérer tous les employés avec leur manager
+    // Récupérer tous les employés avec leur manager_id (sans foreign key syntax)
     const { data: employeesData, error: employeesError } = await supabase
       .from("employees")
-      .select(`
-        id,
-        nom,
-        prenom,
-        poste,
-        equipe,
-        manager_id,
-        manager:employees!employees_manager_id_fkey(nom, prenom)
-      `)
+      .select("id, nom, prenom, poste, equipe, manager_id")
       .order("nom");
 
     if (employeesError) {
       console.error("Erreur:", employeesError);
       toast.error("Erreur lors du chargement des employés");
-    } else {
-      const formattedEmployees = (employeesData || []).map((emp: any) => ({
-        id: emp.id,
-        nom: emp.nom,
-        prenom: emp.prenom,
-        poste: emp.poste,
-        equipe: emp.equipe,
-        manager_id: emp.manager_id,
-        manager_nom: emp.manager?.nom,
-        manager_prenom: emp.manager?.prenom,
-      }));
-      setEmployees(formattedEmployees);
-
-      // Extraire les équipes uniques
-      const uniqueEquipes = [...new Set(employeesData.map((e: any) => e.equipe).filter(Boolean))];
-      setEquipes(uniqueEquipes as string[]);
+      setLoading(false);
+      return;
     }
+
+    // Récupérer les IDs uniques des managers
+    const managerIds = [...new Set(
+      (employeesData || [])
+        .map(e => e.manager_id)
+        .filter(Boolean)
+    )] as string[];
+
+    // Récupérer les informations des managers (si il y en a)
+    let managersInfo: any[] = [];
+    if (managerIds.length > 0) {
+      const { data: managersInfoData } = await supabase
+        .from("employees")
+        .select("id, nom, prenom")
+        .in("id", managerIds);
+      
+      managersInfo = managersInfoData || [];
+    }
+
+    // Créer un map pour accès rapide aux infos des managers
+    const managerMap = new Map(managersInfo.map(m => [m.id, m]));
+
+    // Joindre les données côté client
+    const formattedEmployees = (employeesData || []).map(emp => ({
+      id: emp.id,
+      nom: emp.nom,
+      prenom: emp.prenom,
+      poste: emp.poste,
+      equipe: emp.equipe,
+      manager_id: emp.manager_id,
+      manager_nom: managerMap.get(emp.manager_id)?.nom,
+      manager_prenom: managerMap.get(emp.manager_id)?.prenom,
+    }));
+    
+    setEmployees(formattedEmployees);
+
+    // Extraire les équipes uniques
+    const uniqueEquipes = [...new Set(employeesData.map(e => e.equipe).filter(Boolean))];
+    setEquipes(uniqueEquipes as string[]);
 
     setLoading(false);
   };
