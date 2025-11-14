@@ -44,9 +44,6 @@ const Formation = () => {
           </Button>
           <div>
             <h1 className="text-2xl font-bold">{t('title')}</h1>
-            <p className="text-sm text-muted-foreground">
-              {t('descriptions.jobDocuments')}
-            </p>
           </div>
         </div>
       </header>
