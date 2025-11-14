@@ -19,6 +19,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import { useTranslation } from "react-i18next";
 
 interface WorkSchedule {
   id: string;
@@ -40,6 +41,7 @@ export const PlanningCalendar = () => {
   const { user } = useAuth();
   const { isAdmin, isManager } = useUserRole();
   const canManage = isAdmin || isManager;
+  const { t } = useTranslation('planning');
   
   const [currentDate, setCurrentDate] = useState(new Date());
   const [schedules, setSchedules] = useState<WorkSchedule[]>([]);

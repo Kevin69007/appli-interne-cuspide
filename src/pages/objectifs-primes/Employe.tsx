@@ -13,10 +13,12 @@ import { ColleagueVoteDialog } from "@/components/objectifs-primes/ColleagueVote
 import { supabase } from "@/integrations/supabase/client";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 const Employe = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const { t } = useTranslation('indicators');
   const [employeeId, setEmployeeId] = useState<string | null>(null);
   const [moodRating, setMoodRating] = useState<number | null>(null);
   const [savedMoodRating, setSavedMoodRating] = useState<number | null>(null);
@@ -134,8 +136,8 @@ const Employe = () => {
                 <ChevronLeft className="h-5 w-5" />
               </Button>
               <div>
-                <h1 className="text-2xl font-bold">Mon Tableau de Bord</h1>
-                <p className="text-sm text-muted-foreground">Indicateurs & Primes</p>
+                <h1 className="text-2xl font-bold">{t('employee.myObjectives')}</h1>
+                <p className="text-sm text-muted-foreground">{t('title')}</p>
               </div>
             </div>
           </div>
