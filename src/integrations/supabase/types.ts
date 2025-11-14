@@ -811,6 +811,7 @@ export type Database = {
           email: string | null
           equipe: string | null
           id: string
+          manager_id: string | null
           nom: string
           photo_url: string | null
           poste: string | null
@@ -825,6 +826,7 @@ export type Database = {
           email?: string | null
           equipe?: string | null
           id?: string
+          manager_id?: string | null
           nom: string
           photo_url?: string | null
           poste?: string | null
@@ -839,6 +841,7 @@ export type Database = {
           email?: string | null
           equipe?: string | null
           id?: string
+          manager_id?: string | null
           nom?: string
           photo_url?: string | null
           poste?: string | null
@@ -848,6 +851,13 @@ export type Database = {
           user_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "employees_manager_id_fkey"
+            columns: ["manager_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "employees_profile_id_fkey"
             columns: ["profile_id"]
@@ -3740,6 +3750,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_direct_manager: { Args: { p_employee_id: string }; Returns: boolean }
       is_employee_team_member: {
         Args: { p_employee_id: string }
         Returns: boolean

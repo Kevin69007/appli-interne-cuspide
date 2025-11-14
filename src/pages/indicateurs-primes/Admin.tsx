@@ -5,10 +5,11 @@ import { useUserRole } from "@/hooks/useUserRole";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Settings, Users, FileText, Shield, ChevronLeft, Calendar, Target, Award, Trophy, Gift } from "lucide-react";
+import { Settings, Users, FileText, Shield, ChevronLeft, Calendar, Target, Award, Trophy, Gift, UserCog } from "lucide-react";
 import { AddEmployeeDialog } from "@/components/objectifs-primes/AddEmployeeDialog";
 import { EmployeeObjectivesDialog } from "@/components/objectifs-primes/EmployeeObjectivesDialog";
 import { EmployeesList } from "@/components/objectifs-primes/EmployeesList";
+import { EmployeeManagerAssignment } from "@/components/objectifs-primes/EmployeeManagerAssignment";
 import { BonusMalusConfig } from "@/components/objectifs-primes/BonusMalusConfig";
 import { GeneralConfig } from "@/components/objectifs-primes/GeneralConfig";
 import { BestOfMonthAdmin } from "@/components/objectifs-primes/BestOfMonthAdmin";
@@ -105,7 +106,7 @@ const Admin = () => {
         </div>
 
         <Tabs defaultValue="baremes" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-7">
+          <TabsList className="grid w-full grid-cols-8">
             <TabsTrigger value="baremes">
               <Settings className="h-4 w-4 mr-2" />
               Barèmes
@@ -117,6 +118,10 @@ const Admin = () => {
             <TabsTrigger value="employees">
               <Users className="h-4 w-4 mr-2" />
               Employés
+            </TabsTrigger>
+            <TabsTrigger value="managers">
+              <UserCog className="h-4 w-4 mr-2" />
+              Managers
             </TabsTrigger>
             <TabsTrigger value="votes">
               <Users className="h-4 w-4 mr-2" />
@@ -157,6 +162,10 @@ const Admin = () => {
               </div>
               <EmployeesList key={refreshKey} />
             </Card>
+          </TabsContent>
+
+          <TabsContent value="managers">
+            <EmployeeManagerAssignment />
           </TabsContent>
 
           <TabsContent value="votes">
