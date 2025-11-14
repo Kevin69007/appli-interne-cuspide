@@ -1,0 +1,21 @@
+{
+  "title": "Indicateurs & Primes",
+  "indicators": "Indicateurs",
+  "bonuses": "Primes",
+  "createIndicator": "Créer un indicateur",
+  "editIndicator": "Modifier l'indicateur",
+  "deleteIndicator": "Supprimer l'indicateur",
+  "indicatorName": "Nom de l'indicateur",
+  "targetValue": "Valeur cible",
+  "currentValue": "Valeur actuelle",
+  "unit": "Unité",
+  "recurrence": "Récurrence",
+  "points": "Points",
+  "monthly": "Mensuel",
+  "quarterly": "Trimestriel",
+  "annual": "Annuel",
+  "monthlyScore": "Score mensuel",
+  "annualScore": "Score annuel",
+  "bonusAmount": "Montant de la prime",
+  "noIndicators": "Aucun indicateur trouvé"
+}

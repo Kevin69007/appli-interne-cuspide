@@ -1,0 +1,16 @@
+{
+  "title": "Orders & Stock",
+  "orders": "Orders",
+  "stock": "Stock",
+  "createOrder": "Create order",
+  "editOrder": "Edit order",
+  "deleteOrder": "Delete order",
+  "orderNumber": "Order number",
+  "supplier": "Supplier",
+  "orderDate": "Order date",
+  "deliveryDate": "Delivery date",
+  "status": "Status",
+  "items": "Items",
+  "totalAmount": "Total amount",
+  "noOrders": "No orders found"
+}

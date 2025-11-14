@@ -2,16 +2,19 @@ import { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useTranslation } from "react-i18next";
 import { Sparkles } from "lucide-react";
 import { AgendaWidget } from "@/components/employe/AgendaWidget";
 import { TachesWidget } from "@/components/employe/TachesWidget";
 import { InfosImportantesWidget } from "@/components/employe/InfosImportantesWidget";
 import { TachesPrioritairesWidget } from "@/components/employe/TachesPrioritairesWidget";
+import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 
 const Index = () => {
   const { user, loading } = useAuth();
   const { isAdmin, isManager } = useUserRole();
   const navigate = useNavigate();
+  const { t } = useTranslation();
 
   useEffect(() => {
     if (!loading && user) {
@@ -23,7 +26,7 @@ const Index = () => {
   if (loading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-accent/10 flex items-center justify-center">
-        <div className="animate-pulse text-primary text-lg">Chargement...</div>
+        <div className="animate-pulse text-primary text-lg">{t('loading')}</div>
       </div>
     );
   }
@@ -39,16 +42,17 @@ const Index = () => {
                 <Sparkles className="w-6 h-6 text-white" />
               </div>
               <h1 className="text-2xl font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                Cuspide
+                {t('appName')}
               </h1>
             </div>
             <div className="flex items-center gap-4">
               <span className="text-sm text-muted-foreground">{user.email}</span>
+              <LanguageSwitcher />
               <button
                 onClick={() => navigate("/auth")}
                 className="px-4 py-2 border border-border rounded-lg hover:bg-accent/10 transition-colors"
               >
-                Déconnexion
+                {t('logout')}
               </button>
             </div>
           </div>
@@ -56,9 +60,9 @@ const Index = () => {
 
         <main className="max-w-7xl mx-auto px-6 py-12">
           <div className="text-center mb-12">
-            <h2 className="text-4xl font-bold mb-4">Bienvenue sur Cuspide</h2>
+            <h2 className="text-4xl font-bold mb-4">{t('welcome')}</h2>
             <p className="text-muted-foreground text-lg">
-              Votre portail interne pour le laboratoire de prothèse dentaire
+              {t('tagline')}
             </p>
           </div>
 
@@ -72,18 +76,18 @@ const Index = () => {
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {[
-              { title: "Formation & Documentation", icon: "📚", path: "/formation" },
-              { title: "Indicateurs & Primes", icon: "🎯", path: "/indicateurs-primes" },
-              { title: "Tâches", icon: "✅", path: "/taches" },
-              { title: "Communication Générale", icon: "📢", path: "/communication-generale" },
-              { title: "Projets", icon: "🗂️", path: "/projets" },
-              { title: "Réunions", icon: "🎤", path: "/reunions" },
-              { title: "RH", icon: "🌴", path: "/conges-mood-bar", restricted: true },
-              { title: "Détente", icon: "🎮", path: "/detente" },
-              { title: "Traducteur", icon: "🌐", path: "https://interne-traducteur.cuspide.fr/", external: true },
-              { title: "Commandes & Stock", icon: "🛒", path: "/commandes-stock" },
-              { title: "Planning", icon: "📅", path: "/agenda" },
-              { title: "Suivi Direction", icon: "📊", path: "/suivi-direction", restricted: true },
+              { title: t('navigation.formation'), icon: "📚", path: "/formation" },
+              { title: t('navigation.indicators'), icon: "🎯", path: "/indicateurs-primes" },
+              { title: t('navigation.tasks'), icon: "✅", path: "/taches" },
+              { title: t('navigation.communication'), icon: "📢", path: "/communication-generale" },
+              { title: t('navigation.projects'), icon: "🗂️", path: "/projets" },
+              { title: t('navigation.meetings'), icon: "🎤", path: "/reunions" },
+              { title: t('navigation.rh'), icon: "🌴", path: "/conges-mood-bar", restricted: true },
+              { title: t('navigation.detente'), icon: "🎮", path: "/detente" },
+              { title: t('navigation.translator'), icon: "🌐", path: "https://interne-traducteur.cuspide.fr/", external: true },
+              { title: t('navigation.stock'), icon: "🛒", path: "/commandes-stock" },
+              { title: t('navigation.planning'), icon: "📅", path: "/agenda" },
+              { title: t('navigation.direction'), icon: "📊", path: "/suivi-direction", restricted: true },
             ].filter(item => !item.restricted || isAdmin || isManager).map((item, index) => (
               <div
                 key={index}
@@ -118,16 +122,16 @@ const Index = () => {
           </div>
         </div>
         <h1 className="text-5xl font-bold mb-6 bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-          Laboratoire Cuspide
+          {t('welcome')}
         </h1>
         <p className="text-xl text-muted-foreground mb-8">
-          Application interne pour les collaborateurs du laboratoire de prothèse dentaire
+          {t('tagline')}
         </p>
         <button
           onClick={() => navigate("/auth")}
           className="bg-gradient-to-r from-primary to-accent hover:opacity-90 text-white font-semibold px-8 py-4 rounded-lg text-lg transition-opacity"
         >
-          Se connecter
+          {t('auth:signIn')}
         </button>
       </div>
     </div>

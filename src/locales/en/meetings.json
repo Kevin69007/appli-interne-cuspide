@@ -1,0 +1,21 @@
+{
+  "title": "Meetings",
+  "createMeeting": "Create meeting",
+  "editMeeting": "Edit meeting",
+  "deleteMeeting": "Delete meeting",
+  "meetingTitle": "Meeting title",
+  "meetingDate": "Date",
+  "meetingTime": "Time",
+  "duration": "Duration",
+  "location": "Location",
+  "participants": "Participants",
+  "agenda": "Agenda",
+  "notes": "Notes",
+  "decisions": "Decisions",
+  "recording": "Recording",
+  "transcription": "Transcription",
+  "noMeetings": "No meetings found",
+  "meetingCreated": "Meeting created successfully",
+  "meetingUpdated": "Meeting updated successfully",
+  "meetingDeleted": "Meeting deleted successfully"
+}

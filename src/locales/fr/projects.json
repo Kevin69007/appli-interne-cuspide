@@ -1,0 +1,21 @@
+{
+  "title": "Projets",
+  "createProject": "Créer un projet",
+  "editProject": "Modifier le projet",
+  "deleteProject": "Supprimer le projet",
+  "projectName": "Nom du projet",
+  "projectDescription": "Description du projet",
+  "startDate": "Date de début",
+  "endDate": "Date de fin",
+  "status": "Statut",
+  "progress": "Avancement",
+  "team": "Équipe",
+  "budget": "Budget",
+  "timeline": "Chronologie",
+  "milestones": "Jalons",
+  "documents": "Documents",
+  "noProjects": "Aucun projet trouvé",
+  "projectCreated": "Projet créé avec succès",
+  "projectUpdated": "Projet mis à jour avec succès",
+  "projectDeleted": "Projet supprimé avec succès"
+}

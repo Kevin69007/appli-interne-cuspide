@@ -1,0 +1,12 @@
+{
+  "title": "Communication Générale",
+  "createCommunication": "Créer une communication",
+  "editCommunication": "Modifier la communication",
+  "deleteCommunication": "Supprimer la communication",
+  "communicationTitle": "Titre",
+  "communicationContent": "Contenu",
+  "recipients": "Destinataires",
+  "publishDate": "Date de publication",
+  "expirationDate": "Date d'expiration",
+  "noCommunications": "Aucune communication trouvée"
+}
