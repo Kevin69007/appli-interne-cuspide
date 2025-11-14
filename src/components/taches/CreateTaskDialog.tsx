@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -37,6 +38,7 @@ export const CreateTaskDialog = ({
   isMaintenance = false,
   projectId,
 }: CreateTaskDialogProps) => {
+  const { t } = useTranslation('tasks');
   const [loading, setLoading] = useState(false);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [formData, setFormData] = useState({
@@ -91,7 +93,7 @@ export const CreateTaskDialog = ({
     e.preventDefault();
     if (!currentEmployeeId) {
       console.error("No currentEmployeeId available");
-      toast.error("Impossible de créer une tâche : employé non identifié");
+      toast.error(t('create.errors.noEmployee'));
       return;
     }
 
