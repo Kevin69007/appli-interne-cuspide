@@ -9,6 +9,7 @@ import EntretiensMachines from "./EntretiensMachines";
 import Logs from "./Logs";
 import { PointageList } from "@/components/suivi-direction/PointageList";
 import { DashboardObjectifs } from "@/components/suivi-direction/DashboardObjectifs";
+import { ManagerTeamDashboard } from "@/components/suivi-direction/ManagerTeamDashboard";
 
 const SuiviDirection = () => {
   const navigate = useNavigate();
@@ -41,13 +42,22 @@ const SuiviDirection = () => {
           <h1 className="text-3xl font-bold">Suivi Direction</h1>
         </div>
 
-        <Tabs defaultValue="dashboard" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+        <Tabs defaultValue={isManager && !isAdmin ? "mes-equipes" : "dashboard"} className="w-full">
+          <TabsList className={`grid w-full ${isManager && !isAdmin ? "grid-cols-5" : "grid-cols-4"}`}>
+            {isManager && !isAdmin && (
+              <TabsTrigger value="mes-equipes">Mes Équipes</TabsTrigger>
+            )}
             <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
             <TabsTrigger value="pointage">Info Pointage</TabsTrigger>
             <TabsTrigger value="entretiens">Entretiens Locaux et Machines</TabsTrigger>
             <TabsTrigger value="audit">Journal d'audit</TabsTrigger>
           </TabsList>
+
+          {isManager && !isAdmin && (
+            <TabsContent value="mes-equipes" className="mt-6">
+              <ManagerTeamDashboard />
+            </TabsContent>
+          )}
 
           <TabsContent value="dashboard" className="mt-6">
             <DashboardObjectifs />
