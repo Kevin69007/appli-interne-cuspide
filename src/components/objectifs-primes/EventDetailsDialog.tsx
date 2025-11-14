@@ -114,7 +114,7 @@ export const EventDetailsDialog = ({ open, onOpenChange, eventId, source, onUpda
 
   const getCategoryLabel = (categorie: string) => {
     const labels: Record<string, string> = {
-      objectifs: "Objectif",
+      indicateurs: "Indicateur",
       a_faire: "À faire",
       absence: "Absence",
       incident: "Incident"

@@ -11,7 +11,7 @@ interface Objective {
   valeur_cible: number;
   indicateur: string;
   recurrence: "jour" | "semaine" | "mois";
-  points_objectif: number;
+  points_indicateur: number;
 }
 
 interface CreateObjectiveDialogProps {
@@ -27,43 +27,43 @@ export const CreateObjectiveDialog = ({ onObjectiveCreated, totalPointsConfig, c
     valeur_cible: 0,
     indicateur: "",
     recurrence: "mois" as "jour" | "semaine" | "mois",
-    points_objectif: 0
+    points_indicateur: 0
   });
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     
-    if (formData.points_objectif === 0) {
+    if (formData.points_indicateur === 0) {
       return;
     }
     
-    if (currentTotal + formData.points_objectif > totalPointsConfig) {
+    if (currentTotal + formData.points_indicateur > totalPointsConfig) {
       return;
     }
     
     onObjectiveCreated(formData);
-    setFormData({ nom: "", valeur_cible: 0, indicateur: "", recurrence: "mois", points_objectif: 0 });
+    setFormData({ nom: "", valeur_cible: 0, indicateur: "", recurrence: "mois", points_indicateur: 0 });
     setOpen(false);
   };
 
   const pointsRemaining = totalPointsConfig - currentTotal;
-  const isOverLimit = formData.points_objectif > pointsRemaining;
+  const isOverLimit = formData.points_indicateur > pointsRemaining;
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button variant="outline" size="sm">
           <Plus className="h-4 w-4 mr-2" />
-          Créer objectif
+          Créer indicateur
         </Button>
       </DialogTrigger>
       <DialogContent>
         <DialogHeader>
-          <DialogTitle>Créer un nouvel objectif</DialogTitle>
+          <DialogTitle>Créer un nouvel indicateur</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="nom">Nom de l'objectif</Label>
+            <Label htmlFor="nom">Nom de l'indicateur</Label>
             <Input
               id="nom"
               value={formData.nom}

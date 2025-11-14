@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { Loader2, Save } from "lucide-react";
 
 interface ConfigValues {
-  objectifs_points_total: number;
+  indicateurs_points_total: number;
   meilleur_mois_bonus: number;
   colleague_vote_bonus: number;
   tier1_max: number;
@@ -22,7 +22,7 @@ interface ConfigValues {
 
 export const GeneralConfig = () => {
   const [config, setConfig] = useState<ConfigValues>({
-    objectifs_points_total: 100,
+    indicateurs_points_total: 100,
     meilleur_mois_bonus: 20,
     colleague_vote_bonus: 20,
     tier1_max: 10,
@@ -45,7 +45,7 @@ export const GeneralConfig = () => {
       const { data, error } = await supabase
         .from('configuration')
         .select('*')
-        .in('cle', ['objectifs_points_total', 'meilleur_mois_bonus', 'colleague_vote_bonus', 'auto_declaration_tolerance_tiers']);
+        .in('cle', ['indicateurs_points_total', 'meilleur_mois_bonus', 'colleague_vote_bonus', 'auto_declaration_tolerance_tiers']);
 
       if (error) throw error;
 
@@ -64,7 +64,7 @@ export const GeneralConfig = () => {
           : parseInt(configMap.colleague_vote_bonus) || 20;
 
         setConfig({
-          objectifs_points_total: parseInt(configMap.objectifs_points_total) || 100,
+          indicateurs_points_total: parseInt(configMap.indicateurs_points_total) || 100,
           meilleur_mois_bonus: parseInt(configMap.meilleur_mois_bonus) || 20,
           colleague_vote_bonus: colleagueVoteBonus,
           tier1_max: toleranceTiers?.tier1?.max || 10,
@@ -94,7 +94,7 @@ export const GeneralConfig = () => {
       };
 
       const updates = [
-        { cle: 'objectifs_points_total', valeur: config.objectifs_points_total.toString() },
+        { cle: 'indicateurs_points_total', valeur: config.indicateurs_points_total.toString() },
         { cle: 'meilleur_mois_bonus', valeur: config.meilleur_mois_bonus.toString() },
         { cle: 'colleague_vote_bonus', valeur: JSON.stringify({ points: config.colleague_vote_bonus }) },
         { cle: 'auto_declaration_tolerance_tiers', valeur: JSON.stringify(toleranceTiers) }

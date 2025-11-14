@@ -80,14 +80,14 @@ export const ObjectiveDeclarationDialog = ({ employeeId }: Props) => {
 
       if (error) throw error;
 
-      toast.success("Objectif déclaré avec succès ! En attente de validation.");
+      toast.success("Indicateur déclaré avec succès ! En attente de validation.");
       setOpen(false);
       setSelectedObjectiveId("");
       setValeurDeclaree("");
       setCommentaire("");
     } catch (error) {
       console.error('Error declaring objective:', error);
-      toast.error("Erreur lors de la déclaration de l'objectif");
+      toast.error("Erreur lors de la déclaration de l'indicateur");
     } finally {
       setLoading(false);
     }
@@ -109,16 +109,16 @@ export const ObjectiveDeclarationDialog = ({ employeeId }: Props) => {
       <DialogTrigger asChild>
         <Button className="w-full">
           <FileCheck className="h-4 w-4 mr-2" />
-          Déclarer un objectif
+          Déclarer un indicateur
         </Button>
       </DialogTrigger>
       <DialogContent className="max-w-md">
         <DialogHeader>
-          <DialogTitle>Déclarer un objectif atteint</DialogTitle>
+          <DialogTitle>Déclarer un indicateur atteint</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label>Objectif à déclarer</Label>
+            <Label>Indicateur à déclarer</Label>
             <Select value={selectedObjectiveId} onValueChange={setSelectedObjectiveId}>
               <SelectTrigger>
                 <SelectValue placeholder="Sélectionner un objectif" />

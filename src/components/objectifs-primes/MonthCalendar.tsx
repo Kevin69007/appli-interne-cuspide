@@ -76,6 +76,25 @@ export const MonthCalendar = () => {
 
     const mappedEvents: CalendarEvent[] = [];
 
+    // Memoize parsed indicators for performance
+    const parsedIndicators = useMemo(() => {
+      if (!agendaData) return new Map();
+      
+      const map = new Map();
+      agendaData.forEach(entry => {
+        if (entry.categorie === 'indicateurs') {
+          try {
+            const parsed = JSON.parse(entry.detail);
+            const data = Array.isArray(parsed) ? parsed[0] : parsed;
+            map.set(entry.id, data?.nom || entry.detail);
+          } catch {
+            map.set(entry.id, entry.detail);
+          }
+        }
+      });
+      return map;
+    }, [agendaData]);
+
     // Map agenda entries
     if (!agendaError && agendaData) {
       agendaData.forEach(entry => {
@@ -84,17 +103,10 @@ export const MonthCalendar = () => {
           return;
         }
 
-        // Parse indicator details for cleaner display
-        let label = entry.detail || entry.categorie;
-        if (entry.categorie === 'indicateurs') {
-          try {
-            const parsed = JSON.parse(entry.detail);
-            const data = Array.isArray(parsed) ? parsed[0] : parsed;
-            label = data?.nom || entry.detail;
-          } catch {
-            label = entry.detail;
-          }
-        }
+        // Use memoized label for indicators
+        const label = entry.categorie === 'indicateurs' 
+          ? parsedIndicators.get(entry.id) || entry.detail
+          : entry.detail || entry.categorie;
 
         mappedEvents.push({
           id: entry.id,
@@ -107,12 +119,9 @@ export const MonthCalendar = () => {
       });
     }
 
-    // Map tasks (skip completed ones - already filtered in query)
+    // Map tasks (already filtered in query - no need for double check)
     if (!tasksError && tasksData) {
       tasksData.forEach(task => {
-        // Double-check we don't show completed tasks
-        if (task.statut === 'terminee') return;
-
         mappedEvents.push({
           id: task.id,
           date: new Date(task.date_echeance).getDate(),
