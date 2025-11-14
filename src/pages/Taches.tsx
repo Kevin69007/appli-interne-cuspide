@@ -11,6 +11,7 @@ import { TaskCard } from "@/components/taches/TaskCard";
 import { TaskFilters, TaskFilters as TaskFiltersType } from "@/components/taches/TaskFilters";
 import { toast } from "sonner";
 import { isAfter, isBefore, isEqual, startOfDay } from "date-fns";
+import { useTranslation } from "react-i18next";
 
 interface Task {
   id: string;
@@ -37,6 +38,7 @@ const Taches = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { isAdmin, isManager } = useUserRole();
+  const { t } = useTranslation('tasks');
   const [tasks, setTasks] = useState<Task[]>([]);
   const [boomerangsSent, setBoomerangsSent] = useState<Task[]>([]);
   const [boomerangsReceived, setBoomerangsReceived] = useState<Task[]>([]);
@@ -204,11 +206,11 @@ const Taches = () => {
             <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
               <ArrowLeft className="h-5 w-5" />
             </Button>
-            <h1 className="text-3xl font-bold">Mes Tâches</h1>
+            <h1 className="text-3xl font-bold">{t('title')}</h1>
           </div>
           <Button onClick={() => setShowCreateDialog(true)}>
             <Plus className="h-4 w-4 mr-2" />
-            Nouvelle tâche
+            {t('createTask')}
           </Button>
         </div>
 
@@ -223,23 +225,23 @@ const Taches = () => {
         <Tabs defaultValue="my-tasks" className="w-full">
           <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="my-tasks">
-              Mes tâches ({filteredTasks.length})
+              {t('tabs.myTasks')} ({filteredTasks.length})
             </TabsTrigger>
             <TabsTrigger value="boomerangs-sent">
-              🪃 Envoyés ({filteredBoomerangsSent.length})
+              🪃 {t('tabs.boomerangsSent')} ({filteredBoomerangsSent.length})
             </TabsTrigger>
             <TabsTrigger value="boomerangs-received">
-              🪃 Reçus ({filteredBoomerangsReceived.length})
+              🪃 {t('tabs.boomerangsReceived')} ({filteredBoomerangsReceived.length})
             </TabsTrigger>
           </TabsList>
 
           <TabsContent value="my-tasks" className="space-y-4 mt-6">
             {loading ? (
-              <p className="text-center text-muted-foreground">Chargement...</p>
+              <p className="text-center text-muted-foreground">{t('common:loading')}</p>
             ) : filteredTasks.length === 0 ? (
               <div className="text-center space-y-2">
                 <p className="text-muted-foreground">
-                  {tasks.length === 0 ? "Aucune tâche pour le moment" : "Aucune tâche ne correspond à vos critères"}
+                  {tasks.length === 0 ? t('noTasks') : t('filters.unappliedChanges')}
                 </p>
                 {tasks.length > 0 && (
                   <Button variant="outline" size="sm" onClick={() => setFilters({

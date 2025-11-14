@@ -1,28 +1,30 @@
 import { useNavigate } from "react-router-dom";
 import { ChevronLeft, FileText, BookOpen, Brain } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "react-i18next";
 
 const Formation = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation('formation');
 
   const sections = [
     {
-      title: "Fiches de poste",
-      description: "Consultez les fiches de poste et documents associés",
+      title: t('sections.jobDocuments'),
+      description: t('descriptions.jobDocuments'),
       icon: FileText,
       path: "/fiches-de-poste",
       gradient: "from-blue-500 to-cyan-500",
     },
     {
-      title: "Protocoles",
-      description: "Accédez aux protocoles et procédures",
+      title: t('sections.protocols'),
+      description: t('descriptions.protocols'),
       icon: BookOpen,
       path: "/protocoles",
       gradient: "from-purple-500 to-pink-500",
     },
     {
-      title: "Quizz",
-      description: "Gérez et complétez les quizz mensuels",
+      title: t('sections.quiz'),
+      description: t('descriptions.quiz'),
       icon: Brain,
       path: "/quiz",
       gradient: "from-orange-500 to-red-500",
@@ -41,9 +43,9 @@ const Formation = () => {
             <ChevronLeft className="h-5 w-5" />
           </Button>
           <div>
-            <h1 className="text-2xl font-bold">Formation & Documentation</h1>
+            <h1 className="text-2xl font-bold">{t('title')}</h1>
             <p className="text-sm text-muted-foreground">
-              Accédez aux ressources de formation et documentation
+              {t('descriptions.jobDocuments')}
             </p>
           </div>
         </div>

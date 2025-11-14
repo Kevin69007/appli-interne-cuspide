@@ -1,0 +1,58 @@
+{
+  "title": "Training & Documentation",
+  "sections": {
+    "jobDocuments": "Job Documents",
+    "protocols": "Protocols",
+    "quiz": "Quiz"
+  },
+  "descriptions": {
+    "jobDocuments": "View job descriptions and position documents",
+    "protocols": "Access protocols and procedures",
+    "quiz": "Test your knowledge with quizzes"
+  },
+  "jobDocuments": {
+    "title": "Job Documents",
+    "myDocuments": "My documents",
+    "allDocuments": "All documents",
+    "category": "Category",
+    "viewDocument": "View document",
+    "downloadDocument": "Download",
+    "noDocuments": "No documents available",
+    "documentOpened": "Document opened"
+  },
+  "protocols": {
+    "title": "Protocols",
+    "search": "Search protocol",
+    "searchPlaceholder": "Search by title...",
+    "category": "Category",
+    "allCategories": "All categories",
+    "viewProtocol": "View protocol",
+    "downloadProtocol": "Download",
+    "noProtocols": "No protocols found"
+  },
+  "quiz": {
+    "title": "Quiz",
+    "availableQuizzes": "Available quizzes",
+    "myResults": "My results",
+    "start": "Start",
+    "continue": "Continue",
+    "viewResults": "View results",
+    "score": "Score",
+    "completedOn": "Completed on",
+    "noQuizzes": "No quizzes available",
+    "question": "Question",
+    "of": "of",
+    "next": "Next",
+    "previous": "Previous",
+    "finish": "Finish",
+    "submit": "Submit",
+    "correctAnswer": "Correct answer!",
+    "wrongAnswer": "Wrong answer",
+    "finalScore": "Final score",
+    "passed": "Passed",
+    "failed": "Failed",
+    "retake": "Retake quiz",
+    "backToList": "Back to list"
+  },
+  "backToFormation": "Back to Training"
+}

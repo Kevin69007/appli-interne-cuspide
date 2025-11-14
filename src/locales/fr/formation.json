@@ -1,0 +1,58 @@
+{
+  "title": "Formation & Documentation",
+  "sections": {
+    "jobDocuments": "Fiches de poste",
+    "protocols": "Protocoles",
+    "quiz": "Quizz"
+  },
+  "descriptions": {
+    "jobDocuments": "Consultez les fiches de poste et descriptions de fonction",
+    "protocols": "Accédez aux protocoles et procédures",
+    "quiz": "Testez vos connaissances avec les quizz"
+  },
+  "jobDocuments": {
+    "title": "Fiches de poste",
+    "myDocuments": "Mes documents",
+    "allDocuments": "Tous les documents",
+    "category": "Catégorie",
+    "viewDocument": "Voir le document",
+    "downloadDocument": "Télécharger",
+    "noDocuments": "Aucun document disponible",
+    "documentOpened": "Document ouvert"
+  },
+  "protocols": {
+    "title": "Protocoles",
+    "search": "Rechercher un protocole",
+    "searchPlaceholder": "Rechercher par titre...",
+    "category": "Catégorie",
+    "allCategories": "Toutes les catégories",
+    "viewProtocol": "Voir le protocole",
+    "downloadProtocol": "Télécharger",
+    "noProtocols": "Aucun protocole trouvé"
+  },
+  "quiz": {
+    "title": "Quizz",
+    "availableQuizzes": "Quizz disponibles",
+    "myResults": "Mes résultats",
+    "start": "Commencer",
+    "continue": "Continuer",
+    "viewResults": "Voir les résultats",
+    "score": "Score",
+    "completedOn": "Complété le",
+    "noQuizzes": "Aucun quizz disponible",
+    "question": "Question",
+    "of": "sur",
+    "next": "Suivant",
+    "previous": "Précédent",
+    "finish": "Terminer",
+    "submit": "Soumettre",
+    "correctAnswer": "Bonne réponse !",
+    "wrongAnswer": "Mauvaise réponse",
+    "finalScore": "Score final",
+    "passed": "Réussi",
+    "failed": "Échoué",
+    "retake": "Refaire le quizz",
+    "backToList": "Retour à la liste"
+  },
+  "backToFormation": "Retour à Formation"
+}
