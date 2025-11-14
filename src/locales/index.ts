@@ -16,6 +16,7 @@ import rhFr from './fr/rh.json';
 import planningFr from './fr/planning.json';
 import directionFr from './fr/direction.json';
 import notfoundFr from './fr/notfound.json';
+import formationFr from './fr/formation.json';
 
 // Import English translations
 import commonEn from './en/common.json';
@@ -31,6 +32,7 @@ import rhEn from './en/rh.json';
 import planningEn from './en/planning.json';
 import directionEn from './en/direction.json';
 import notfoundEn from './en/notfound.json';
+import formationEn from './en/formation.json';
 
 i18n
   .use(LanguageDetector)
@@ -51,6 +53,7 @@ i18n
         planning: planningFr,
         direction: directionFr,
         notfound: notfoundFr,
+        formation: formationFr,
       },
       en: {
         common: commonEn,
@@ -66,6 +69,7 @@ i18n
         planning: planningEn,
         direction: directionEn,
         notfound: notfoundEn,
+        formation: formationEn,
       },
     },
     fallbackLng: 'fr',
