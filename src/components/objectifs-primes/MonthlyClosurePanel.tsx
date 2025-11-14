@@ -57,7 +57,7 @@ export const MonthlyClosurePanel = () => {
         *,
         employee:employees!inner(nom, prenom, equipe)
       `)
-      .eq('categorie', 'objectifs' as any)
+      .eq('categorie', 'indicateurs' as any)
       .not('valeur_declaree', 'is', null)
       .gte('date', firstDay)
       .lte('date', lastDay)

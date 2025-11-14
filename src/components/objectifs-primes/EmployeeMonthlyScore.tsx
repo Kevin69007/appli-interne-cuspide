@@ -92,7 +92,7 @@ export const EmployeeMonthlyScore = ({ employeeId, month, year }: Props) => {
     const currentDay = new Date().getDate();
     const monthPercentage = Math.round((currentDay / totalDays) * 100);
     
-    return `Vous êtes à ${monthPercentage}% du mois avec ${Math.round(score.projection_percentage)}% des objectifs atteints.`;
+    return `Vous êtes à ${monthPercentage}% du mois avec ${Math.round(score.projection_percentage)}% des indicateurs atteints.`;
   };
 
   return (
