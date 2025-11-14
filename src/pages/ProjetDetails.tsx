@@ -218,7 +218,7 @@ const ProjetDetails = () => {
                   )}
                 </>
               )}
-              {project.statut === "en_cours" && (
+              {project.statut === "en_cours" && (isAdmin || project.created_by === currentEmployeeId) && (
                 <Button
                   variant="outline"
                   onClick={() => handleQuickStatusChange("en_pause")}
@@ -228,7 +228,7 @@ const ProjetDetails = () => {
                   Mettre en pause
                 </Button>
               )}
-              {project.statut === "en_pause" && (
+              {project.statut === "en_pause" && (isAdmin || project.created_by === currentEmployeeId) && (
                 <Button
                   variant="outline"
                   onClick={() => handleQuickStatusChange("en_cours")}
@@ -238,10 +238,12 @@ const ProjetDetails = () => {
                   Reprendre
                 </Button>
               )}
-              <Button variant="outline" onClick={() => setShowEditProjectDialog(true)}>
-                <Pencil className="h-4 w-4 mr-2" />
-                Modifier le projet
-              </Button>
+              {(isAdmin || project.created_by === currentEmployeeId) && (
+                <Button variant="outline" onClick={() => setShowEditProjectDialog(true)}>
+                  <Pencil className="h-4 w-4 mr-2" />
+                  Modifier le projet
+                </Button>
+              )}
             </div>
           )}
         </div>
