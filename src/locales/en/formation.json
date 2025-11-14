@@ -1,10 +1,9 @@
 {
   "title": "Training & Documentation",
-  "subtitle": "Access training resources and documentation",
   "sections": {
     "jobDocuments": "Job Documents",
     "protocols": "Protocols",
-    "quiz": "Quizzes"
+    "quiz": "Quiz"
   },
   "descriptions": {
     "jobDocuments": "View job descriptions and position documents",

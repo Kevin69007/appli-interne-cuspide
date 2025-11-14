@@ -1,8 +1,7 @@
 {
   "title": "Formation & Documentation",
-  "subtitle": "Accédez aux ressources de formation et documentation",
   "sections": {
-    "jobDocuments": "Fiche de poste",
+    "jobDocuments": "Fiches de poste",
     "protocols": "Protocoles",
     "quiz": "Quizz"
   },
@@ -12,7 +11,7 @@
     "quiz": "Testez vos connaissances avec les quizz"
   },
   "jobDocuments": {
-    "title": "Fiche de poste",
+    "title": "Fiches de poste",
     "newDocument": "Nouvelle fiche",
     "myDocuments": "Mes documents",
     "allDocuments": "Tous les documents",
@@ -31,17 +30,17 @@
     "delete": "Supprimer",
     "viewDocument": "Voir le document",
     "download": "Télécharger",
-    "noDocuments": "Aucune fiche de postes créée",
-    "createSuccess": "Fiche de postes créée avec succès",
+    "noDocuments": "Aucune fiche de poste créée",
+    "createSuccess": "Fiche de poste créée avec succès",
     "createError": "Erreur lors de la création de la fiche",
-    "updateSuccess": "Fiche de postes mise à jour",
+    "updateSuccess": "Fiche de poste mise à jour",
     "updateError": "Erreur lors de la mise à jour",
-    "deleteSuccess": "Fiche de postes supprimée",
+    "deleteSuccess": "Fiche de poste supprimée",
     "deleteError": "Erreur lors de la suppression",
     "uploadError": "Erreur lors du téléchargement du fichier",
     "accessDenied": "Accès refusé : vous devez être administrateur",
     "permissionError": "Erreur lors de la vérification des permissions",
-    "loadingError": "Erreur lors du chargement des fiches de postes",
+    "loadingError": "Erreur lors du chargement des fiches",
     "uploading": "Téléchargement en cours...",
     "loading": "Chargement...",
     "cancel": "Annuler",
