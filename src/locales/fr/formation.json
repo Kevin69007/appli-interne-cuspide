@@ -2,17 +2,17 @@
   "title": "Formation & Documentation",
   "subtitle": "Accédez aux ressources de formation et documentation",
   "sections": {
-    "jobDocuments": "Fiches de postes",
+    "jobDocuments": "Fiche de poste",
     "protocols": "Protocoles",
     "quiz": "Quizz"
   },
   "descriptions": {
-    "jobDocuments": "Consultez les fiches de postes et descriptions de fonction",
+    "jobDocuments": "Consultez les fiches de poste et descriptions de fonction",
     "protocols": "Accédez aux protocoles et procédures",
     "quiz": "Testez vos connaissances avec les quizz"
   },
   "jobDocuments": {
-    "title": "Fiches de postes",
+    "title": "Fiche de poste",
     "newDocument": "Nouvelle fiche",
     "myDocuments": "Mes documents",
     "allDocuments": "Tous les documents",
