@@ -139,15 +139,15 @@ export const GeneralConfig = () => {
         <CardContent className="space-y-6">
           <div className="grid gap-4 md:grid-cols-2">
             <div className="space-y-2">
-              <Label htmlFor="objectifs_total">Total points objectifs</Label>
+              <Label htmlFor="indicateurs_total">Total points indicateurs</Label>
               <Input
-                id="objectifs_total"
+                id="indicateurs_total"
                 type="number"
-                value={config.objectifs_points_total}
-                onChange={(e) => setConfig(prev => ({ ...prev, objectifs_points_total: parseInt(e.target.value) || 100 }))}
+                value={config.indicateurs_points_total}
+                onChange={(e) => setConfig(prev => ({ ...prev, indicateurs_points_total: parseInt(e.target.value) || 100 }))}
               />
               <p className="text-xs text-muted-foreground">
-                Points totaux disponibles pour les objectifs du mois
+                Points totaux disponibles pour les indicateurs du mois
               </p>
             </div>
 

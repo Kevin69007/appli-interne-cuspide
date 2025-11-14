@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { AddEventDialog } from "./AddEventDialog";
 import { EventDetailsDialog } from "./EventDetailsDialog";
 import { supabase } from "@/integrations/supabase/client";

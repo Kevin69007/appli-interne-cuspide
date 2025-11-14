@@ -232,7 +232,7 @@ export const CreateTaskDialog = ({
           )}
 
           {canAssignOthers && (
-            <div>
+            <div onClick={(e) => e.stopPropagation()}>
               <Label htmlFor="assigned_to">Assigner à *</Label>
               <Combobox
                 value={formData.assigned_to}

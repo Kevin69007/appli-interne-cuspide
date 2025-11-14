@@ -117,8 +117,8 @@ export const CreateObjectiveDialog = ({ onObjectiveCreated, totalPointsConfig, c
               type="number"
               min="0"
               max={pointsRemaining}
-              value={formData.points_objectif}
-              onChange={(e) => setFormData({ ...formData, points_objectif: parseInt(e.target.value) || 0 })}
+              value={formData.points_indicateur}
+              onChange={(e) => setFormData({ ...formData, points_indicateur: parseInt(e.target.value) || 0 })}
               placeholder={`Ex: ${Math.min(10, pointsRemaining)}`}
               required
             />
@@ -127,7 +127,7 @@ export const CreateObjectiveDialog = ({ onObjectiveCreated, totalPointsConfig, c
             </p>
             {isOverLimit && (
               <p className="text-xs text-destructive mt-1">
-                ⚠️ Dépassement de {formData.points_objectif - pointsRemaining} pts
+                ⚠️ Dépassement de {formData.points_indicateur - pointsRemaining} pts
               </p>
             )}
           </div>
@@ -136,7 +136,7 @@ export const CreateObjectiveDialog = ({ onObjectiveCreated, totalPointsConfig, c
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Annuler
             </Button>
-            <Button type="submit" disabled={isOverLimit || formData.points_objectif === 0}>
+            <Button type="submit" disabled={isOverLimit || formData.points_indicateur === 0}>
               Créer
             </Button>
           </div>
