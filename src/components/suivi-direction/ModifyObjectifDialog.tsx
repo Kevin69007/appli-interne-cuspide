@@ -85,8 +85,8 @@ export const ModifyObjectifDialog = ({ open, onOpenChange, objectif, onSuccess }
           .insert({
             employee_id: objectif.employee_id,
             type: "malus",
-            titre: "Objectif corrigé",
-            message: `Votre objectif "${objectif.nom}" a été corrigé par un manager. Un malus a été appliqué en raison de l'écart important (${ecartPourcentage.toFixed(1)}%).`,
+            titre: "Indicateur corrigé",
+            message: `Votre indicateur "${objectif.nom}" a été corrigé par un manager. Un malus a été appliqué en raison de l'écart important (${ecartPourcentage.toFixed(1)}%).`,
             url: "/objectifs-primes/employe"
           });
 
@@ -94,9 +94,9 @@ export const ModifyObjectifDialog = ({ open, onOpenChange, objectif, onSuccess }
           console.error("Erreur notification:", notifError);
         }
 
-        toast.success(`Objectif modifié avec pénalité appliquée (écart: ${ecartPourcentage.toFixed(1)}%)`);
+        toast.success(`Indicateur modifié avec pénalité appliquée (écart: ${ecartPourcentage.toFixed(1)}%)`);
       } else {
-        toast.success("Objectif modifié avec succès");
+        toast.success("Indicateur modifié avec succès");
       }
 
       onSuccess();
@@ -113,7 +113,7 @@ export const ModifyObjectifDialog = ({ open, onOpenChange, objectif, onSuccess }
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Modifier l'objectif</DialogTitle>
+          <DialogTitle>Modifier l'Indicateur</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-2">

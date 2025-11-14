@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { ChevronLeft, ChevronRight, Calendar as CalendarIcon } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect } from "react";
 import { AddEventDialog } from "./AddEventDialog";
 import { EventDetailsDialog } from "./EventDetailsDialog";
 import { supabase } from "@/integrations/supabase/client";
@@ -76,24 +76,21 @@ export const MonthCalendar = () => {
 
     const mappedEvents: CalendarEvent[] = [];
 
-    // Memoize parsed indicators for performance
-    const parsedIndicators = useMemo(() => {
-      if (!agendaData) return new Map();
-      
-      const map = new Map();
-      agendaData.forEach(entry => {
+    // Parser les indicateurs directement avec un cache Map local
+    const parsedIndicators = new Map<string, string>();
+    if (agendaData) {
+      agendaData.forEach((entry: any) => {
         if (entry.categorie === 'indicateurs') {
           try {
             const parsed = JSON.parse(entry.detail);
             const data = Array.isArray(parsed) ? parsed[0] : parsed;
-            map.set(entry.id, data?.nom || entry.detail);
+            parsedIndicators.set(entry.id, data?.nom || entry.detail);
           } catch {
-            map.set(entry.id, entry.detail);
+            parsedIndicators.set(entry.id, entry.detail);
           }
         }
       });
-      return map;
-    }, [agendaData]);
+    }
 
     // Map agenda entries
     if (!agendaError && agendaData) {

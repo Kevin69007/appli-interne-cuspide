@@ -157,14 +157,14 @@ export const EmployeeObjectivesDialog = () => {
       return;
     }
     if (objectives.length === 0) {
-      toast.error("Veuillez créer au moins un objectif");
+      toast.error("Veuillez créer au moins un indicateur");
       return;
     }
     
     setLoading(true);
 
     try {
-      // Générer les dates selon la récurrence de chaque objectif
+      // Générer les dates selon la récurrence de chaque indicateur
       const entries = [];
       
       for (const employeeId of selectedEmployees) {
@@ -177,7 +177,7 @@ export const EmployeeObjectivesDialog = () => {
                 entries.push({
                   employee_id: employeeId,
                   date: date,
-                  categorie: 'objectifs' as const,
+                  categorie: 'indicateurs' as const,
                   detail: JSON.stringify([objective]),
                   statut_validation: 'en_attente' as const
                 });
@@ -193,7 +193,7 @@ export const EmployeeObjectivesDialog = () => {
 
       if (error) throw error;
 
-      toast.success(`${entries.length} objectif(s) ont été créés avec succès.`);
+      toast.success(`${entries.length} indicateur(s) ont été créés avec succès.`);
 
       setSelectedEmployees([]);
       setSelectedMonths([new Date().getMonth() + 1]);
@@ -202,7 +202,7 @@ export const EmployeeObjectivesDialog = () => {
       setOpen(false);
     } catch (error) {
       console.error("Error setting objectives:", error);
-      toast.error("Impossible de définir les objectifs.");
+      toast.error("Impossible de définir les indicateurs.");
     } finally {
       setLoading(false);
     }

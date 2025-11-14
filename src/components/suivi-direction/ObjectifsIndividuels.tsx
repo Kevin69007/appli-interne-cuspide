@@ -101,7 +101,7 @@ export const ObjectifsIndividuels = () => {
         setFilteredObjectifs([]);
       }
     } catch (error: any) {
-      toast.error("Erreur lors du chargement des objectifs");
+      toast.error("Erreur lors du chargement des indicateurs");
       console.error("Erreur détaillée:", error);
     } finally {
       setLoading(false);
@@ -169,11 +169,11 @@ export const ObjectifsIndividuels = () => {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-lg font-semibold">Objectifs individuels</h3>
+        <h3 className="text-lg font-semibold">Indicateurs individuels</h3>
         {!isAdmin && !isManager && (
           <Button onClick={() => setShowDeclareDialog(true)} size="sm">
             <Plus className="h-4 w-4 mr-2" />
-            Déclarer un objectif
+            Déclarer un indicateur
           </Button>
         )}
       </div>
@@ -185,7 +185,7 @@ export const ObjectifsIndividuels = () => {
           <TableHeader>
             <TableRow>
               <TableHead>Employé</TableHead>
-              <TableHead>Objectif</TableHead>
+              <TableHead>Indicateur</TableHead>
               <TableHead>Type</TableHead>
               <TableHead>Période</TableHead>
               <TableHead>Cible</TableHead>
@@ -204,7 +204,7 @@ export const ObjectifsIndividuels = () => {
             ) : filteredObjectifs.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={8} className="text-center text-muted-foreground">
-                  Aucun objectif déclaré
+                  Aucun indicateur déclaré
                 </TableCell>
               </TableRow>
             ) : (

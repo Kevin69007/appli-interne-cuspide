@@ -108,7 +108,7 @@ export const DeclareObjectifDialog = ({ open, onOpenChange, onSuccess }: Declare
     }
 
     if (!canDeclareForDate(periodeDebut, typePeriode)) {
-      toast.error("Pour un objectif journalier, vous ne pouvez déclarer que pour aujourd'hui ou un jour passé");
+      toast.error("Pour un indicateur journalier, vous ne pouvez déclarer que pour aujourd'hui ou un jour passé");
       return;
     }
 
@@ -133,7 +133,7 @@ export const DeclareObjectifDialog = ({ open, onOpenChange, onSuccess }: Declare
 
       if (error) throw error;
 
-      toast.success("Objectif déclaré avec succès");
+      toast.success("Indicateur déclaré avec succès");
       onSuccess();
       onOpenChange(false);
       resetForm();
@@ -159,7 +159,7 @@ export const DeclareObjectifDialog = ({ open, onOpenChange, onSuccess }: Declare
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
-          <DialogTitle>Déclarer un objectif</DialogTitle>
+          <DialogTitle>Déclarer un Indicateur</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           {(isAdmin || isManager) && (
@@ -181,7 +181,7 @@ export const DeclareObjectifDialog = ({ open, onOpenChange, onSuccess }: Declare
           )}
 
           <div className="space-y-2">
-            <Label htmlFor="nom">Nom de l'objectif *</Label>
+            <Label htmlFor="nom">Nom de l'indicateur *</Label>
             <Input
               id="nom"
               value={nom}
@@ -217,7 +217,7 @@ export const DeclareObjectifDialog = ({ open, onOpenChange, onSuccess }: Declare
             />
             {typePeriode === "daily" && (
               <p className="text-xs text-muted-foreground">
-                Pour un objectif journalier, vous ne pouvez déclarer que pour aujourd'hui ou un jour passé
+                Pour un indicateur journalier, vous ne pouvez déclarer que pour aujourd'hui ou un jour passé
               </p>
             )}
           </div>

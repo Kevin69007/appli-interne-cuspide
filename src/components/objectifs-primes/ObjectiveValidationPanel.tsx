@@ -102,7 +102,7 @@ export const ObjectiveValidationPanel = () => {
         const parsed = JSON.parse(selectedObjective.detail);
         objectiveData = Array.isArray(parsed) ? parsed[0] : parsed;
       } catch (e) {
-        throw new Error("Format d'objectif invalide");
+        throw new Error("Format d'indicateur invalide");
       }
 
       // Calculer les points de l'indicateur (proportionnel à la valeur contrôlée)
@@ -135,7 +135,7 @@ export const ObjectiveValidationPanel = () => {
             categorie: 'incident',
             type_incident: 'erreur_protocole',
             gravite: discrepancy > toleranceConfig.moyen ? 'majeure' : 'moyenne',
-            detail: `Écart de ${discrepancy.toFixed(1)}% sur déclaration objectif`,
+            detail: `Écart de ${discrepancy.toFixed(1)}% sur déclaration indicateur`,
             points: malusPoints,
             statut_validation: 'valide'
           });
@@ -178,7 +178,7 @@ export const ObjectiveValidationPanel = () => {
 
       if (error) throw error;
 
-      toast.success("Objectif rejeté");
+      toast.success("Indicateur rejeté");
       setSelectedObjective(null);
       setCommentaireValidation("");
       fetchPendingObjectives();
@@ -198,10 +198,10 @@ export const ObjectiveValidationPanel = () => {
 
   return (
     <>
-      <Card>
-        <CardHeader>
-          <CardTitle>Objectifs en attente de validation</CardTitle>
-        </CardHeader>
+    <Card>
+      <CardHeader>
+        <CardTitle>Indicateurs en attente de validation</CardTitle>
+      </CardHeader>
         <CardContent>
           {pendingObjectives.length === 0 ? (
             <p className="text-center text-muted-foreground py-8">
