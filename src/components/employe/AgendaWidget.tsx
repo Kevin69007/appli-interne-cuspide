@@ -1,4 +1,5 @@
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Card } from "@/components/ui/card";
 import { Calendar, ChevronRight } from "lucide-react";
 import { useEffect, useState } from "react";
@@ -15,6 +16,7 @@ interface AgendaEvent {
 
 export const AgendaWidget = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation('indicators');
   const [events, setEvents] = useState<AgendaEvent[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -69,7 +71,7 @@ export const AgendaWidget = () => {
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
           <Calendar className="h-5 w-5 text-primary" />
-          <h3 className="text-lg font-semibold">Aujourd'hui</h3>
+          <h3 className="text-lg font-semibold">{t('employee.agenda.title')}</h3>
         </div>
         <ChevronRight className="h-5 w-5 text-muted-foreground" />
       </div>
@@ -87,10 +89,10 @@ export const AgendaWidget = () => {
 
       <div className="space-y-2">
         {loading ? (
-          <p className="text-sm text-muted-foreground">Chargement...</p>
+          <p className="text-sm text-muted-foreground">{t('employee.agenda.loading')}</p>
         ) : todayEvents.length === 0 ? (
           <p className="text-sm text-muted-foreground text-center py-2">
-            Aucun événement aujourd'hui
+            {t('employee.agenda.noEvents')}
           </p>
         ) : (
           todayEvents.map((event) => (
@@ -107,7 +109,7 @@ export const AgendaWidget = () => {
       </div>
 
       <p className="text-xs text-muted-foreground mt-4 text-center">
-        Voir le calendrier complet →
+        {t('employee.agenda.viewFullCalendar')}
       </p>
     </Card>
   );

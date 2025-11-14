@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -25,6 +26,7 @@ interface PriorityTask {
 export const TachesPrioritairesWidget = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const { t } = useTranslation('indicators');
   const [tasks, setTasks] = useState<PriorityTask[]>([]);
   const [loading, setLoading] = useState(true);
   const [commentingTaskId, setCommentingTaskId] = useState<string | null>(null);
@@ -121,20 +123,20 @@ export const TachesPrioritairesWidget = () => {
 
       if (error) throw error;
 
-      toast.success("Point d'avancement ajouté");
+      toast.success(t('employee.priorityTasks.progressAdded'));
       setComment("");
       setCommentingTaskId(null);
       fetchPriorityTasks();
     } catch (error) {
       console.error("Error adding comment:", error);
-      toast.error("Erreur lors de l'ajout du commentaire");
+      toast.error(t('employee.priorityTasks.addError'));
     }
   };
 
   if (loading) {
     return (
       <Card className="p-6 cursor-pointer hover:shadow-lg transition-shadow">
-        <p className="text-sm text-muted-foreground">Chargement...</p>
+        <p className="text-sm text-muted-foreground">{t('employee.priorityTasks.loading')}</p>
       </Card>
     );
   }
@@ -151,13 +153,13 @@ export const TachesPrioritairesWidget = () => {
       <div className="flex items-center justify-between mb-4">
         <h3 className="font-semibold text-lg flex items-center gap-2">
           <AlertTriangle className="h-5 w-5 text-orange-500" />
-          Tâches Prioritaires
+          {t('employee.priorityTasks.title')}
         </h3>
         <Badge variant="destructive">🔥 {tasks.length}</Badge>
       </div>
 
       {tasks.length === 0 ? (
-        <p className="text-sm text-muted-foreground">Aucune tâche prioritaire en cours</p>
+        <p className="text-sm text-muted-foreground">{t('employee.priorityTasks.noPriorityTasks')}</p>
       ) : (
         <div className="space-y-3">
           {tasks.slice(0, 3).map((task) => {
@@ -180,7 +182,7 @@ export const TachesPrioritairesWidget = () => {
                     <p className="font-medium text-sm">{task.titre}</p>
                     {projectInfo && !Array.isArray(projectInfo) && (
                       <p className="text-xs text-muted-foreground">
-                        Projet: {projectInfo.titre}
+                        {t('employee.priorityTasks.project')}: {projectInfo.titre}
                       </p>
                     )}
                     <p className="text-xs text-muted-foreground">
@@ -189,7 +191,7 @@ export const TachesPrioritairesWidget = () => {
                   </div>
                   {showWarning && (
                     <Badge variant="outline" className="text-xs bg-orange-100 border-orange-300">
-                      ⚠️ Point requis
+                      ⚠️ {t('employee.priorityTasks.needsUpdate')}
                     </Badge>
                   )}
                 </div>
@@ -205,12 +207,12 @@ export const TachesPrioritairesWidget = () => {
                     }}
                   >
                     <MessageSquare className="h-3 w-3 mr-2" />
-                    Ajouter un point d'avancement
+                    {t('employee.priorityTasks.addProgress')}
                   </Button>
                 ) : (
                   <div className="mt-2 flex gap-2" onClick={(e) => e.stopPropagation()}>
                     <Input
-                      placeholder="Décrivez l'avancement..."
+                      placeholder={t('employee.priorityTasks.progressPlaceholder')}
                       value={comment}
                       onChange={(e) => setComment(e.target.value)}
                       className="h-8 text-sm"
