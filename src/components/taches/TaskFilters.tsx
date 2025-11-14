@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -30,6 +31,7 @@ interface TaskFiltersProps {
 }
 
 export const TaskFilters = ({ onFilterChange, taskCount }: TaskFiltersProps) => {
+  const { t } = useTranslation('tasks');
   // Filtres en cours de configuration (pas encore appliqués)
   const [pendingFilters, setPendingFilters] = useState<TaskFilters>({
     searchTerm: "",

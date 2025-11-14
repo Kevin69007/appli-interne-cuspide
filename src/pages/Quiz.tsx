@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -49,6 +50,7 @@ interface QuizDoc {
 }
 
 const Quiz = () => {
+  const { t } = useTranslation('formation');
   const { user } = useAuth();
   const navigate = useNavigate();
   const [isAdmin, setIsAdmin] = useState(false);
@@ -100,12 +102,12 @@ const Quiz = () => {
       if (data) {
         setIsAdmin(true);
       } else {
-        toast.error("Accès refusé : vous devez être administrateur");
+        toast.error(t('quiz.accessDenied'));
         navigate("/");
       }
     } catch (error) {
       console.error("Error checking admin status:", error);
-      toast.error("Erreur lors de la vérification des permissions");
+      toast.error(t('quiz.permissionError'));
       navigate("/");
     } finally {
       setLoading(false);
@@ -135,7 +137,7 @@ const Quiz = () => {
       setDocuments(formattedDocs || []);
     } catch (error) {
       console.error("Error fetching documents:", error);
-      toast.error("Erreur lors du chargement des quizz");
+      toast.error(t('quiz.loadingError'));
     }
   };
 
