@@ -65,8 +65,8 @@ export const EmployeeObjectivesWidget = ({ employeeId }: Props) => {
     }
 
     try {
-      // Mise à jour optimiste : retirer l'objectif immédiatement de l'état local
-      setObjectives(prev => prev.map(obj => 
+      // Mise à jour optimiste : retirer l'indicateur immédiatement de l'état local
+      setObjectives(prev => prev.map(obj =>
         obj.id === objectiveId 
           ? { ...obj, valeur_declaree: parseFloat(valeurDeclaree), statut_validation: 'en_attente' }
           : obj
@@ -153,11 +153,11 @@ export const EmployeeObjectivesWidget = ({ employeeId }: Props) => {
             <p className="font-medium text-sm">{data?.nom || obj.detail}</p>
             <p className="text-xs text-muted-foreground mt-1">
               📅 {new Date(obj.date).toLocaleDateString('fr-FR')}
-              {data?.valeur_cible && ` • Objectif: ${data.valeur_cible} ${data.indicateur || ''}`}
+              {data?.valeur_cible && ` • Cible: ${data.valeur_cible} ${data.indicateur || ''}`}
             </p>
           </div>
           
-          {/* Afficher le bouton uniquement si l'objectif peut être déclaré */}
+          {/* Afficher le bouton uniquement si l'indicateur peut être déclaré */}
           {variant !== 'validated' && variant !== 'pending' && canDeclare && (
             <Button 
               size="sm" 
@@ -168,7 +168,7 @@ export const EmployeeObjectivesWidget = ({ employeeId }: Props) => {
             </Button>
           )}
           
-          {/* Badge pour les objectifs futurs */}
+          {/* Badge pour les indicateurs futurs */}
           {variant === 'upcoming' && !canDeclare && (
             <Badge variant="secondary" className="text-xs">
               🔒 Pas encore disponible
@@ -258,7 +258,7 @@ export const EmployeeObjectivesWidget = ({ employeeId }: Props) => {
             </div>
             {upcoming.length > 3 && (
               <p className="text-xs text-muted-foreground mt-2 text-center">
-                + {upcoming.length - 3} autres objectifs à venir
+                + {upcoming.length - 3} autres indicateurs à venir
               </p>
             )}
           </div>
@@ -275,7 +275,7 @@ export const EmployeeObjectivesWidget = ({ employeeId }: Props) => {
             </div>
             {validated.length > 2 && (
               <p className="text-xs text-muted-foreground mt-2 text-center">
-                + {validated.length - 2} autres objectifs validés
+                + {validated.length - 2} autres indicateurs validés
               </p>
             )}
           </div>

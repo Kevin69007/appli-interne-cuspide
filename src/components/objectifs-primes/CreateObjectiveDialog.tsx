@@ -111,7 +111,7 @@ export const CreateObjectiveDialog = ({ onObjectiveCreated, totalPointsConfig, c
           </div>
 
           <div>
-            <Label htmlFor="points">Points objectif *</Label>
+            <Label htmlFor="points">Points indicateur *</Label>
             <Input
               id="points"
               type="number"
