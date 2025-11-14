@@ -6,13 +6,13 @@ import { KPIDashboard } from "./KPIDashboard";
 export const DashboardObjectifs = () => {
   return (
     <div className="space-y-4">
-      <Tabs defaultValue="objectifs" className="w-full">
+      <Tabs defaultValue="indicateurs" className="w-full">
         <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="objectifs">Objectifs Individuels</TabsTrigger>
+          <TabsTrigger value="indicateurs">Indicateurs Individuels</TabsTrigger>
           <TabsTrigger value="kpi">Chiffres & KPI</TabsTrigger>
         </TabsList>
 
-        <TabsContent value="objectifs" className="mt-6">
+        <TabsContent value="indicateurs" className="mt-6">
           <ObjectifsIndividuels />
         </TabsContent>
 

@@ -77,7 +77,7 @@ export const ObjectifsFilters = ({ onFilterChange, objectifs }: ObjectifsFilters
 
   const handleExportPDF = () => {
     if (objectifs.length === 0) {
-      toast.error("Aucun objectif à exporter");
+      toast.error("Aucun indicateur à exporter");
       return;
     }
 
@@ -87,7 +87,7 @@ export const ObjectifsFilters = ({ onFilterChange, objectifs }: ObjectifsFilters
       
       // En-tête
       doc.setFontSize(18);
-      doc.text("Rapport - Objectifs Individuels", pageWidth / 2, 20, { align: "center" });
+      doc.text("Rapport - Indicateurs Individuels", pageWidth / 2, 20, { align: "center" });
       
       doc.setFontSize(10);
       const periodText = filters.startDate && filters.endDate
@@ -102,7 +102,7 @@ export const ObjectifsFilters = ({ onFilterChange, objectifs }: ObjectifsFilters
       // En-têtes
       doc.setFont(undefined, "bold");
       doc.text("Employé", 10, y);
-      doc.text("Objectif", 50, y);
+      doc.text("Indicateur", 50, y);
       doc.text("Type", 100, y);
       doc.text("Cible", 130, y);
       doc.text("Réalisé", 160, y);
@@ -147,7 +147,7 @@ export const ObjectifsFilters = ({ onFilterChange, objectifs }: ObjectifsFilters
         );
       }
       
-      doc.save(`objectifs-individuels-${format(new Date(), "yyyy-MM-dd")}.pdf`);
+      doc.save(`indicateurs-individuels-${format(new Date(), "yyyy-MM-dd")}.pdf`);
       toast.success("Export PDF réussi");
     } catch (error) {
       console.error("Erreur export PDF:", error);
