@@ -10,7 +10,7 @@ import { useAuth } from "@/contexts/AuthContext";
 interface CalendarEvent {
   id: string;
   date: number;
-  type: "objectif" | "absence" | "incident" | "formation" | "a_faire" | "horaire";
+  type: "indicateurs" | "absence" | "incident" | "formation" | "a_faire" | "horaire";
   label: string;
   validated?: boolean;
   source?: 'agenda' | 'task' | 'schedule';
@@ -56,14 +56,15 @@ export const MonthCalendar = () => {
       .gte("date", firstDay)
       .lte("date", lastDay);
 
-    // Fetch tasks
+    // Fetch tasks (excluding completed ones)
     const { data: tasksData, error: tasksError } = await supabase
       .from("tasks")
       .select("*")
       .eq("assigned_to", employeeData.id)
       .gte("date_echeance", firstDay)
       .lte("date_echeance", lastDay)
-      .neq("statut", "annulee");
+      .neq("statut", "annulee")
+      .neq("statut", "terminee");
 
     // Fetch work schedules
     const { data: schedulesData, error: schedulesError } = await supabase
@@ -78,26 +79,46 @@ export const MonthCalendar = () => {
     // Map agenda entries
     if (!agendaError && agendaData) {
       agendaData.forEach(entry => {
+        // Skip validated indicators
+        if (entry.categorie === 'indicateurs' && entry.statut_validation === 'valide') {
+          return;
+        }
+
+        // Parse indicator details for cleaner display
+        let label = entry.detail || entry.categorie;
+        if (entry.categorie === 'indicateurs') {
+          try {
+            const parsed = JSON.parse(entry.detail);
+            const data = Array.isArray(parsed) ? parsed[0] : parsed;
+            label = data?.nom || entry.detail;
+          } catch {
+            label = entry.detail;
+          }
+        }
+
         mappedEvents.push({
           id: entry.id,
           date: new Date(entry.date).getDate(),
           type: entry.categorie as any,
-          label: entry.detail || entry.categorie,
+          label,
           validated: entry.statut_validation === 'valide',
           source: 'agenda'
         });
       });
     }
 
-    // Map tasks
+    // Map tasks (skip completed ones - already filtered in query)
     if (!tasksError && tasksData) {
       tasksData.forEach(task => {
+        // Double-check we don't show completed tasks
+        if (task.statut === 'terminee') return;
+
         mappedEvents.push({
           id: task.id,
           date: new Date(task.date_echeance).getDate(),
           type: "a_faire",
           label: task.titre,
-          validated: task.statut === 'terminee',
+          validated: false,
           source: 'task'
         });
       });
@@ -164,8 +185,7 @@ export const MonthCalendar = () => {
   
   const getEventColor = (type: string, validated?: boolean) => {
     switch (type) {
-      case "objectif":
-      case "objectifs": return "bg-green-500/20 text-green-700 dark:text-green-400";
+      case "indicateurs": return "bg-green-500/20 text-green-700 dark:text-green-400";
       case "a_faire": return "bg-blue-500/20 text-blue-700 dark:text-blue-400";
       case "horaire": return "bg-cyan-500/20 text-cyan-700 dark:text-cyan-400";
       case "absence": 
@@ -250,7 +270,7 @@ export const MonthCalendar = () => {
         </div>
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded bg-green-500/20" />
-          <span>Objectifs</span>
+          <span>Indicateurs</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded bg-blue-500/20" />
