@@ -1,11 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole } from "@/hooks/useUserRole";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Settings, Users, FileText, Shield, ChevronLeft, Calendar, Target, Award, Trophy, Gift, UserCog } from "lucide-react";
+import { Settings, Users, FileText, Shield, ChevronLeft, Calendar, Target, Award, Trophy, Gift, UserCog, Wrench } from "lucide-react";
 import { AddEmployeeDialog } from "@/components/objectifs-primes/AddEmployeeDialog";
 import { EmployeeObjectivesDialog } from "@/components/objectifs-primes/EmployeeObjectivesDialog";
 import { EmployeesList } from "@/components/objectifs-primes/EmployeesList";
@@ -18,6 +18,7 @@ import { MonthlyClosurePanel } from "@/components/objectifs-primes/MonthlyClosur
 import { TeamManagersConfig } from "@/components/objectifs-primes/TeamManagersConfig";
 import { ColleagueVoteResults } from "@/components/objectifs-primes/ColleagueVoteResults";
 import { MoodRatingsAdmin } from "@/components/objectifs-primes/MoodRatingsAdmin";
+import { ObjectivesManagementTab } from "@/components/objectifs-primes/ObjectivesManagementTab";
 
 const Admin = () => {
   const [refreshKey, setRefreshKey] = useState(0);
@@ -25,8 +26,13 @@ const Admin = () => {
   const { user } = useAuth();
   const { isAdmin, isManager } = useUserRole();
 
+  useEffect(() => {
+    if (!user || (!isAdmin && !isManager)) {
+      navigate("/auth");
+    }
+  }, [user, isAdmin, isManager, navigate]);
+
   if (!user || (!isAdmin && !isManager)) {
-    navigate("/auth");
     return null;
   }
 
@@ -106,7 +112,7 @@ const Admin = () => {
         </div>
 
         <Tabs defaultValue="baremes" className="space-y-6">
-          <TabsList className="grid w-full grid-cols-8">
+          <TabsList className="grid w-full grid-cols-9">
             <TabsTrigger value="baremes">
               <Settings className="h-4 w-4 mr-2" />
               Barèmes
@@ -138,6 +144,10 @@ const Admin = () => {
             <TabsTrigger value="audit">
               <Shield className="h-4 w-4 mr-2" />
               Audit
+            </TabsTrigger>
+            <TabsTrigger value="gestion">
+              <Wrench className="h-4 w-4 mr-2" />
+              Gestion
             </TabsTrigger>
           </TabsList>
 
@@ -189,6 +199,12 @@ const Admin = () => {
                 <Shield className="h-12 w-12 mx-auto mb-4 opacity-50" />
                 <p>Logs d'audit à venir</p>
               </div>
+            </Card>
+          </TabsContent>
+
+          <TabsContent value="gestion">
+            <Card className="p-6">
+              <ObjectivesManagementTab />
             </Card>
           </TabsContent>
         </Tabs>
