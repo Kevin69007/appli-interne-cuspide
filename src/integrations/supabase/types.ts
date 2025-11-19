@@ -811,6 +811,7 @@ export type Database = {
           email: string | null
           equipe: string | null
           id: string
+          is_remote: boolean | null
           manager_id: string | null
           nom: string
           photo_url: string | null
@@ -826,6 +827,7 @@ export type Database = {
           email?: string | null
           equipe?: string | null
           id?: string
+          is_remote?: boolean | null
           manager_id?: string | null
           nom: string
           photo_url?: string | null
@@ -841,6 +843,7 @@ export type Database = {
           email?: string | null
           equipe?: string | null
           id?: string
+          is_remote?: boolean | null
           manager_id?: string | null
           nom?: string
           photo_url?: string | null

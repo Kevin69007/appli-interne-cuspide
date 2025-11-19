@@ -7,12 +7,14 @@ import { MonthCalendar } from "@/components/objectifs-primes/MonthCalendar";
 import { PlanningCalendar } from "@/components/planning/PlanningCalendar";
 import { TimeDeclarationForm } from "@/components/planning/TimeDeclarationForm";
 import { TimeDeclarationHistory } from "@/components/planning/TimeDeclarationHistory";
+import { useState } from "react";
 import { useUserRole } from "@/hooks/useUserRole";
 
 const Agenda = () => {
   const navigate = useNavigate();
   const { t } = useTranslation('planning');
   const { isAdmin, isManager } = useUserRole();
+  const [refreshHistory, setRefreshHistory] = useState(0);
 
   return (
     <div className="min-h-screen bg-background">
@@ -51,8 +53,8 @@ const Agenda = () => {
           </TabsContent>
 
           <TabsContent value="declaration" className="space-y-6">
-            <TimeDeclarationForm />
-            <TimeDeclarationHistory />
+            <TimeDeclarationForm onSuccess={() => setRefreshHistory(prev => prev + 1)} />
+            <TimeDeclarationHistory key={refreshHistory} />
           </TabsContent>
         </Tabs>
       </main>

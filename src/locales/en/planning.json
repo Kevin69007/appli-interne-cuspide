@@ -95,7 +95,17 @@
       "status": "Status",
       "actions": "Actions",
       "detailsTitle": "Declaration details",
-      "close": "Close"
+      "close": "Close",
+      "details": "Declaration Details",
+      "justificationRequired": "Justification Required",
+      "fullyJustified": "Fully Justified",
+      "reason": "Reason for Gap",
+      "additionalDetails": "Additional Details"
+    },
+    "manager": {
+      "viewDetails": "View Details",
+      "justification": "Justification",
+      "reason": "Reason"
     }
   }
 }
