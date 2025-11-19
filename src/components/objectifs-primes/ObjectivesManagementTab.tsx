@@ -52,7 +52,7 @@ interface ObjectiveGroup {
 }
 
 export const ObjectivesManagementTab = () => {
-  const { t } = useTranslation();
+  const { t } = useTranslation('indicators');
   const [objectives, setObjectives] = useState<ObjectiveGroup[]>([]);
   const [filteredObjectives, setFilteredObjectives] = useState<ObjectiveGroup[]>([]);
   const [loading, setLoading] = useState(true);
