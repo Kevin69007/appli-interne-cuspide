@@ -18,6 +18,21 @@
   "annualScore": "Annual score",
   "bonusAmount": "Bonus amount",
   "noIndicators": "No indicators found",
+  "management": {
+    "editObjective": "Edit indicator",
+    "scopeDescription": "Modification scope",
+    "modifyFutureOnly": "Modify future occurrences only (Recommended)",
+    "modifyAll": "Modify all occurrences",
+    "indicatorName": "Indicator name",
+    "recurrence": "Recurrence",
+    "targetValue": "Target value",
+    "unit": "Unit",
+    "points": "Points",
+    "confirmModification": "Confirm modification"
+  },
+  "common": {
+    "cancel": "Cancel"
+  },
   "employee": {
     "myObjectives": "My objectives",
     "myIndicators": "My indicators",
