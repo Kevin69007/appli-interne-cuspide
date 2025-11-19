@@ -62,7 +62,7 @@ export const DuplicateObjectiveDialog = ({
   objective,
   onSuccess,
 }: DuplicateObjectiveDialogProps) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation('indicators');
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [selectedMonths, setSelectedMonths] = useState<number[]>([]);

@@ -54,7 +54,7 @@ export const EditObjectiveDialog = ({
   objective,
   onSuccess,
 }: EditObjectiveDialogProps) => {
-  const { t } = useTranslation();
+  const { t } = useTranslation('indicators');
   const { user } = useAuth();
   const [loading, setLoading] = useState(false);
   const [modifyScope, setModifyScope] = useState<"future" | "all">("future");
