@@ -18,6 +18,21 @@
   "annualScore": "Score annuel",
   "bonusAmount": "Montant de la prime",
   "noIndicators": "Aucun indicateur trouvé",
+  "management": {
+    "editObjective": "Modifier l'indicateur",
+    "scopeDescription": "Portée de la modification",
+    "modifyFutureOnly": "Modifier uniquement les occurrences futures (Recommandé)",
+    "modifyAll": "Modifier toutes les occurrences",
+    "indicatorName": "Nom de l'indicateur",
+    "recurrence": "Récurrence",
+    "targetValue": "Valeur cible",
+    "unit": "Unité",
+    "points": "Points",
+    "confirmModification": "Confirmer la modification"
+  },
+  "common": {
+    "cancel": "Annuler"
+  },
   "employee": {
     "myObjectives": "Mes objectifs",
     "myIndicators": "Mes indicateurs",
