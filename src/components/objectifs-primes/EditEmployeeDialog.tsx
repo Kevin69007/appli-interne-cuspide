@@ -4,10 +4,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { useTranslation } from "react-i18next";
 
 interface EditEmployeeDialogProps {
   open: boolean;
@@ -17,13 +19,15 @@ interface EditEmployeeDialogProps {
 }
 
 export const EditEmployeeDialog = ({ open, onOpenChange, employeeId, onEmployeeUpdated }: EditEmployeeDialogProps) => {
+  const { t } = useTranslation('rh');
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({
     nom: "",
     prenom: "",
     poste: "",
     email: "",
-    role: "user" as "user" | "manager" | "admin"
+    role: "user" as "user" | "manager" | "admin",
+    is_remote: false
   });
   const [newPassword, setNewPassword] = useState("");
 
@@ -35,7 +39,7 @@ export const EditEmployeeDialog = ({ open, onOpenChange, employeeId, onEmployeeU
 
   const fetchEmployeeData = async () => {
     try {
-      // Fetch employee data including email
+      // Fetch employee data including email and is_remote
       const { data: empData, error: empError } = await supabase
         .from("employees")
         .select("*, user_id")
@@ -67,7 +71,8 @@ export const EditEmployeeDialog = ({ open, onOpenChange, employeeId, onEmployeeU
         prenom: empData.prenom,
         poste: empData.poste || "",
         email: empData.email || "",
-        role: role as "user" | "manager" | "admin"
+        role: role as "user" | "manager" | "admin",
+        is_remote: empData.is_remote || false
       });
     } catch (error) {
       console.error("Error fetching employee:", error);
@@ -86,7 +91,8 @@ export const EditEmployeeDialog = ({ open, onOpenChange, employeeId, onEmployeeU
         .update({
           nom: formData.nom,
           prenom: formData.prenom,
-          poste: formData.poste
+          poste: formData.poste,
+          is_remote: formData.is_remote
         })
         .eq("id", employeeId);
 
@@ -225,6 +231,20 @@ export const EditEmployeeDialog = ({ open, onOpenChange, employeeId, onEmployeeU
                   </SelectContent>
                 </Select>
               </div>
+
+              <div className="flex items-center justify-between">
+                <Label htmlFor="edit_is_remote">{t('isRemote')}</Label>
+                <Switch
+                  id="edit_is_remote"
+                  checked={formData.is_remote}
+                  onCheckedChange={(checked) => setFormData({ ...formData, is_remote: checked })}
+                />
+              </div>
+              {formData.is_remote && (
+                <p className="text-sm text-muted-foreground">
+                  {t('isRemoteDescription')}
+                </p>
+              )}
 
               <div className="flex justify-end gap-2">
                 <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>

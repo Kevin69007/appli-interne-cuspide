@@ -4,10 +4,13 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Switch } from "@/components/ui/switch";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 
 export const AddEmployeeDialog = ({ onEmployeeAdded }: { onEmployeeAdded?: () => void }) => {
+  const { t } = useTranslation('rh');
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   
@@ -17,7 +20,8 @@ export const AddEmployeeDialog = ({ onEmployeeAdded }: { onEmployeeAdded?: () =>
     poste: "",
     email: "",
     password: "",
-    role: "user" as "admin" | "manager" | "user"
+    role: "user" as "admin" | "manager" | "user",
+    is_remote: false
   });
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -40,7 +44,8 @@ export const AddEmployeeDialog = ({ onEmployeeAdded }: { onEmployeeAdded?: () =>
           poste: formData.poste,
           email: formData.email,
           password: formData.password,
-          role: formData.role
+          role: formData.role,
+          is_remote: formData.is_remote
         }
       });
 
@@ -60,7 +65,7 @@ export const AddEmployeeDialog = ({ onEmployeeAdded }: { onEmployeeAdded?: () =>
       }
 
       toast.success(data?.message || "Employé ajouté avec succès");
-      setFormData({ nom: "", prenom: "", poste: "", email: "", password: "", role: "user" });
+      setFormData({ nom: "", prenom: "", poste: "", email: "", password: "", role: "user", is_remote: false });
       setOpen(false);
       onEmployeeAdded?.();
     } catch (error: any) {
@@ -146,6 +151,19 @@ export const AddEmployeeDialog = ({ onEmployeeAdded }: { onEmployeeAdded?: () =>
               </SelectContent>
             </Select>
           </div>
+          <div className="flex items-center justify-between">
+            <Label htmlFor="is_remote">{t('isRemote')}</Label>
+            <Switch
+              id="is_remote"
+              checked={formData.is_remote}
+              onCheckedChange={(checked) => setFormData({ ...formData, is_remote: checked })}
+            />
+          </div>
+          {formData.is_remote && (
+            <p className="text-sm text-muted-foreground">
+              {t('isRemoteDescription')}
+            </p>
+          )}
           <div className="flex justify-end gap-2">
             <Button type="button" variant="outline" onClick={() => setOpen(false)}>
               Annuler

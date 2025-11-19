@@ -5,5 +5,7 @@
   "leaves": "Leaves",
   "mood": "Mood",
   "jobDescription": "Job Description",
-  "noEmployees": "No employees found"
+  "noEmployees": "No employees found",
+  "isRemote": "Remote Employee",
+  "isRemoteDescription": "An automatic task will be created daily for time declaration"
 }

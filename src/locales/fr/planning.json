@@ -95,7 +95,17 @@
       "status": "Statut",
       "actions": "Actions",
       "detailsTitle": "Détails de la déclaration",
-      "close": "Fermer"
+      "close": "Fermer",
+      "details": "Détails de la déclaration",
+      "justificationRequired": "Justification requise",
+      "fullyJustified": "Totalement justifié",
+      "reason": "Raison de l'écart",
+      "additionalDetails": "Détails supplémentaires"
+    },
+    "manager": {
+      "viewDetails": "Voir les détails",
+      "justification": "Justification",
+      "reason": "Raison"
     }
   }
 }

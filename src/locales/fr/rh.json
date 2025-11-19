@@ -5,5 +5,7 @@
   "leaves": "Congés",
   "mood": "Humeur",
   "jobDescription": "Fiche de poste",
-  "noEmployees": "Aucun employé trouvé"
+  "noEmployees": "Aucun employé trouvé",
+  "isRemote": "Employé en distanciel",
+  "isRemoteDescription": "Une tâche automatique sera créée chaque jour pour la déclaration d'heures"
 }

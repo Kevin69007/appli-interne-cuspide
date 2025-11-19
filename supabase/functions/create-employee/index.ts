@@ -23,7 +23,7 @@ serve(async (req) => {
       }
     );
 
-    const { nom, prenom, poste, email, password, role } = await req.json();
+    const { nom, prenom, poste, email, password, role, is_remote } = await req.json();
 
     // Vérifier si l'email existe déjà dans employees
     const { data: existingEmployee } = await supabaseAdmin
@@ -72,7 +72,8 @@ serve(async (req) => {
         prenom,
         poste,
         email,
-        user_id: authData.user.id
+        user_id: authData.user.id,
+        is_remote: is_remote || false
       });
 
     if (employeeError) {

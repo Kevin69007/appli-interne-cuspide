@@ -13,7 +13,11 @@ import { useToast } from "@/hooks/use-toast";
 import { JustificationSection } from "./JustificationSection";
 import { cn } from "@/lib/utils";
 
-export const TimeDeclarationForm = () => {
+interface TimeDeclarationFormProps {
+  onSuccess?: () => void;
+}
+
+export const TimeDeclarationForm = ({ onSuccess }: TimeDeclarationFormProps) => {
   const { t } = useTranslation('planning');
   const { user } = useAuth();
   const { toast } = useToast();
@@ -121,6 +125,9 @@ export const TimeDeclarationForm = () => {
       setHeures('');
       setTauxActivite('');
       setJustificationData(null);
+      
+      // Notify parent to refresh
+      onSuccess?.();
     } catch (error) {
       console.error('Error saving declaration:', error);
       toast({
