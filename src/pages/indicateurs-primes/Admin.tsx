@@ -24,15 +24,34 @@ const Admin = () => {
   const [refreshKey, setRefreshKey] = useState(0);
   const navigate = useNavigate();
   const { user } = useAuth();
-  const { isAdmin, isManager } = useUserRole();
+  const { isAdmin, isManager, loading: roleLoading } = useUserRole();
 
   useEffect(() => {
-    if (!user || (!isAdmin && !isManager)) {
+    if (!user) {
+      navigate("/auth");
+      return;
+    }
+    
+    // Attendre que le rôle soit chargé avant de décider
+    if (!roleLoading && !isAdmin && !isManager) {
       navigate("/auth");
     }
-  }, [user, isAdmin, isManager, navigate]);
+  }, [user, isAdmin, isManager, roleLoading, navigate]);
 
-  if (!user || (!isAdmin && !isManager)) {
+  // Afficher un loader pendant le chargement
+  if (!user || roleLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-background">
+        <div className="text-center">
+          <Settings className="h-8 w-8 animate-spin mx-auto mb-4 text-primary" />
+          <p className="text-muted-foreground">Chargement...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Si chargé et pas admin/manager, retourner null (sera redirigé par useEffect)
+  if (!isAdmin && !isManager) {
     return null;
   }
 
