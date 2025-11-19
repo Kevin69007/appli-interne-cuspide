@@ -135,7 +135,7 @@ export const EditObjectiveDialog = ({
         },
       });
 
-      toast.success(t("indicators.management.modificationSuccess"));
+      toast.success(t("management.modificationSuccess"));
       onSuccess();
       onOpenChange(false);
     } catch (error) {
@@ -150,7 +150,7 @@ export const EditObjectiveDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>{t("indicators.management.editObjective")}</DialogTitle>
+          <DialogTitle>{t("management.editObjective")}</DialogTitle>
           <DialogDescription>
             Modifier l'indicateur pour {objective.employee_name}
           </DialogDescription>
@@ -161,7 +161,7 @@ export const EditObjectiveDialog = ({
             <Alert>
               <AlertTriangle className="h-4 w-4" />
               <AlertDescription>
-                {t("indicators.management.warningModifyDeclared")} ({objective.declared_occurrences}/{objective.total_occurrences})
+                {t("management.warningModifyDeclared")} ({objective.declared_occurrences}/{objective.total_occurrences})
               </AlertDescription>
             </Alert>
           )}
@@ -172,7 +172,7 @@ export const EditObjectiveDialog = ({
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="future" id="future" />
                 <Label htmlFor="future" className="font-normal cursor-pointer">
-                  {t("indicators.management.modifyFutureOnly")}
+                  {t("management.modifyFutureOnly")}
                   <span className="text-sm text-muted-foreground ml-2">
                     (Recommandé)
                   </span>
@@ -181,7 +181,7 @@ export const EditObjectiveDialog = ({
               <div className="flex items-center space-x-2">
                 <RadioGroupItem value="all" id="all" />
                 <Label htmlFor="all" className="font-normal cursor-pointer">
-                  {t("indicators.management.modifyAll")}
+                  {t("management.modifyAll")}
                 </Label>
               </div>
             </RadioGroup>
@@ -189,7 +189,7 @@ export const EditObjectiveDialog = ({
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
-              <Label htmlFor="indicator_name">{t("indicators.management.indicatorName")}</Label>
+              <Label htmlFor="indicator_name">{t("management.indicatorName")}</Label>
               <Input
                 id="indicator_name"
                 value={formData.indicator_name}
@@ -199,7 +199,7 @@ export const EditObjectiveDialog = ({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="recurrence">{t("indicators.management.recurrence")}</Label>
+              <Label htmlFor="recurrence">{t("management.recurrence")}</Label>
               <Select
                 value={formData.recurrence}
                 onValueChange={(value) => setFormData({ ...formData, recurrence: value })}
@@ -216,7 +216,7 @@ export const EditObjectiveDialog = ({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="target_value">{t("indicators.management.targetValue")}</Label>
+              <Label htmlFor="target_value">{t("management.targetValue")}</Label>
               <Input
                 id="target_value"
                 type="number"
@@ -228,7 +228,7 @@ export const EditObjectiveDialog = ({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="unit">{t("indicators.management.unit")}</Label>
+              <Label htmlFor="unit">{t("management.unit")}</Label>
               <Input
                 id="unit"
                 value={formData.unit}
@@ -238,7 +238,7 @@ export const EditObjectiveDialog = ({
             </div>
 
             <div className="space-y-2">
-              <Label htmlFor="points">{t("indicators.management.points")}</Label>
+              <Label htmlFor="points">{t("management.points")}</Label>
               <Input
                 id="points"
                 type="number"
@@ -254,7 +254,7 @@ export const EditObjectiveDialog = ({
               Annuler
             </Button>
             <Button type="submit" disabled={loading}>
-              {loading ? "Modification..." : t("indicators.management.confirmModification")}
+              {loading ? "Modification..." : t("management.confirmModification")}
             </Button>
           </DialogFooter>
         </form>

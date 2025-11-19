@@ -192,7 +192,7 @@ export const DuplicateObjectiveDialog = ({
         },
       });
 
-      toast.success(t("indicators.management.duplicationSuccess"));
+      toast.success(t("management.duplicationSuccess"));
       onSuccess();
       onOpenChange(false);
     } catch (error) {
@@ -219,7 +219,7 @@ export const DuplicateObjectiveDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>{t("indicators.management.duplicateObjective")}</DialogTitle>
+          <DialogTitle>{t("management.duplicateObjective")}</DialogTitle>
           <DialogDescription>
             Prolonger l'indicateur "{objective.indicator_name}" pour {objective.employee_name}
           </DialogDescription>
@@ -242,7 +242,7 @@ export const DuplicateObjectiveDialog = ({
 
           <div className="space-y-4">
             <div className="space-y-2">
-              <Label>{t("indicators.management.selectMonths")}</Label>
+              <Label>{t("management.selectMonths")}</Label>
               <div className="grid grid-cols-3 gap-2">
                 {MONTHS.map(month => (
                   <Button
@@ -260,7 +260,7 @@ export const DuplicateObjectiveDialog = ({
             </div>
 
             <div className="space-y-2">
-              <Label>{t("indicators.management.selectYears")}</Label>
+              <Label>{t("management.selectYears")}</Label>
               <div className="flex gap-2">
                 {years.map(year => (
                   <Button
@@ -283,14 +283,14 @@ export const DuplicateObjectiveDialog = ({
               onCheckedChange={(checked) => setKeepSameValues(checked as boolean)}
             />
             <Label htmlFor="keepSameValues" className="cursor-pointer">
-              {t("indicators.management.keepSameValues")}
+              {t("management.keepSameValues")}
             </Label>
           </div>
 
           {!keepSameValues && (
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
-                <Label htmlFor="target_value">{t("indicators.management.targetValue")}</Label>
+                <Label htmlFor="target_value">{t("management.targetValue")}</Label>
                 <Input
                   id="target_value"
                   type="number"
@@ -302,7 +302,7 @@ export const DuplicateObjectiveDialog = ({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="points">{t("indicators.management.points")}</Label>
+                <Label htmlFor="points">{t("management.points")}</Label>
                 <Input
                   id="points"
                   type="number"
@@ -317,7 +317,7 @@ export const DuplicateObjectiveDialog = ({
           {previewCount > 0 && (
             <Card className="p-4 bg-primary/10">
               <div className="text-sm font-medium">
-                {t("indicators.management.previewOccurrences", { count: previewCount })}
+                {t("management.previewOccurrences", { count: previewCount })}
               </div>
               <div className="text-sm text-muted-foreground mt-1">
                 Total de points: {previewCount * (keepSameValues ? objective.points : formData.points)}
@@ -330,7 +330,7 @@ export const DuplicateObjectiveDialog = ({
               Annuler
             </Button>
             <Button type="submit" disabled={loading || previewCount === 0}>
-              {loading ? "Création..." : t("indicators.management.confirmDuplication")}
+              {loading ? "Création..." : t("management.confirmDuplication")}
             </Button>
           </DialogFooter>
         </form>
