@@ -196,7 +196,7 @@ export const ObjectivesManagementTab = () => {
 
   const handleDeleteClick = (objective: ObjectiveGroup) => {
     if (objective.declared_occurrences > 0) {
-      toast.error(t("indicators.management.cannotDeleteDeclared"));
+      toast.error(t("management.cannotDeleteDeclared"));
       return;
     }
     setSelectedObjective(objective);
@@ -214,7 +214,7 @@ export const ObjectivesManagementTab = () => {
 
       if (error) throw error;
 
-      toast.success(t("indicators.management.deleteSuccess"));
+      toast.success(t("management.deleteSuccess"));
       fetchObjectives();
       setDeleteDialogOpen(false);
     } catch (error) {
@@ -241,7 +241,7 @@ export const ObjectivesManagementTab = () => {
   if (loading) {
     return (
       <div className="flex items-center justify-center py-8">
-        <p className="text-muted-foreground">{t("indicators.management.loadingObjectives")}</p>
+        <p className="text-muted-foreground">{t("management.loadingObjectives")}</p>
       </div>
     );
   }
@@ -252,7 +252,7 @@ export const ObjectivesManagementTab = () => {
         <div className="flex flex-col gap-4">
           <div className="flex items-center gap-2">
             <Filter className="h-5 w-5 text-muted-foreground" />
-            <h3 className="text-lg font-semibold">{t("indicators.management.filters")}</h3>
+            <h3 className="text-lg font-semibold">{t("management.filters")}</h3>
           </div>
           
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
@@ -268,10 +268,10 @@ export const ObjectivesManagementTab = () => {
 
             <Select value={selectedEmployee} onValueChange={setSelectedEmployee}>
               <SelectTrigger>
-                <SelectValue placeholder={t("indicators.management.allEmployees")} />
+                <SelectValue placeholder={t("management.allEmployees")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">{t("indicators.management.allEmployees")}</SelectItem>
+                <SelectItem value="all">{t("management.allEmployees")}</SelectItem>
                 {employees.map(emp => (
                   <SelectItem key={emp.id} value={emp.id}>{emp.name}</SelectItem>
                 ))}
@@ -280,10 +280,10 @@ export const ObjectivesManagementTab = () => {
 
             <Select value={selectedRecurrence} onValueChange={setSelectedRecurrence}>
               <SelectTrigger>
-                <SelectValue placeholder={t("indicators.management.allRecurrences")} />
+                <SelectValue placeholder={t("management.allRecurrences")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">{t("indicators.management.allRecurrences")}</SelectItem>
+                <SelectItem value="all">{t("management.allRecurrences")}</SelectItem>
                 <SelectItem value="jour">Jour</SelectItem>
                 <SelectItem value="semaine">Semaine</SelectItem>
                 <SelectItem value="mois">Mois</SelectItem>
@@ -292,10 +292,10 @@ export const ObjectivesManagementTab = () => {
 
             <Select value={selectedStatus} onValueChange={setSelectedStatus}>
               <SelectTrigger>
-                <SelectValue placeholder={t("indicators.management.allStatuses")} />
+                <SelectValue placeholder={t("management.allStatuses")} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="all">{t("indicators.management.allStatuses")}</SelectItem>
+                <SelectItem value="all">{t("management.allStatuses")}</SelectItem>
                 <SelectItem value="en_attente">En attente</SelectItem>
                 <SelectItem value="valide">Validé</SelectItem>
                 <SelectItem value="refuse">Refusé</SelectItem>
@@ -309,21 +309,21 @@ export const ObjectivesManagementTab = () => {
         <Table>
           <TableHeader>
             <TableRow>
-              <TableHead>{t("indicators.management.employee")}</TableHead>
-              <TableHead>{t("indicators.management.indicatorName")}</TableHead>
-              <TableHead>{t("indicators.management.recurrence")}</TableHead>
-              <TableHead>{t("indicators.management.period")}</TableHead>
-              <TableHead>{t("indicators.management.targetValue")}</TableHead>
-              <TableHead>{t("indicators.management.points")}</TableHead>
-              <TableHead>{t("indicators.management.occurrences")}</TableHead>
-              <TableHead className="text-right">{t("indicators.management.actions")}</TableHead>
+              <TableHead>{t("management.employee")}</TableHead>
+              <TableHead>{t("management.indicatorName")}</TableHead>
+              <TableHead>{t("management.recurrence")}</TableHead>
+              <TableHead>{t("management.period")}</TableHead>
+              <TableHead>{t("management.targetValue")}</TableHead>
+              <TableHead>{t("management.points")}</TableHead>
+              <TableHead>{t("management.occurrences")}</TableHead>
+              <TableHead className="text-right">{t("management.actions")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
             {filteredObjectives.length === 0 ? (
               <TableRow>
                 <TableCell colSpan={8} className="text-center py-8 text-muted-foreground">
-                  {t("indicators.management.noObjectives")}
+                  {t("management.noObjectives")}
                 </TableCell>
               </TableRow>
             ) : (
@@ -344,10 +344,10 @@ export const ObjectivesManagementTab = () => {
                   <TableCell>
                     <div className="flex flex-col gap-1">
                       <span className="text-sm">
-                        {t("indicators.management.seriesOf", { count: obj.total_occurrences })}
+                        {t("management.seriesOf", { count: obj.total_occurrences })}
                       </span>
                       <span className="text-xs text-muted-foreground">
-                        {t("indicators.management.progressRate", {
+                        {t("management.progressRate", {
                           declared: obj.declared_occurrences,
                           total: obj.total_occurrences,
                         })}
@@ -407,9 +407,9 @@ export const ObjectivesManagementTab = () => {
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>{t("indicators.management.deleteObjective")}</AlertDialogTitle>
+            <AlertDialogTitle>{t("management.deleteObjective")}</AlertDialogTitle>
             <AlertDialogDescription>
-              {t("indicators.management.confirmDelete")}
+              {t("management.confirmDelete")}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
