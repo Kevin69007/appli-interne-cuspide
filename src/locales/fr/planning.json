@@ -26,5 +26,76 @@
   "day": "Jour",
   "today": "Aujourd'hui",
   "previous": "Précédent",
-  "next": "Suivant"
+  "next": "Suivant",
+  "tabs": {
+    "team": "Planning d'équipe",
+    "personal": "Agenda personnel",
+    "timeDeclaration": "Déclaration d'heures"
+  },
+  "timeDeclaration": {
+    "title": "Déclaration d'heures quotidienne",
+    "subtitle": "Déclarez vos heures de travail et votre taux d'activité",
+    "date": "Date",
+    "hours": "Heures travaillées",
+    "hoursPlaceholder": "Ex: 7.5",
+    "activityRate": "Taux d'activité (%)",
+    "activityPlaceholder": "Ex: 75",
+    "submit": "Valider ma déclaration",
+    "success": "Déclaration enregistrée avec succès",
+    "error": "Erreur lors de l'enregistrement",
+    "validation": {
+      "greenZone": "Excellente journée de travail ! ✅",
+      "orangeZone": "Attention à votre temps de travail ⚠️",
+      "redZone": "Journée incomplète, justification requise ❌",
+      "activityGreen": "Taux d'activité optimal 💪",
+      "activityOrange": "Taux d'activité moyen ⚠️",
+      "activityRed": "Taux d'activité faible ⚠️"
+    },
+    "justification": {
+      "required": "Justification requise (moins de 7h travaillées)",
+      "selectReason": "Sélectionnez la raison de l'écart",
+      "reasons": {
+        "agenda_error": "Erreur sur mon agenda (je devais faire moins de 7h)",
+        "reunions_appels": "J'ai eu des réunions ou des appels téléphoniques",
+        "timer_issue": "Problème avec le timer / Oubli de déclencher",
+        "personal_issue": "Problème personnel, je n'ai pas pu travailler",
+        "no_work": "Je n'avais pas suffisamment de travail (manager informé)"
+      },
+      "agendaError": {
+        "label": "Nombre d'heures réellement prévues",
+        "placeholder": "Ex: 6.5"
+      },
+      "meetings": {
+        "withWho": "Avec qui ?",
+        "withWhoPlaceholder": "Ex: Jean Dupont, Marie Martin",
+        "coverAll": "Cela explique-t-il l'intégralité du temps manquant ?",
+        "yes": "Oui",
+        "no": "Non, j'ai d'autres raisons pour le temps restant"
+      },
+      "timer": {
+        "coverAll": "Cela explique-t-il l'intégralité de l'écart ?",
+        "yes": "Oui, cela couvre tout l'écart",
+        "no": "Non, j'ai d'autres raisons"
+      },
+      "additionalReasons": "Raisons supplémentaires pour le temps restant",
+      "addReason": "Ajouter une raison"
+    },
+    "history": {
+      "title": "Historique de mes déclarations",
+      "noData": "Aucune déclaration pour cette période",
+      "viewDetails": "Voir les détails",
+      "justified": "Justifié",
+      "notJustified": "Non justifié",
+      "filterPeriod": "Filtrer par période",
+      "startDate": "Date de début",
+      "endDate": "Date de fin",
+      "filter": "Filtrer",
+      "hours": "Heures",
+      "activity": "Activité",
+      "status": "Statut",
+      "actions": "Actions",
+      "detailsTitle": "Détails de la déclaration",
+      "close": "Fermer"
+    }
+  }
 }

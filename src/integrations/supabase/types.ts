@@ -2109,9 +2109,13 @@ export type Database = {
         Row: {
           created_at: string | null
           date: string
+          details_justification: Json | null
+          ecart_totalement_justifie: boolean | null
           employee_id: string
           heures: number
           id: string
+          justification_requise: boolean | null
+          raison_ecart: string | null
           saisi_par: string | null
           taux_activite: number | null
           updated_at: string | null
@@ -2119,9 +2123,13 @@ export type Database = {
         Insert: {
           created_at?: string | null
           date: string
+          details_justification?: Json | null
+          ecart_totalement_justifie?: boolean | null
           employee_id: string
           heures: number
           id?: string
+          justification_requise?: boolean | null
+          raison_ecart?: string | null
           saisi_par?: string | null
           taux_activite?: number | null
           updated_at?: string | null
@@ -2129,9 +2137,13 @@ export type Database = {
         Update: {
           created_at?: string | null
           date?: string
+          details_justification?: Json | null
+          ecart_totalement_justifie?: boolean | null
           employee_id?: string
           heures?: number
           id?: string
+          justification_requise?: boolean | null
+          raison_ecart?: string | null
           saisi_par?: string | null
           taux_activite?: number | null
           updated_at?: string | null
