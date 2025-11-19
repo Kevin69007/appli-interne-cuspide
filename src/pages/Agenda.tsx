@@ -1,13 +1,17 @@
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { ChevronLeft } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { MonthCalendar } from "@/components/objectifs-primes/MonthCalendar";
 import { PlanningCalendar } from "@/components/planning/PlanningCalendar";
+import { TimeDeclarationForm } from "@/components/planning/TimeDeclarationForm";
+import { TimeDeclarationHistory } from "@/components/planning/TimeDeclarationHistory";
 import { useUserRole } from "@/hooks/useUserRole";
 
 const Agenda = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation('planning');
   const { isAdmin, isManager } = useUserRole();
 
   return (
@@ -33,8 +37,9 @@ const Agenda = () => {
       <main className="container mx-auto px-4 py-8">
         <Tabs defaultValue="planning" className="space-y-4">
           <TabsList>
-            <TabsTrigger value="planning">Planning d'équipe</TabsTrigger>
-            <TabsTrigger value="agenda">Agenda personnel</TabsTrigger>
+            <TabsTrigger value="planning">{t('tabs.team')}</TabsTrigger>
+            <TabsTrigger value="agenda">{t('tabs.personal')}</TabsTrigger>
+            <TabsTrigger value="declaration">{t('tabs.timeDeclaration')}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="planning" className="space-y-4">
@@ -43,6 +48,11 @@ const Agenda = () => {
 
           <TabsContent value="agenda" className="space-y-4">
             <MonthCalendar />
+          </TabsContent>
+
+          <TabsContent value="declaration" className="space-y-6">
+            <TimeDeclarationForm />
+            <TimeDeclarationHistory />
           </TabsContent>
         </Tabs>
       </main>

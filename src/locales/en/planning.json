@@ -26,5 +26,76 @@
   "day": "Day",
   "today": "Today",
   "previous": "Previous",
-  "next": "Next"
+  "next": "Next",
+  "tabs": {
+    "team": "Team schedule",
+    "personal": "Personal agenda",
+    "timeDeclaration": "Time declaration"
+  },
+  "timeDeclaration": {
+    "title": "Daily time declaration",
+    "subtitle": "Declare your working hours and activity rate",
+    "date": "Date",
+    "hours": "Hours worked",
+    "hoursPlaceholder": "Ex: 7.5",
+    "activityRate": "Activity rate (%)",
+    "activityPlaceholder": "Ex: 75",
+    "submit": "Submit declaration",
+    "success": "Declaration saved successfully",
+    "error": "Error saving declaration",
+    "validation": {
+      "greenZone": "Excellent workday! ✅",
+      "orangeZone": "Watch your working time ⚠️",
+      "redZone": "Incomplete day, justification required ❌",
+      "activityGreen": "Optimal activity rate 💪",
+      "activityOrange": "Average activity rate ⚠️",
+      "activityRed": "Low activity rate ⚠️"
+    },
+    "justification": {
+      "required": "Justification required (less than 7h worked)",
+      "selectReason": "Select the reason for the gap",
+      "reasons": {
+        "agenda_error": "Error in my calendar (I was supposed to work less than 7h)",
+        "reunions_appels": "I had meetings or phone calls",
+        "timer_issue": "Timer issue / Forgot to start timer",
+        "personal_issue": "Personal problem, couldn't work",
+        "no_work": "Not enough work (manager informed)"
+      },
+      "agendaError": {
+        "label": "Actual scheduled hours",
+        "placeholder": "Ex: 6.5"
+      },
+      "meetings": {
+        "withWho": "With whom?",
+        "withWhoPlaceholder": "Ex: John Doe, Jane Smith",
+        "coverAll": "Does this explain the entire missing time?",
+        "yes": "Yes",
+        "no": "No, I have other reasons for the remaining time"
+      },
+      "timer": {
+        "coverAll": "Does this explain the entire gap?",
+        "yes": "Yes, this covers all the gap",
+        "no": "No, I have other reasons"
+      },
+      "additionalReasons": "Additional reasons for remaining time",
+      "addReason": "Add a reason"
+    },
+    "history": {
+      "title": "My declarations history",
+      "noData": "No declarations for this period",
+      "viewDetails": "View details",
+      "justified": "Justified",
+      "notJustified": "Not justified",
+      "filterPeriod": "Filter by period",
+      "startDate": "Start date",
+      "endDate": "End date",
+      "filter": "Filter",
+      "hours": "Hours",
+      "activity": "Activity",
+      "status": "Status",
+      "actions": "Actions",
+      "detailsTitle": "Declaration details",
+      "close": "Close"
+    }
+  }
 }
