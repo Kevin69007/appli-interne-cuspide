@@ -58,7 +58,12 @@
     "noObjectives": "Aucun indicateur trouvé",
     "seriesOf": "Série de {{count}}",
     "progressRate": "{{declared}}/{{total}} déclarées",
-    "confirmModification": "Confirmer la modification"
+    "confirmModification": "Confirmer la modification",
+    "date": "Date",
+    "status": "Statut",
+    "applyFilters": "Rechercher",
+    "resetFilters": "Réinitialiser",
+    "activeFilters": "{{count}} filtre(s) actif(s)"
   },
   "common": {
     "cancel": "Annuler"

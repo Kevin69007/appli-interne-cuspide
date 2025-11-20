@@ -58,7 +58,12 @@
     "noObjectives": "No indicators found",
     "seriesOf": "Series of {{count}}",
     "progressRate": "{{declared}}/{{total}} declared",
-    "confirmModification": "Confirm modification"
+    "confirmModification": "Confirm modification",
+    "date": "Date",
+    "status": "Status",
+    "applyFilters": "Search",
+    "resetFilters": "Reset",
+    "activeFilters": "{{count}} active filter(s)"
   },
   "common": {
     "cancel": "Cancel"
