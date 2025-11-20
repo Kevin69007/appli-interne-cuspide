@@ -103,19 +103,25 @@ export const EditObjectiveDialog = ({
         return;
       }
 
+      // Calculer les points par occurrence (Option B : répartition)
+      const pointsPerOccurrence = entriesToModify.length > 0 
+        ? formData.points / entriesToModify.length 
+        : 0;
+
       // Update entries
-      const detail = {
+      const detail = [{
         nom: formData.indicator_name,
         valeur_cible: formData.target_value,
         unite: formData.unit,
         recurrence: formData.recurrence,
-      };
+        points_indicateur: formData.points,
+      }];
 
       const { error: updateError } = await supabase
         .from("agenda_entries")
         .update({
           type: formData.indicator_name,
-          points_indicateur: formData.points,
+          points_indicateur: pointsPerOccurrence,
           detail: JSON.stringify(detail),
         })
         .in("id", entriesToModify);
