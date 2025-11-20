@@ -32,11 +32,11 @@ export interface FilterValues {
 export const ObjectifsFilters = ({ onFilterChange, objectifs }: ObjectifsFiltersProps) => {
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [filters, setFilters] = useState<FilterValues>({
-    employeeId: "",
+    employeeId: "all",
     startDate: "",
     endDate: "",
-    typePeriode: "",
-    statut: ""
+    typePeriode: "all",
+    statut: "all"
   });
 
   useEffect(() => {
@@ -65,11 +65,11 @@ export const ObjectifsFilters = ({ onFilterChange, objectifs }: ObjectifsFilters
 
   const handleReset = () => {
     const emptyFilters: FilterValues = {
-      employeeId: "",
+      employeeId: "all",
       startDate: "",
       endDate: "",
-      typePeriode: "",
-      statut: ""
+      typePeriode: "all",
+      statut: "all"
     };
     setFilters(emptyFilters);
     onFilterChange(emptyFilters);
@@ -165,7 +165,7 @@ export const ObjectifsFilters = ({ onFilterChange, objectifs }: ObjectifsFilters
               <SelectValue placeholder="Tous" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Tous</SelectItem>
+              <SelectItem value="all">Tous</SelectItem>
               {employees.map((emp) => (
                 <SelectItem key={emp.id} value={emp.id}>
                   {emp.prenom} {emp.nom}
@@ -202,7 +202,7 @@ export const ObjectifsFilters = ({ onFilterChange, objectifs }: ObjectifsFilters
               <SelectValue placeholder="Tous" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Tous</SelectItem>
+              <SelectItem value="all">Tous</SelectItem>
               <SelectItem value="daily">Journalier</SelectItem>
               <SelectItem value="weekly">Hebdomadaire</SelectItem>
               <SelectItem value="monthly">Mensuel</SelectItem>
@@ -217,7 +217,7 @@ export const ObjectifsFilters = ({ onFilterChange, objectifs }: ObjectifsFilters
               <SelectValue placeholder="Tous" />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="">Tous</SelectItem>
+              <SelectItem value="all">Tous</SelectItem>
               <SelectItem value="en_cours">En cours</SelectItem>
               <SelectItem value="termine">Terminé</SelectItem>
               <SelectItem value="modifie">Modifié</SelectItem>
