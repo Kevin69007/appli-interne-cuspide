@@ -188,7 +188,7 @@ export const DuplicateObjectiveDialog = ({
         action: "INSERT",
         user_id: user?.id,
         nouveau_contenu: {
-          duplication_source: objective.entry_ids[0],
+          duplication_source: objective.entry_ids?.[0] || 'unknown',
           entries_created: entries.length,
           months: selectedMonths,
           years: selectedYears,
