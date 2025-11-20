@@ -144,12 +144,13 @@ export const DuplicateObjectiveDialog = ({
     setLoading(true);
 
     try {
-      const detail = {
+      const detail = [{
         nom: objective.indicator_name,
         valeur_cible: keepSameValues ? objective.target_value : formData.target_value,
         unite: objective.unit,
         recurrence: objective.recurrence,
-      };
+        points_indicateur: keepSameValues ? objective.points : formData.points,
+      }];
 
       const entries: any[] = [];
 
@@ -161,12 +162,12 @@ export const DuplicateObjectiveDialog = ({
             entries.push({
               employee_id: objective.employee_id,
               date,
-              categorie: "objectif",
+              categorie: "indicateurs",
               type: objective.indicator_name,
               detail: JSON.stringify(detail),
-              points_indicateur: keepSameValues ? objective.points : formData.points,
+              points_indicateur: 0,
               statut_objectif: "en_attente",
-              statut_validation: "valide",
+              statut_validation: "en_attente",
               auteur_id: user?.id,
             });
           });
