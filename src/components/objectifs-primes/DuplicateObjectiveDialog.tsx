@@ -171,7 +171,6 @@ export const DuplicateObjectiveDialog = ({
               detail: JSON.stringify(detail),
               points_indicateur: pointsPerOccurrence,
               statut_validation: "en_attente",
-              auteur_id: user?.id,
             });
           });
         });
