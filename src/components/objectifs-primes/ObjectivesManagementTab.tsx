@@ -124,6 +124,7 @@ export const ObjectivesManagementTab = () => {
           const existing = objectivesMap.get(key)!;
           existing.occurrences.push(occurrence);
           existing.total_occurrences++;
+          existing.points += (entry.points_indicateur || 0);
           if (entry.statut_validation === 'valide') {
             existing.declared_occurrences++;
           }
@@ -137,7 +138,7 @@ export const ObjectivesManagementTab = () => {
             indicator_name: detailObj?.nom || entry.type || "Sans nom",
             recurrence: detailObj?.recurrence || "mois",
             target_value: detailObj?.valeur_cible || 0,
-            points: detailObj?.points_indicateur || 0,
+            points: entry.points_indicateur || 0,
             unit: detailObj?.unite || "",
             total_occurrences: 1,
             declared_occurrences: entry.statut_validation === 'valide' ? 1 : 0,
@@ -265,6 +266,41 @@ export const ObjectivesManagementTab = () => {
     }
   };
 
+  const handleDeleteOccurrence = async (occurrenceId: string, objectiveGroup: ObjectiveGroup) => {
+    if (objectiveGroup.total_occurrences === 1) {
+      if (!window.confirm("Ceci est la dernière occurrence. Voulez-vous supprimer tout l'indicateur ?")) {
+        return;
+      }
+    }
+
+    try {
+      const { error } = await supabase
+        .from("agenda_entries")
+        .delete()
+        .eq("id", occurrenceId);
+
+      if (error) throw error;
+
+      const { data: userData } = await supabase.auth.getUser();
+      await supabase.from("audit_log").insert({
+        table_name: "agenda_entries",
+        action: "DELETE",
+        record_id: occurrenceId,
+        user_id: userData.user?.id,
+        ancien_contenu: {
+          occurrence_id: occurrenceId,
+          objective_group: objectiveGroup.indicator_name,
+        },
+      });
+
+      toast.success("Occurrence supprimée");
+      fetchObjectives();
+    } catch (error) {
+      console.error("Error deleting occurrence:", error);
+      toast.error("Erreur lors de la suppression");
+    }
+  };
+
   if (loading) {
     return (
       <div className="flex items-center justify-center py-8">
@@ -380,6 +416,7 @@ export const ObjectivesManagementTab = () => {
                   onEdit={handleEdit}
                   onDuplicate={handleDuplicate}
                   onDelete={handleDeleteClick}
+                  onDeleteOccurrence={handleDeleteOccurrence}
                 />
               );
             })}
