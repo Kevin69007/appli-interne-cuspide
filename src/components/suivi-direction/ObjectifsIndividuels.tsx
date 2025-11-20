@@ -143,7 +143,7 @@ export const ObjectifsIndividuels = () => {
   const handleFilterChange = (filters: FilterValues) => {
     let filtered = [...objectifs];
 
-    if (filters.employeeId) {
+    if (filters.employeeId && filters.employeeId !== "all") {
       filtered = filtered.filter(obj => obj.employee.id === filters.employeeId);
     }
 
@@ -155,11 +155,11 @@ export const ObjectifsIndividuels = () => {
       filtered = filtered.filter(obj => obj.periode_debut <= filters.endDate);
     }
 
-    if (filters.typePeriode) {
+    if (filters.typePeriode && filters.typePeriode !== "all") {
       filtered = filtered.filter(obj => obj.type_periode === filters.typePeriode);
     }
 
-    if (filters.statut) {
+    if (filters.statut && filters.statut !== "all") {
       filtered = filtered.filter(obj => obj.statut === filters.statut);
     }
 
