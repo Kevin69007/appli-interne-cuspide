@@ -20,7 +20,8 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { Edit, Copy, Trash2, Search, Filter, X } from "lucide-react";
+import { Edit, Copy, Trash2, Search, Filter, X, ChevronDown, ChevronRight } from "lucide-react";
+import React from "react";
 import { toast } from "sonner";
 import { EditObjectiveDialog } from "./EditObjectiveDialog";
 import { DuplicateObjectiveDialog } from "./DuplicateObjectiveDialog";
@@ -44,8 +45,15 @@ interface ObjectiveGroup {
   target_value: number;
   points: number;
   unit: string;
-  date: string;
-  status: string;
+  total_occurrences: number;
+  declared_occurrences: number;
+  occurrences: Array<{
+    id: string;
+    date: string;
+    status: string;
+    declared_value?: number;
+  }>;
+  isExpanded?: boolean;
 }
 
 export const ObjectivesManagementTab = () => {
@@ -70,6 +78,7 @@ export const ObjectivesManagementTab = () => {
   const [duplicateDialogOpen, setDuplicateDialogOpen] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [selectedObjective, setSelectedObjective] = useState<ObjectiveGroup | null>(null);
+  const [expandedRows, setExpandedRows] = useState<Set<string>>(new Set());
 
   useEffect(() => {
     fetchEmployees();
@@ -104,6 +113,7 @@ export const ObjectivesManagementTab = () => {
           valeur_declaree,
           points_indicateur,
           statut_objectif,
+          statut_validation,
           detail,
           employees (
             nom,
@@ -115,25 +125,48 @@ export const ObjectivesManagementTab = () => {
 
       if (error) throw error;
 
-      const objectivesList: ObjectiveGroup[] = entries?.map((entry: any) => {
-        const detail = entry.detail ? JSON.parse(entry.detail) : {};
-        return {
+      const objectivesMap = new Map<string, ObjectiveGroup>();
+
+      entries?.forEach((entry: any) => {
+        const detail = entry.detail ? JSON.parse(entry.detail) : [];
+        const detailObj = Array.isArray(detail) ? detail[0] : detail;
+        const key = `${entry.employee_id}_${detailObj?.nom}_${detailObj?.recurrence}`;
+        
+        const occurrence = {
           id: entry.id,
-          employee_id: entry.employee_id,
-          employee_name: entry.employees 
-            ? `${entry.employees.prenom} ${entry.employees.nom}` 
-            : "Inconnu",
-          indicator_name: detail.nom || entry.type || "Sans nom",
-          recurrence: detail.recurrence || "mois",
-          target_value: detail.valeur_cible || 0,
-          points: entry.points_indicateur || 0,
-          unit: detail.unite || "",
           date: entry.date,
           status: entry.statut_objectif || "en_attente",
+          declared_value: entry.valeur_declaree,
         };
-      }) || [];
 
-      setObjectives(objectivesList);
+        if (objectivesMap.has(key)) {
+          const existing = objectivesMap.get(key)!;
+          existing.occurrences.push(occurrence);
+          existing.total_occurrences++;
+          if (entry.statut_validation === 'valide') {
+            existing.declared_occurrences++;
+          }
+        } else {
+          objectivesMap.set(key, {
+            id: entry.id,
+            employee_id: entry.employee_id,
+            employee_name: entry.employees 
+              ? `${entry.employees.prenom} ${entry.employees.nom}` 
+              : "Inconnu",
+            indicator_name: detailObj?.nom || entry.type || "Sans nom",
+            recurrence: detailObj?.recurrence || "mois",
+            target_value: detailObj?.valeur_cible || 0,
+            points: detailObj?.points_indicateur || 0,
+            unit: detailObj?.unite || "",
+            total_occurrences: 1,
+            declared_occurrences: entry.statut_validation === 'valide' ? 1 : 0,
+            occurrences: [occurrence],
+            isExpanded: false,
+          });
+        }
+      });
+
+      setObjectives(Array.from(objectivesMap.values()));
     } catch (error) {
       console.error("Error fetching objectives:", error);
       toast.error("Erreur lors du chargement des indicateurs");
@@ -161,10 +194,24 @@ export const ObjectivesManagementTab = () => {
     }
 
     if (selectedStatus !== "all") {
-      filtered = filtered.filter(obj => obj.status === selectedStatus);
+      filtered = filtered.filter(obj => 
+        obj.occurrences.some(occ => occ.status === selectedStatus)
+      );
     }
 
     setFilteredObjectives(filtered);
+  };
+
+  const toggleExpand = (objectiveKey: string) => {
+    setExpandedRows(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(objectiveKey)) {
+        newSet.delete(objectiveKey);
+      } else {
+        newSet.add(objectiveKey);
+      }
+      return newSet;
+    });
   };
 
   const handleApplyFilters = () => {
@@ -328,53 +375,103 @@ export const ObjectivesManagementTab = () => {
         <Table>
           <TableHeader>
             <TableRow>
+              <TableHead className="w-12"></TableHead>
               <TableHead>{t("management.employee")}</TableHead>
               <TableHead>{t("management.indicatorName")}</TableHead>
               <TableHead>{t("management.recurrence")}</TableHead>
-              <TableHead>{t("management.date")}</TableHead>
               <TableHead>{t("management.targetValue")}</TableHead>
               <TableHead>{t("management.points")}</TableHead>
-              <TableHead>{t("management.status")}</TableHead>
+              <TableHead>{t("management.occurrences")}</TableHead>
               <TableHead className="text-right">{t("management.actions")}</TableHead>
             </TableRow>
           </TableHeader>
           <TableBody>
-            {filteredObjectives.map((obj) => (
-              <TableRow key={obj.id}>
-                <TableCell>{obj.employee_name}</TableCell>
-                <TableCell className="font-medium">{obj.indicator_name}</TableCell>
-                <TableCell>
-                  <Badge variant="outline">{obj.recurrence}</Badge>
-                </TableCell>
-                <TableCell>
-                  {new Date(obj.date).toLocaleDateString('fr-FR')}
-                </TableCell>
-                <TableCell>
-                  {obj.target_value} {obj.unit}
-                </TableCell>
-                <TableCell>
-                  <Badge>{obj.points} pts</Badge>
-                </TableCell>
-                <TableCell>
-                  <Badge variant={obj.status === "valide" ? "default" : obj.status === "rejete" ? "destructive" : "secondary"}>
-                    {obj.status === "valide" ? "Validé" : obj.status === "rejete" ? "Rejeté" : "En attente"}
-                  </Badge>
-                </TableCell>
-                <TableCell className="text-right">
-                  <div className="flex justify-end gap-2">
-                    <Button variant="ghost" size="icon" onClick={() => handleEdit(obj)}>
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" onClick={() => handleDuplicate(obj)}>
-                      <Copy className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="icon" onClick={() => handleDeleteClick(obj)}>
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </TableCell>
-              </TableRow>
-            ))}
+            {filteredObjectives.map((obj) => {
+              const objectiveKey = `${obj.employee_id}_${obj.indicator_name}_${obj.recurrence}`;
+              const isExpanded = expandedRows.has(objectiveKey);
+              
+              return (
+                <React.Fragment key={objectiveKey}>
+                  {/* Ligne principale (groupée) */}
+                  <TableRow>
+                    <TableCell>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => toggleExpand(objectiveKey)}
+                      >
+                        {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
+                      </Button>
+                    </TableCell>
+                    <TableCell>{obj.employee_name}</TableCell>
+                    <TableCell className="font-medium">{obj.indicator_name}</TableCell>
+                    <TableCell>
+                      <Badge variant="outline">{obj.recurrence}</Badge>
+                    </TableCell>
+                    <TableCell>
+                      {obj.target_value} {obj.unit}
+                    </TableCell>
+                    <TableCell>
+                      <Badge>{obj.points} pts</Badge>
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-col gap-1">
+                        <Badge variant="secondary">
+                          Série de {obj.total_occurrences}
+                        </Badge>
+                        <span className="text-xs text-muted-foreground">
+                          {obj.declared_occurrences}/{obj.total_occurrences} déclarées
+                        </span>
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-right">
+                      <div className="flex justify-end gap-2">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleEdit(obj)}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDuplicate(obj)}
+                        >
+                          <Copy className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={() => handleDeleteClick(obj)}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+
+                  {/* Lignes détaillées (occurrences) */}
+                  {isExpanded && obj.occurrences.map((occ) => (
+                    <TableRow key={occ.id} className="bg-muted/50">
+                      <TableCell></TableCell>
+                      <TableCell colSpan={2} className="pl-12 text-sm text-muted-foreground">
+                        {new Date(occ.date).toLocaleDateString('fr-FR')}
+                      </TableCell>
+                      <TableCell>
+                        <Badge variant={occ.status === "valide" ? "default" : "secondary"}>
+                          {occ.status === "valide" ? "Validé" : "En attente"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell className="text-sm">
+                        {occ.declared_value ? `${occ.declared_value} ${obj.unit}` : "-"}
+                      </TableCell>
+                      <TableCell colSpan={3}></TableCell>
+                    </TableRow>
+                  ))}
+                </React.Fragment>
+              );
+            })}
           </TableBody>
         </Table>
       )}
