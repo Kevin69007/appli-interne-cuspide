@@ -170,7 +170,6 @@ export const DuplicateObjectiveDialog = ({
               type: objective.indicator_name,
               detail: JSON.stringify(detail),
               points_indicateur: pointsPerOccurrence,
-              statut_objectif: "en_attente",
               statut_validation: "en_attente",
               auteur_id: user?.id,
             });
