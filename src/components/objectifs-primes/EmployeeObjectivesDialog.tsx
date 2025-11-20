@@ -173,12 +173,18 @@ export const EmployeeObjectivesDialog = () => {
             for (const objective of objectives) {
               const dates = generateRecurringDates(year, month, objective.recurrence);
               
+              // Calculer les points par occurrence (Option B : répartition)
+              const pointsPerOccurrence = dates.length > 0 
+                ? objective.points_indicateur / dates.length 
+                : 0;
+              
               for (const date of dates) {
                 entries.push({
                   employee_id: employeeId,
                   date: date,
                   categorie: 'indicateurs' as const,
                   detail: JSON.stringify([objective]),
+                  points_indicateur: pointsPerOccurrence,
                   statut_validation: 'en_attente' as const
                 });
               }

@@ -158,6 +158,10 @@ export const DuplicateObjectiveDialog = ({
         selectedMonths.forEach(month => {
           const dates = generateRecurringDates(year, month, objective.recurrence);
           
+          // Calculer les points par occurrence (répartition)
+          const totalPoints = keepSameValues ? objective.points : formData.points;
+          const pointsPerOccurrence = dates.length > 0 ? totalPoints / dates.length : 0;
+          
           dates.forEach(date => {
             entries.push({
               employee_id: objective.employee_id,
@@ -165,7 +169,7 @@ export const DuplicateObjectiveDialog = ({
               categorie: "indicateurs",
               type: objective.indicator_name,
               detail: JSON.stringify(detail),
-              points_indicateur: 0,
+              points_indicateur: pointsPerOccurrence,
               statut_objectif: "en_attente",
               statut_validation: "en_attente",
               auteur_id: user?.id,
