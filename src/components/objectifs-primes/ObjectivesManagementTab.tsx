@@ -20,11 +20,11 @@ import {
 } from "@/components/ui/select";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { Edit, Copy, Trash2, Search, Filter, X, ChevronDown, ChevronRight } from "lucide-react";
-import React from "react";
+import { Search, Filter, X } from "lucide-react";
 import { toast } from "sonner";
 import { EditObjectiveDialog } from "./EditObjectiveDialog";
 import { DuplicateObjectiveDialog } from "./DuplicateObjectiveDialog";
+import { ObjectiveRowGroup, ObjectiveGroup } from "./ObjectiveRowGroup";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -36,25 +36,6 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 
-interface ObjectiveGroup {
-  id: string;
-  employee_id: string;
-  employee_name: string;
-  indicator_name: string;
-  recurrence: string;
-  target_value: number;
-  points: number;
-  unit: string;
-  total_occurrences: number;
-  declared_occurrences: number;
-  occurrences: Array<{
-    id: string;
-    date: string;
-    status: string;
-    declared_value?: number;
-  }>;
-  isExpanded?: boolean;
-}
 
 export const ObjectivesManagementTab = () => {
   const { t } = useTranslation('indicators');
@@ -391,85 +372,15 @@ export const ObjectivesManagementTab = () => {
               const isExpanded = expandedRows.has(objectiveKey);
               
               return (
-                <React.Fragment key={objectiveKey}>
-                  {/* Ligne principale (groupée) */}
-                  <TableRow>
-                    <TableCell>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => toggleExpand(objectiveKey)}
-                      >
-                        {isExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronRight className="h-4 w-4" />}
-                      </Button>
-                    </TableCell>
-                    <TableCell>{obj.employee_name}</TableCell>
-                    <TableCell className="font-medium">{obj.indicator_name}</TableCell>
-                    <TableCell>
-                      <Badge variant="outline">{obj.recurrence}</Badge>
-                    </TableCell>
-                    <TableCell>
-                      {obj.target_value} {obj.unit}
-                    </TableCell>
-                    <TableCell>
-                      <Badge>{obj.points} pts</Badge>
-                    </TableCell>
-                    <TableCell>
-                      <div className="flex flex-col gap-1">
-                        <Badge variant="secondary">
-                          Série de {obj.total_occurrences}
-                        </Badge>
-                        <span className="text-xs text-muted-foreground">
-                          {obj.declared_occurrences}/{obj.total_occurrences} déclarées
-                        </span>
-                      </div>
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleEdit(obj)}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDuplicate(obj)}
-                        >
-                          <Copy className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="icon"
-                          onClick={() => handleDeleteClick(obj)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-
-                  {/* Lignes détaillées (occurrences) */}
-                  {isExpanded && obj.occurrences.map((occ) => (
-                    <TableRow key={occ.id} className="bg-muted/50">
-                      <TableCell></TableCell>
-                      <TableCell colSpan={2} className="pl-12 text-sm text-muted-foreground">
-                        {new Date(occ.date).toLocaleDateString('fr-FR')}
-                      </TableCell>
-                      <TableCell>
-                        <Badge variant={occ.status === "valide" ? "default" : "secondary"}>
-                          {occ.status === "valide" ? "Validé" : "En attente"}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-sm">
-                        {occ.declared_value ? `${occ.declared_value} ${obj.unit}` : "-"}
-                      </TableCell>
-                      <TableCell colSpan={3}></TableCell>
-                    </TableRow>
-                  ))}
-                </React.Fragment>
+                <ObjectiveRowGroup
+                  key={objectiveKey}
+                  obj={obj}
+                  isExpanded={isExpanded}
+                  onToggleExpand={() => toggleExpand(objectiveKey)}
+                  onEdit={handleEdit}
+                  onDuplicate={handleDuplicate}
+                  onDelete={handleDeleteClick}
+                />
               );
             })}
           </TableBody>
