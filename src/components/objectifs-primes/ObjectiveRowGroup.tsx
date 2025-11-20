@@ -30,6 +30,7 @@ interface ObjectiveRowGroupProps {
   onEdit: (obj: ObjectiveGroup) => void;
   onDuplicate: (obj: ObjectiveGroup) => void;
   onDelete: (obj: ObjectiveGroup) => void;
+  onDeleteOccurrence: (occurrenceId: string, objectiveGroup: ObjectiveGroup) => void;
 }
 
 export const ObjectiveRowGroup = ({
@@ -39,6 +40,7 @@ export const ObjectiveRowGroup = ({
   onEdit,
   onDuplicate,
   onDelete,
+  onDeleteOccurrence,
 }: ObjectiveRowGroupProps) => {
   return (
     <>
@@ -116,7 +118,16 @@ export const ObjectiveRowGroup = ({
           <TableCell className="text-sm">
             {occ.declared_value ? `${occ.declared_value} ${obj.unit}` : "-"}
           </TableCell>
-          <TableCell colSpan={3}></TableCell>
+          <TableCell colSpan={2}></TableCell>
+          <TableCell className="text-right">
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => onDeleteOccurrence(occ.id, obj)}
+            >
+              <Trash2 className="h-4 w-4 text-destructive" />
+            </Button>
+          </TableCell>
         </TableRow>
       ))}
     </>
