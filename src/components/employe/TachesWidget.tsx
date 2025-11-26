@@ -18,7 +18,7 @@ interface Task {
   statut: string;
 }
 
-export const TachesWidget = () => {
+export const TachesWidget = ({ onDataLoaded }: { onDataLoaded?: (hasData: boolean) => void } = {}) => {
   const navigate = useNavigate();
   const { t } = useTranslation('indicators');
   const [tasks, setTasks] = useState<Task[]>([]);
@@ -53,8 +53,10 @@ export const TachesWidget = () => {
         .limit(5);
 
       setTasks(data || []);
+      onDataLoaded?.((data || []).length > 0);
     } catch (error) {
       console.error("Erreur:", error);
+      onDataLoaded?.(false);
     } finally {
       setLoading(false);
     }
@@ -84,6 +86,14 @@ export const TachesWidget = () => {
     }
   };
 
+  if (loading) {
+    return null;
+  }
+
+  if (tasks.length === 0) {
+    return null;
+  }
+
   return (
     <Card 
       className="p-6 cursor-pointer hover:shadow-lg transition-shadow"
@@ -98,13 +108,8 @@ export const TachesWidget = () => {
       </div>
 
       <div className="space-y-2">
-        {loading ? (
-          <p className="text-sm text-muted-foreground">{t('employee.tasks.loading')}</p>
-        ) : tasks.length === 0 ? (
-          <p className="text-sm text-muted-foreground">{t('employee.tasks.noTasks')}</p>
-        ) : (
-          tasks.map((task) => (
-            <div key={task.id} className="flex items-center gap-2 p-2 rounded border">
+        {tasks.map((task) => (
+          <div key={task.id} className="flex items-center gap-2 p-2 rounded border">
               <Checkbox
                 checked={task.statut === "terminee"}
                 onCheckedChange={() => toggleTaskStatus(task.id, task.statut)}
@@ -125,8 +130,7 @@ export const TachesWidget = () => {
                 </Badge>
               )}
             </div>
-          ))
-        )}
+          ))}
       </div>
 
       <p className="text-xs text-muted-foreground mt-4 text-center">

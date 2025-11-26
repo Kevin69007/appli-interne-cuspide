@@ -1,4 +1,4 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -8,6 +8,7 @@ import { AgendaWidget } from "@/components/employe/AgendaWidget";
 import { TachesWidget } from "@/components/employe/TachesWidget";
 import { InfosImportantesWidget } from "@/components/employe/InfosImportantesWidget";
 import { TachesPrioritairesWidget } from "@/components/employe/TachesPrioritairesWidget";
+import { MoodBarWidget } from "@/components/employe/MoodBarWidget";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { useModuleVisibility } from "@/hooks/useModuleVisibility";
 
@@ -17,6 +18,11 @@ const Index = () => {
   const navigate = useNavigate();
   const { t } = useTranslation();
   const { modules, loading: modulesLoading } = useModuleVisibility();
+  
+  const [hasTasks, setHasTasks] = useState<boolean | null>(null);
+  const [hasPriorityTasks, setHasPriorityTasks] = useState<boolean | null>(null);
+  const [hasInfos, setHasInfos] = useState<boolean | null>(null);
+  const [hasVotedMood, setHasVotedMood] = useState(false);
 
   useEffect(() => {
     if (!loading && user) {
@@ -71,9 +77,16 @@ const Index = () => {
           {/* Widgets rapides pour tous les utilisateurs */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
             <AgendaWidget />
-            <TachesWidget />
-            <TachesPrioritairesWidget />
-            <InfosImportantesWidget />
+            <TachesWidget onDataLoaded={setHasTasks} />
+            <TachesPrioritairesWidget onDataLoaded={setHasPriorityTasks} />
+            <InfosImportantesWidget onDataLoaded={setHasInfos} />
+            
+            {/* Afficher le MoodBar si au moins un widget est vide ou si l'utilisateur n'a pas voté */}
+            {!hasVotedMood && (hasTasks === false || hasPriorityTasks === false || hasInfos === false) && (
+              <div className="col-span-full">
+                <MoodBarWidget onVoted={setHasVotedMood} />
+              </div>
+            )}
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">

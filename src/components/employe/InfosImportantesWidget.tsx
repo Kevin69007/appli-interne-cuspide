@@ -17,7 +17,7 @@ interface Communication {
   isRead: boolean;
 }
 
-export const InfosImportantesWidget = () => {
+export const InfosImportantesWidget = ({ onDataLoaded }: { onDataLoaded?: (hasData: boolean) => void } = {}) => {
   const { t } = useTranslation('indicators');
   const [communications, setCommunications] = useState<Communication[]>([]);
   const [loading, setLoading] = useState(true);
@@ -66,8 +66,10 @@ export const InfosImportantesWidget = () => {
       })).filter(comm => !comm.require_confirmation || !comm.isRead);
 
       setCommunications(enrichedComms);
+      onDataLoaded?.(enrichedComms.length > 0);
     } catch (error) {
       console.error("Erreur:", error);
+      onDataLoaded?.(false);
     } finally {
       setLoading(false);
     }
@@ -100,6 +102,14 @@ export const InfosImportantesWidget = () => {
     }
   };
 
+  if (loading) {
+    return null;
+  }
+
+  if (communications.length === 0) {
+    return null;
+  }
+
   return (
     <Card className="p-6">
       <div className="flex items-center gap-3 mb-4">
@@ -111,13 +121,8 @@ export const InfosImportantesWidget = () => {
       </div>
 
       <div className="space-y-4">
-        {loading ? (
-          <p className="text-sm text-muted-foreground">{t('employee.importantInfoWidget.loading')}</p>
-        ) : communications.length === 0 ? (
-          <p className="text-sm text-muted-foreground">{t('employee.importantInfoWidget.noInfo')}</p>
-        ) : (
-          communications.map((comm) => (
-            <div key={comm.id} className="p-4 border rounded-lg space-y-2">
+        {communications.map((comm) => (
+          <div key={comm.id} className="p-4 border rounded-lg space-y-2">
               <div className="flex items-start justify-between gap-2">
                 <h4 className="font-semibold">{comm.titre}</h4>
                 {comm.require_confirmation && !comm.isRead && (
@@ -140,8 +145,7 @@ export const InfosImportantesWidget = () => {
                 </Button>
               )}
             </div>
-          ))
-        )}
+          ))}
       </div>
     </Card>
   );
