@@ -228,22 +228,22 @@ export const MoodBarWidget = ({ onVoted }: { onVoted?: (voted: boolean) => void 
 
       <div className="space-y-6">
         <div className="space-y-3">
-          <p className="text-center text-muted-foreground font-medium">
+          <p className="text-center text-muted-foreground font-medium text-sm sm:text-base">
             Comment te sens-tu ?
           </p>
-          <div className="flex justify-center gap-4">
+          <div className="grid grid-cols-3 sm:flex sm:justify-center gap-2 sm:gap-4">
             {moodOptions.map((mood) => (
               <button
                 key={mood.value}
                 onClick={() => handleMoodSelect(mood.value, mood.emoji, mood.label)}
-                className={`flex flex-col items-center gap-2 p-4 rounded-lg border-2 transition-all hover:scale-110 hover:shadow-lg ${
+                className={`flex flex-col items-center gap-1 sm:gap-2 p-2 sm:p-4 rounded-lg border-2 transition-all hover:scale-110 hover:shadow-lg ${
                   selectedMood === mood.value
                     ? "border-primary bg-primary/10 scale-110 shadow-lg"
                     : "border-border hover:border-primary/50"
                 }`}
               >
-                <span className="text-4xl">{mood.emoji}</span>
-                <span className="text-sm font-medium text-foreground">{mood.label}</span>
+                <span className="text-2xl sm:text-4xl">{mood.emoji}</span>
+                <span className="text-xs sm:text-sm font-medium text-foreground">{mood.label}</span>
               </button>
             ))}
           </div>
@@ -251,22 +251,22 @@ export const MoodBarWidget = ({ onVoted }: { onVoted?: (voted: boolean) => void 
 
         {selectedMood && (
           <div className="space-y-3 animate-fade-in">
-            <p className="text-center text-muted-foreground font-medium">
+            <p className="text-center text-muted-foreground font-medium text-sm sm:text-base">
               De quoi as-tu besoin aujourd'hui ?
             </p>
-            <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
               {needOptions.map((need) => (
                 <button
                   key={need.category}
                   onClick={() => handleNeedSelect(need.category)}
-                  className={`flex items-center gap-2 p-3 rounded-lg border-2 transition-all hover:scale-105 ${
+                  className={`flex items-center gap-2 p-2 sm:p-3 rounded-lg border-2 transition-all hover:scale-105 ${
                     selectedNeed === need.category
                       ? "border-primary bg-primary/10 scale-105 shadow-md"
                       : "border-border hover:border-primary/50"
                   }`}
                 >
-                  <span className="text-2xl">{need.emoji}</span>
-                  <span className="text-sm font-medium text-foreground">{need.label}</span>
+                  <span className="text-xl sm:text-2xl">{need.emoji}</span>
+                  <span className="text-xs sm:text-sm font-medium text-foreground">{need.label}</span>
                 </button>
               ))}
             </div>

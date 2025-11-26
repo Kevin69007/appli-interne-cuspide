@@ -328,33 +328,33 @@ export const TaskCard = ({ task, currentEmployeeId, onUpdate, isHelpRequest, isM
   return (
     <>
       <Card
-        className={`p-4 cursor-pointer hover:shadow-md transition-shadow ${
+        className={`p-3 sm:p-4 cursor-pointer hover:shadow-md transition-shadow ${
           task.statut === "terminee" ? "opacity-60" : ""
         }`}
         onClick={() => setShowDetails(true)}
       >
-        <div className="flex items-start justify-between gap-4">
-          <div className="flex-1 space-y-2">
-            <div className="flex items-center gap-3">
+        <div className="flex items-start justify-between gap-2 sm:gap-4">
+          <div className="flex-1 space-y-2 min-w-0">
+            <div className="flex items-center gap-2 sm:gap-3">
               <button
                 onClick={(e) => {
                   e.stopPropagation();
                   toggleStatus();
                 }}
-                className="hover:scale-110 transition-transform"
+                className="hover:scale-110 transition-transform shrink-0"
               >
                 {statusIcon}
               </button>
-              <h3 className={`font-semibold text-lg ${task.statut === "terminee" ? "line-through" : ""}`}>
+              <h3 className={`font-semibold text-base sm:text-lg ${task.statut === "terminee" ? "line-through" : ""} line-clamp-2`}>
                 {highlightText(task.titre)}
               </h3>
             </div>
 
             {task.description && (
-              <p className="text-sm text-muted-foreground ml-8">{highlightText(task.description)}</p>
+              <p className="text-xs sm:text-sm text-muted-foreground ml-6 sm:ml-8 line-clamp-2">{highlightText(task.description)}</p>
             )}
 
-            <div className="flex flex-wrap items-center gap-2 ml-8">
+            <div className="flex flex-wrap items-center gap-1 sm:gap-2 ml-6 sm:ml-8">
               <Badge className={priorityColor}>{task.priorite}</Badge>
 
               {isMaintenance && task.machine_piece && (
@@ -414,58 +414,58 @@ export const TaskCard = ({ task, currentEmployeeId, onUpdate, isHelpRequest, isM
             </div>
 
             {/* Quick Actions */}
-            <div className="flex gap-1 ml-8 mt-2" onClick={(e) => e.stopPropagation()}>
+            <div className="flex flex-wrap gap-1 ml-6 sm:ml-8 mt-2" onClick={(e) => e.stopPropagation()}>
               <Button
                 size="sm"
                 variant="ghost"
-                className="h-8 px-3"
+                className="h-8 px-2 sm:px-3 text-xs"
                 onClick={(e) => {
                   e.stopPropagation();
                   setActiveAction(activeAction === "comment" ? null : "comment");
                   setActionInput("");
                 }}
               >
-                <MessageSquare className="h-4 w-4 mr-1" />
-                Commenter
+                <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
+                <span className="hidden sm:inline">Commenter</span>
               </Button>
               <Button
                 size="sm"
                 variant="ghost"
-                className="h-8 px-3"
+                className="h-8 px-2 sm:px-3 text-xs"
                 onClick={(e) => {
                   e.stopPropagation();
                   setActiveAction(activeAction === "date" ? null : "date");
                   setActionInput("");
                 }}
               >
-                <Calendar className="h-4 w-4 mr-1" />
-                Modifier date
+                <Calendar className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
+                <span className="hidden sm:inline">Date</span>
               </Button>
               <Button
                 size="sm"
                 variant="ghost"
-                className="h-8 px-3"
+                className="h-8 px-2 sm:px-3 text-xs"
                 onClick={(e) => {
                   e.stopPropagation();
                   setActiveAction(activeAction === "reminder" ? null : "reminder");
                   setActionInput("");
                 }}
               >
-                <Bell className="h-4 w-4 mr-1" />
-                Rappel
+                <Bell className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
+                <span className="hidden sm:inline">Rappel</span>
               </Button>
               <Button
                 size="sm"
                 variant="ghost"
-                className="h-8 px-3"
+                className="h-8 px-2 sm:px-3 text-xs"
                 onClick={(e) => {
                   e.stopPropagation();
                   setShowQuickSubTaskInput(!showQuickSubTaskInput);
                   setActiveAction(null);
                 }}
               >
-                <Plus className="h-4 w-4 mr-1" />
-                Sous-tâche
+                <Plus className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
+                <span className="hidden sm:inline">Sous-tâche</span>
               </Button>
             </div>
 

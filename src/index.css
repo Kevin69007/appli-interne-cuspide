@@ -297,22 +297,38 @@
     justify-content: center;
   }
 
-  /* Mobile-specific overrides when needed */
-  @media (max-width: 768px) {
-    html, body, #root {
-      width: 1200px; /* Force desktop width on mobile */
-    }
+  /* Responsive utilities */
+  .mobile-only {
+    @apply block sm:hidden;
+  }
+  
+  .tablet-up {
+    @apply hidden sm:block;
+  }
+  
+  .desktop-only {
+    @apply hidden lg:block;
+  }
 
-    .page-container, .page-container-with-banner {
-      width: 1200px; /* Force desktop width on mobile */
-    }
-
+  /* Mobile-optimized spacing */
+  @media (max-width: 640px) {
     .content-wrapper {
-      width: 1200px; /* Force desktop width on mobile */
+      padding: 0 1rem;
     }
+  }
 
-    .loading-container, .loading-container-with-banner {
-      width: 1200px; /* Force desktop width on mobile */
+  /* Touch-friendly minimum sizes on mobile */
+  @media (max-width: 640px) {
+    button, a, [role="button"] {
+      min-height: 44px;
+      min-width: 44px;
+    }
+  }
+
+  /* Safe areas for mobile devices */
+  @supports (padding: env(safe-area-inset-bottom)) {
+    body {
+      padding-bottom: env(safe-area-inset-bottom);
     }
   }
 }
