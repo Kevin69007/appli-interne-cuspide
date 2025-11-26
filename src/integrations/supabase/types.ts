@@ -804,6 +804,71 @@ export type Database = {
           },
         ]
       }
+      daily_mood: {
+        Row: {
+          created_at: string | null
+          date: string
+          employee_id: string | null
+          id: string
+          mood_emoji: string
+          mood_label: string
+          need_type: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          date?: string
+          employee_id?: string | null
+          id?: string
+          mood_emoji: string
+          mood_label: string
+          need_type?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          date?: string
+          employee_id?: string | null
+          id?: string
+          mood_emoji?: string
+          mood_label?: string
+          need_type?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_mood_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      daily_quotes: {
+        Row: {
+          author: string | null
+          category: string
+          created_at: string | null
+          id: string
+          is_active: boolean | null
+          quote_text: string
+        }
+        Insert: {
+          author?: string | null
+          category: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          quote_text: string
+        }
+        Update: {
+          author?: string | null
+          category?: string
+          created_at?: string | null
+          id?: string
+          is_active?: boolean | null
+          quote_text?: string
+        }
+        Relationships: []
+      }
       employees: {
         Row: {
           atelier: string | null

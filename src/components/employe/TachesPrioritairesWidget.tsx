@@ -23,7 +23,7 @@ interface PriorityTask {
   }>;
 }
 
-export const TachesPrioritairesWidget = () => {
+export const TachesPrioritairesWidget = ({ onDataLoaded }: { onDataLoaded?: (hasData: boolean) => void } = {}) => {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { t } = useTranslation('indicators');
@@ -66,8 +66,10 @@ export const TachesPrioritairesWidget = () => {
 
       if (error) throw error;
       setTasks(data || []);
+      onDataLoaded?.((data || []).length > 0);
     } catch (error) {
       console.error("Error fetching priority tasks:", error);
+      onDataLoaded?.(false);
     } finally {
       setLoading(false);
     }
@@ -134,11 +136,11 @@ export const TachesPrioritairesWidget = () => {
   };
 
   if (loading) {
-    return (
-      <Card className="p-6 cursor-pointer hover:shadow-lg transition-shadow">
-        <p className="text-sm text-muted-foreground">{t('employee.priorityTasks.loading')}</p>
-      </Card>
-    );
+    return null;
+  }
+
+  if (tasks.length === 0) {
+    return null;
   }
 
   return (
@@ -158,10 +160,7 @@ export const TachesPrioritairesWidget = () => {
         <Badge variant="destructive">🔥 {tasks.length}</Badge>
       </div>
 
-      {tasks.length === 0 ? (
-        <p className="text-sm text-muted-foreground">{t('employee.priorityTasks.noPriorityTasks')}</p>
-      ) : (
-        <div className="space-y-3">
+      <div className="space-y-3">
           {tasks.slice(0, 3).map((task) => {
       const projectData = task.project_tasks?.[0]?.project;
       const projectInfo = Array.isArray(projectData) && projectData.length > 0 
@@ -235,8 +234,7 @@ export const TachesPrioritairesWidget = () => {
               </div>
             );
           })}
-        </div>
-      )}
+      </div>
     </Card>
   );
 };
