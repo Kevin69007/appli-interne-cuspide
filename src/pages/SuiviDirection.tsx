@@ -10,6 +10,7 @@ import Logs from "./Logs";
 import { PointageList } from "@/components/suivi-direction/PointageList";
 import { DashboardObjectifs } from "@/components/suivi-direction/DashboardObjectifs";
 import { ManagerTeamDashboard } from "@/components/suivi-direction/ManagerTeamDashboard";
+import { ModuleVisibilityConfig } from "@/components/admin/ModuleVisibilityConfig";
 
 const SuiviDirection = () => {
   const navigate = useNavigate();
@@ -43,7 +44,7 @@ const SuiviDirection = () => {
         </div>
 
         <Tabs defaultValue={isManager && !isAdmin ? "mes-equipes" : "dashboard"} className="w-full">
-          <TabsList className={`grid w-full ${isManager && !isAdmin ? "grid-cols-5" : "grid-cols-4"}`}>
+          <TabsList className={`grid w-full ${isAdmin ? "grid-cols-6" : isManager && !isAdmin ? "grid-cols-5" : "grid-cols-4"}`}>
             {isManager && !isAdmin && (
               <TabsTrigger value="mes-equipes">Mes Équipes</TabsTrigger>
             )}
@@ -51,6 +52,9 @@ const SuiviDirection = () => {
             <TabsTrigger value="pointage">Info Pointage</TabsTrigger>
             <TabsTrigger value="entretiens">Entretiens Locaux et Machines</TabsTrigger>
             <TabsTrigger value="audit">Journal d'audit</TabsTrigger>
+            {isAdmin && (
+              <TabsTrigger value="modules">Modules</TabsTrigger>
+            )}
           </TabsList>
 
           {isManager && !isAdmin && (
@@ -74,6 +78,12 @@ const SuiviDirection = () => {
           <TabsContent value="audit" className="mt-6">
             <Logs />
           </TabsContent>
+
+          {isAdmin && (
+            <TabsContent value="modules" className="mt-6">
+              <ModuleVisibilityConfig />
+            </TabsContent>
+          )}
         </Tabs>
       </div>
     </div>

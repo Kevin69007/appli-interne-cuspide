@@ -9,12 +9,14 @@ import { TachesWidget } from "@/components/employe/TachesWidget";
 import { InfosImportantesWidget } from "@/components/employe/InfosImportantesWidget";
 import { TachesPrioritairesWidget } from "@/components/employe/TachesPrioritairesWidget";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { useModuleVisibility } from "@/hooks/useModuleVisibility";
 
 const Index = () => {
   const { user, loading } = useAuth();
   const { isAdmin, isManager } = useUserRole();
   const navigate = useNavigate();
   const { t } = useTranslation();
+  const { modules, loading: modulesLoading } = useModuleVisibility();
 
   useEffect(() => {
     if (!loading && user) {
@@ -75,37 +77,30 @@ const Index = () => {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {[
-              { title: t('navigation.formation'), icon: "📚", path: "/formation" },
-              { title: t('navigation.indicators'), icon: "🎯", path: "/indicateurs-primes" },
-              { title: t('navigation.tasks'), icon: "✅", path: "/taches" },
-              { title: t('navigation.communication'), icon: "📢", path: "/communication-generale" },
-              { title: t('navigation.projects'), icon: "🗂️", path: "/projets" },
-              { title: t('navigation.meetings'), icon: "🎤", path: "/reunions" },
-              { title: t('navigation.rh'), icon: "🌴", path: "/conges-mood-bar", restricted: true },
-              { title: t('navigation.detente'), icon: "🎮", path: "/detente" },
-              { title: t('navigation.translator'), icon: "🌐", path: "https://interne-traducteur.cuspide.fr/", external: true },
-              { title: t('navigation.stock'), icon: "🛒", path: "/commandes-stock" },
-              { title: t('navigation.planning'), icon: "📅", path: "/agenda" },
-              { title: t('navigation.direction'), icon: "📊", path: "/suivi-direction", restricted: true },
-            ].filter(item => !item.restricted || isAdmin || isManager).map((item, index) => (
-              <div
-                key={index}
-                onClick={() => {
-                  if (item.external) {
-                    window.open(item.path, '_blank', 'noopener,noreferrer');
-                  } else if (item.path) {
-                    navigate(item.path);
-                  }
-                }}
-                className="group p-6 rounded-xl border border-border bg-card hover:border-primary hover:shadow-lg hover:shadow-primary/20 transition-all duration-300 cursor-pointer"
-              >
-                <div className="text-4xl mb-4">{item.icon}</div>
-                <h3 className="text-lg font-semibold group-hover:text-primary transition-colors">
-                  {item.title}
-                </h3>
+            {modulesLoading ? (
+              <div className="col-span-full text-center py-8 text-muted-foreground">
+                {t('loading')}
               </div>
-            ))}
+            ) : (
+              modules.map((module) => (
+                <div
+                  key={module.id}
+                  onClick={() => {
+                    if (module.is_external) {
+                      window.open(module.path, '_blank', 'noopener,noreferrer');
+                    } else {
+                      navigate(module.path);
+                    }
+                  }}
+                  className="group p-6 rounded-xl border border-border bg-card hover:border-primary hover:shadow-lg hover:shadow-primary/20 transition-all duration-300 cursor-pointer"
+                >
+                  <div className="text-4xl mb-4">{module.icon}</div>
+                  <h3 className="text-lg font-semibold group-hover:text-primary transition-colors">
+                    {module.module_name}
+                  </h3>
+                </div>
+              ))
+            )}
           </div>
         </main>
       </div>

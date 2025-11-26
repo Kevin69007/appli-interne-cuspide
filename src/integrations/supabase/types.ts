@@ -1628,6 +1628,54 @@ export type Database = {
           },
         ]
       }
+      module_visibility: {
+        Row: {
+          created_at: string | null
+          display_order: number | null
+          icon: string
+          id: string
+          is_enabled: boolean | null
+          is_external: boolean | null
+          module_key: string
+          module_name: string
+          path: string
+          updated_at: string | null
+          visible_to_admin: boolean | null
+          visible_to_manager: boolean | null
+          visible_to_user: boolean | null
+        }
+        Insert: {
+          created_at?: string | null
+          display_order?: number | null
+          icon: string
+          id?: string
+          is_enabled?: boolean | null
+          is_external?: boolean | null
+          module_key: string
+          module_name: string
+          path: string
+          updated_at?: string | null
+          visible_to_admin?: boolean | null
+          visible_to_manager?: boolean | null
+          visible_to_user?: boolean | null
+        }
+        Update: {
+          created_at?: string | null
+          display_order?: number | null
+          icon?: string
+          id?: string
+          is_enabled?: boolean | null
+          is_external?: boolean | null
+          module_key?: string
+          module_name?: string
+          path?: string
+          updated_at?: string | null
+          visible_to_admin?: boolean | null
+          visible_to_manager?: boolean | null
+          visible_to_user?: boolean | null
+        }
+        Relationships: []
+      }
       monthly_scores: {
         Row: {
           annee: number
