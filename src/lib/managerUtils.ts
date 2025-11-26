@@ -68,6 +68,10 @@ export const getOverdueTasksForManagedEmployees = async (
 
   const employeeIds = managedEmployees.map(e => e.id);
 
+  // Date du jour à minuit (00:00:00) pour ne considérer en retard que les tâches d'avant aujourd'hui
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
   // Puis récupérer leurs tâches en retard
   const { data, error } = await supabase
     .from("tasks")
@@ -87,7 +91,7 @@ export const getOverdueTasksForManagedEmployees = async (
     `)
     .in("assigned_to", employeeIds)
     .in("statut", ["en_cours", "a_faire"])
-    .lt("date_echeance", new Date().toISOString())
+    .lt("date_echeance", today.toISOString())
     .order("date_echeance");
 
   if (error) {
@@ -97,9 +101,10 @@ export const getOverdueTasksForManagedEmployees = async (
 
   const tasks: OverdueTask[] = (data || []).map((task: any) => {
     const dateEcheance = new Date(task.date_echeance);
-    const now = new Date();
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
     const joursRetard = Math.floor(
-      (now.getTime() - dateEcheance.getTime()) / (1000 * 60 * 60 * 24)
+      (today.getTime() - dateEcheance.getTime()) / (1000 * 60 * 60 * 24)
     );
 
     return {

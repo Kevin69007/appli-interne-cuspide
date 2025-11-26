@@ -8,6 +8,7 @@ import { CheckCircle2, Circle, Clock, MessageSquare, Calendar, Bell, Plus, Info 
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { isPast, isToday } from "date-fns";
 import { TaskDetailsDialog } from "./TaskDetailsDialog";
 import { BoomerangTimer } from "./BoomerangTimer";
 import { QuickSubTasksPanel } from "./QuickSubTasksPanel";
@@ -318,9 +319,10 @@ export const TaskCard = ({ task, currentEmployeeId, onUpdate, isHelpRequest, isM
     );
   };
 
-  const isOverdue = new Date(task.date_echeance) < new Date() && task.statut !== "terminee";
+  const taskDate = new Date(task.date_echeance);
+  const isOverdue = isPast(taskDate) && !isToday(taskDate) && task.statut !== "terminee";
   const daysUntilDue = Math.ceil(
-    (new Date(task.date_echeance).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
+    (taskDate.getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24)
   );
 
   return (
