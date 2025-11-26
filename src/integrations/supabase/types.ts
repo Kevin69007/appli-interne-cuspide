@@ -1870,6 +1870,7 @@ export type Database = {
           id: string
           lu: boolean | null
           message: string | null
+          statut: string | null
           titre: string
           type: string
           url: string | null
@@ -1880,6 +1881,7 @@ export type Database = {
           id?: string
           lu?: boolean | null
           message?: string | null
+          statut?: string | null
           titre: string
           type: string
           url?: string | null
@@ -1890,6 +1892,7 @@ export type Database = {
           id?: string
           lu?: boolean | null
           message?: string | null
+          statut?: string | null
           titre?: string
           type?: string
           url?: string | null
