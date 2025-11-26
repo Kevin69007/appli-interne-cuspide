@@ -12,6 +12,7 @@ import { isPast, isToday } from "date-fns";
 import { TaskDetailsDialog } from "./TaskDetailsDialog";
 import { BoomerangTimer } from "./BoomerangTimer";
 import { QuickSubTasksPanel } from "./QuickSubTasksPanel";
+import { EmployeeAvatar } from "@/components/ui/employee-avatar";
 
 interface TaskCardProps {
   task: any;
@@ -373,6 +374,20 @@ export const TaskCard = ({ task, currentEmployeeId, onUpdate, isHelpRequest, isM
                   )}
                 </span>
               </div>
+
+              {task.assigned_employee && (
+                <div className="flex items-center gap-2">
+                  <EmployeeAvatar
+                    photoUrl={task.assigned_employee.photo_url}
+                    nom={task.assigned_employee.nom}
+                    prenom={task.assigned_employee.prenom}
+                    size="sm"
+                  />
+                  <span className="text-sm text-muted-foreground">
+                    {task.assigned_employee.prenom}
+                  </span>
+                </div>
+              )}
 
               {task.commentaires?.length > 0 && (
                 <div className="flex items-center gap-1 text-sm text-muted-foreground">

@@ -3,12 +3,13 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
-import { Calendar, User, AlertCircle, Pencil } from "lucide-react";
+import { Calendar, AlertCircle, Pencil } from "lucide-react";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";
 import { useUserRole } from "@/hooks/useUserRole";
 import { EditProjectDialog } from "./EditProjectDialog";
+import { EmployeeAvatar } from "@/components/ui/employee-avatar";
 
 interface ProjectCardProps {
   project: {
@@ -20,7 +21,7 @@ interface ProjectCardProps {
     progression: number;
     is_priority: boolean;
     responsable_id: string;
-    responsable?: { nom: string; prenom: string };
+    responsable?: { nom: string; prenom: string; photo_url?: string };
   };
   onUpdate: () => void;
   currentEmployeeId: string | null;
@@ -129,7 +130,12 @@ export const ProjectCard = memo(({ project, onUpdate, currentEmployeeId }: Proje
 
         {project.responsable && (
           <div className="flex items-center gap-2 text-sm text-muted-foreground pt-2 border-t">
-            <User className="h-4 w-4" />
+            <EmployeeAvatar
+              photoUrl={project.responsable.photo_url}
+              nom={project.responsable.nom}
+              prenom={project.responsable.prenom}
+              size="sm"
+            />
             <span>
               {project.responsable.prenom} {project.responsable.nom}
             </span>
