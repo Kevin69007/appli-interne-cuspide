@@ -180,12 +180,12 @@ export const MoodBarWidget = ({ onVoted }: { onVoted?: (voted: boolean) => void 
 
   if (showResult && selectedMood) {
     return (
-      <Card className="p-8 text-center space-y-6 bg-gradient-to-br from-primary/5 to-secondary/5 border-2 border-primary/20 animate-fade-in">
+      <Card variant="glass" className="p-8 text-center space-y-6 animate-fade-in hover-3d">
         <div className="flex justify-center">
           <img
             src={moodGifs[selectedMood]}
             alt="Mood animation"
-            className="w-64 h-48 object-cover rounded-lg shadow-lg"
+            className="w-64 h-48 object-cover rounded-lg shadow-2xl shadow-primary/30"
           />
         </div>
         
@@ -216,11 +216,11 @@ export const MoodBarWidget = ({ onVoted }: { onVoted?: (voted: boolean) => void 
   }
 
   return (
-    <Card className="p-8 space-y-6 bg-gradient-to-br from-primary/5 to-secondary/5 border-2 border-primary/20 animate-fade-in">
+    <Card variant="glass" className="p-8 space-y-6 animate-fade-in hover-3d">
       <div className="text-center space-y-2">
         <div className="flex items-center justify-center gap-2">
-          <Sparkles className="w-6 h-6 text-primary animate-pulse" />
-          <h2 className="text-2xl font-bold text-foreground">
+          <Sparkles className="w-6 h-6 text-primary animate-glow" />
+          <h2 className="text-2xl font-display font-bold text-foreground">
             Donne-nous ton état d'esprit du jour !
           </h2>
         </div>
@@ -300,9 +300,10 @@ export const MoodBarWidget = ({ onVoted }: { onVoted?: (voted: boolean) => void 
 
         {selectedMood && selectedNeed && (
           <Button
+            variant="gradient"
             onClick={handleSubmit}
             disabled={submitting}
-            className="w-full animate-fade-in"
+            className="w-full animate-fade-in font-display"
             size="lg"
           >
             {submitting ? "Enregistrement..." : "Valider mon humeur 🎉"}
