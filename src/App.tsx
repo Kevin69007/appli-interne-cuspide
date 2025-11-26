@@ -3,6 +3,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
 import ErrorBoundary from "@/components/ErrorBoundary";
+import { ThemeProvider } from "@/components/ThemeProvider";
 import { useEffect } from "react";
 import "@/locales";
 import Index from "./pages/Index";
@@ -61,10 +62,11 @@ const App = () => {
   return (
     <ErrorBoundary>
       <QueryClientProvider client={queryClient}>
-        <Toaster />
-        <BrowserRouter>
-          <AuthProvider>
-          <Routes>
+        <ThemeProvider defaultTheme="light" storageKey="tutti-ui-theme">
+          <Toaster />
+          <BrowserRouter>
+            <AuthProvider>
+            <Routes>
             <Route path="/" element={<Index />} />
             <Route path="/auth" element={<Auth />} />
             <Route path="/fiches-de-poste" element={<JobDocuments />} />
@@ -95,11 +97,12 @@ const App = () => {
           <Route path="/reunions/admin" element={<AdminReunions />} />
           <Route path="/calendrier-projets" element={<CalendrierProjets />} />
           <Route path="*" element={<NotFound />} />
-          </Routes>
-        </AuthProvider>
-      </BrowserRouter>
-    </QueryClientProvider>
-  </ErrorBoundary>
+            </Routes>
+          </AuthProvider>
+        </BrowserRouter>
+        </ThemeProvider>
+      </QueryClientProvider>
+    </ErrorBoundary>
   );
 };
 

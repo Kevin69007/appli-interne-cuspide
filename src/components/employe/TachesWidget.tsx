@@ -96,20 +96,27 @@ export const TachesWidget = ({ onDataLoaded }: { onDataLoaded?: (hasData: boolea
 
   return (
     <Card 
-      className="p-6 cursor-pointer hover:shadow-lg transition-shadow"
+      variant="glass"
+      className="p-6 cursor-pointer hover-3d transition-all duration-300 animate-fade-in group"
       onClick={() => navigate("/taches")}
     >
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
-          <CheckSquare className="h-5 w-5 text-primary" />
-          <h3 className="text-lg font-semibold">{t('employee.tasks.myTasks')}</h3>
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+            <CheckSquare className="h-5 w-5 text-white" />
+          </div>
+          <h3 className="text-lg font-display font-semibold">{t('employee.tasks.myTasks')}</h3>
         </div>
-        <ChevronRight className="h-5 w-5 text-muted-foreground" />
+        <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:translate-x-1 transition-transform" />
       </div>
 
       <div className="space-y-2">
-        {tasks.map((task) => (
-          <div key={task.id} className="flex items-center gap-2 p-2 rounded border">
+        {tasks.map((task, idx) => (
+          <div 
+            key={task.id} 
+            className="flex items-center gap-2 p-3 rounded-lg glass border border-border/50 hover:border-primary/50 transition-all duration-300 animate-fade-in"
+            style={{ animationDelay: `${idx * 100}ms` }}
+          >
               <Checkbox
                 checked={task.statut === "terminee"}
                 onCheckedChange={() => toggleTaskStatus(task.id, task.statut)}

@@ -65,24 +65,30 @@ export const AgendaWidget = () => {
 
   return (
     <Card 
-      className="p-6 cursor-pointer hover:shadow-lg transition-shadow"
+      variant="glass"
+      className="p-6 cursor-pointer hover-3d transition-all duration-300 animate-fade-in group"
       onClick={() => navigate("/agenda")}
     >
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-3">
-          <Calendar className="h-5 w-5 text-primary" />
-          <h3 className="text-lg font-semibold">{t('employee.agenda.title')}</h3>
+          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+            <Calendar className="h-5 w-5 text-white" />
+          </div>
+          <h3 className="text-lg font-display font-semibold">{t('employee.agenda.title')}</h3>
         </div>
-        <ChevronRight className="h-5 w-5 text-muted-foreground" />
+        <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:translate-x-1 transition-transform" />
       </div>
 
       <div className="mb-4">
-        <div className="text-center p-4 bg-primary/5 rounded-lg border border-primary/20">
-          <div className="text-3xl font-bold text-primary">
-            {format(today, "dd", { locale: fr })}
-          </div>
-          <div className="text-sm text-muted-foreground uppercase">
-            {format(today, "MMMM yyyy", { locale: fr })}
+        <div className="relative text-center p-6 glass rounded-xl border border-primary/30 overflow-hidden group-hover:border-primary/50 transition-colors">
+          <div className="absolute inset-0 bg-gradient-to-br from-primary/10 to-accent/10 opacity-0 group-hover:opacity-100 transition-opacity" />
+          <div className="relative">
+            <div className="text-5xl font-display font-bold text-primary mb-2 animate-scale-in">
+              {format(today, "dd", { locale: fr })}
+            </div>
+            <div className="text-sm text-muted-foreground uppercase tracking-wider">
+              {format(today, "MMMM yyyy", { locale: fr })}
+            </div>
           </div>
         </div>
       </div>
@@ -95,9 +101,13 @@ export const AgendaWidget = () => {
             {t('employee.agenda.noEvents')}
           </p>
         ) : (
-          todayEvents.map((event) => (
-            <div key={event.id} className="flex items-center gap-3 p-3 rounded-lg border bg-card">
-              <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0" />
+          todayEvents.map((event, idx) => (
+            <div 
+              key={event.id} 
+              className="flex items-center gap-3 p-3 rounded-lg glass border border-border/50 hover:border-primary/50 transition-all duration-300 animate-fade-in"
+              style={{ animationDelay: `${idx * 100}ms` }}
+            >
+              <div className="w-2 h-2 rounded-full bg-primary flex-shrink-0 animate-pulse" />
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium truncate">
                   {event.detail || event.type}

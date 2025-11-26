@@ -10,6 +10,8 @@ import { InfosImportantesWidget } from "@/components/employe/InfosImportantesWid
 import { TachesPrioritairesWidget } from "@/components/employe/TachesPrioritairesWidget";
 import { MoodBarWidget } from "@/components/employe/MoodBarWidget";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
+import { ThemeToggle } from "@/components/ThemeToggle";
+import { AnimatedBackground } from "@/components/AnimatedBackground";
 import { useModuleVisibility } from "@/hooks/useModuleVisibility";
 
 const Index = () => {
@@ -47,8 +49,9 @@ const Index = () => {
     const showMoodBar = !hasVotedMood && widgetsWithData < 3;
 
     return (
-      <div className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-accent/10">
-        <header className="glass border-b border-border/50 sticky top-0 z-50">
+      <div className="min-h-screen">
+        <AnimatedBackground />
+        <header className="glass border-b border-border/50 sticky top-0 z-50 backdrop-blur-xl">
           <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 bg-gradient-to-br from-primary to-accent rounded-xl flex items-center justify-center animate-pulse-glow">
@@ -60,6 +63,7 @@ const Index = () => {
             </div>
             <div className="flex items-center gap-4">
               <span className="text-sm text-muted-foreground">{user.email}</span>
+              <ThemeToggle />
               <LanguageSwitcher />
               <button
                 onClick={() => navigate("/auth")}
@@ -145,8 +149,9 @@ const Index = () => {
 
   // Landing page pour utilisateurs non authentifiés
   return (
-    <div className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-accent/10 flex items-center justify-center">
-      <div className="max-w-2xl mx-auto px-6 text-center">
+    <div className="min-h-screen flex items-center justify-center">
+      <AnimatedBackground />
+      <div className="max-w-2xl mx-auto px-6 text-center relative z-10">
         <div className="mb-8 flex justify-center animate-fade-in-up">
           <div className="w-20 h-20 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center animate-float shadow-2xl shadow-primary/40">
             <Sparkles className="w-12 h-12 text-white" />
