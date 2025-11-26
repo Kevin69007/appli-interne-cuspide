@@ -165,58 +165,58 @@ export const TaskFilters = ({ onFilterChange, taskCount }: TaskFiltersProps) => 
   };
 
   return (
-    <Card className="p-4 mb-6 bg-accent/50">
+    <Card className="p-3 sm:p-4 mb-4 sm:mb-6 bg-accent/50">
       {/* Quick Filter Presets */}
-      <div className="flex flex-wrap gap-2 mb-4">
+      <div className="flex overflow-x-auto gap-2 mb-3 sm:mb-4 pb-2 -mx-3 px-3 sm:mx-0 sm:px-0 sm:flex-wrap scrollbar-thin">
         <Button
           variant="outline"
           size="sm"
           onClick={() => applyPreset("urgent")}
-          className="text-xs"
+          className="text-xs shrink-0"
         >
-          <Flame className="h-3 w-3 mr-1" />
-          Urgentes
+          <Flame className="h-3 w-3 sm:mr-1" />
+          <span className="hidden sm:inline">Urgentes</span>
         </Button>
         <Button
           variant="outline"
           size="sm"
           onClick={() => applyPreset("overdue")}
-          className="text-xs"
+          className="text-xs shrink-0"
         >
-          <Clock className="h-3 w-3 mr-1" />
-          En retard
+          <Clock className="h-3 w-3 sm:mr-1" />
+          <span className="hidden sm:inline">En retard</span>
         </Button>
         <Button
           variant="outline"
           size="sm"
           onClick={() => applyPreset("today")}
-          className="text-xs"
+          className="text-xs shrink-0"
         >
-          <Target className="h-3 w-3 mr-1" />
-          Aujourd'hui
+          <Target className="h-3 w-3 sm:mr-1" />
+          <span className="hidden sm:inline">Aujourd'hui</span>
         </Button>
         <Button
           variant="outline"
           size="sm"
           onClick={() => applyPreset("thisWeek")}
-          className="text-xs"
+          className="text-xs shrink-0"
         >
-          <CalendarCheck className="h-3 w-3 mr-1" />
-          Cette semaine
+          <CalendarCheck className="h-3 w-3 sm:mr-1" />
+          <span className="hidden sm:inline">Semaine</span>
         </Button>
         <Button
           variant="outline"
           size="sm"
           onClick={() => applyPreset("completed")}
-          className="text-xs"
+          className="text-xs shrink-0"
         >
-          <CheckCircle2 className="h-3 w-3 mr-1" />
-          Terminées récemment
+          <CheckCircle2 className="h-3 w-3 sm:mr-1" />
+          <span className="hidden sm:inline">Terminées</span>
         </Button>
       </div>
 
       {/* Main Filters */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-3 sm:mb-4">
         {/* Search */}
         <div className="space-y-2">
           <Label htmlFor="search" className="text-xs">Recherche</Label>
@@ -366,32 +366,34 @@ export const TaskFilters = ({ onFilterChange, taskCount }: TaskFiltersProps) => 
       )}
 
       {/* Bottom Bar: Active Filters + Reset */}
-      <div className="flex items-center justify-between pt-3 border-t gap-4 flex-wrap">
+      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pt-3 border-t gap-3 sm:gap-4">
         <div className="flex items-center gap-2 flex-wrap">
           {activeFilterCount > 0 && (
             <Badge variant="secondary" className="text-xs">
-              🔍 {activeFilterCount} filtre{activeFilterCount > 1 ? "s" : ""} actif{activeFilterCount > 1 ? "s" : ""}
+              🔍 {activeFilterCount} filtre{activeFilterCount > 1 ? "s" : ""}
             </Badge>
           )}
           <span className="text-xs text-muted-foreground">
-            {taskCount.filtered} sur {taskCount.total} tâche{taskCount.total > 1 ? "s" : ""}
+            {taskCount.filtered} / {taskCount.total} tâche{taskCount.total > 1 ? "s" : ""}
           </span>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 w-full sm:w-auto">
           <Button 
             variant="default" 
             size="sm" 
             onClick={applyFilters}
             disabled={!hasUnappliedChanges}
-            className="gap-1"
+            className="gap-1 flex-1 sm:flex-none"
           >
             <Search className="h-3 w-3" />
-            Rechercher
+            <span className="hidden sm:inline">Rechercher</span>
+            <span className="sm:hidden">OK</span>
           </Button>
           {activeFilterCount > 0 && (
-            <Button variant="ghost" size="sm" onClick={resetFilters} className="gap-1">
+            <Button variant="ghost" size="sm" onClick={resetFilters} className="gap-1 flex-1 sm:flex-none">
               <X className="h-3 w-3" />
-              Réinitialiser
+              <span className="hidden sm:inline">Réinitialiser</span>
+              <span className="sm:hidden">Reset</span>
             </Button>
           )}
         </div>

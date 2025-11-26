@@ -52,35 +52,38 @@ const Index = () => {
       <div className="min-h-screen">
         <AnimatedBackground />
         <header className="glass border-b border-border/50 sticky top-0 z-50 backdrop-blur-xl">
-          <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="w-10 h-10 bg-gradient-to-br from-primary to-accent rounded-xl flex items-center justify-center animate-pulse-glow">
-                <Sparkles className="w-6 h-6 text-white" />
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-primary to-accent rounded-xl flex items-center justify-center animate-pulse-glow shrink-0">
+                <Sparkles className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
               </div>
-              <h1 className="text-2xl font-display font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
+              <h1 className="text-lg sm:text-2xl font-display font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                 {t('appName')}
               </h1>
             </div>
-            <div className="flex items-center gap-4">
-              <span className="text-sm text-muted-foreground">{user.email}</span>
+            <div className="flex items-center gap-2 sm:gap-4">
+              <span className="hidden md:inline-block text-sm text-muted-foreground truncate max-w-[150px] lg:max-w-none">{user.email}</span>
               <ThemeToggle />
-              <LanguageSwitcher />
+              <div className="hidden sm:block">
+                <LanguageSwitcher />
+              </div>
               <button
                 onClick={() => navigate("/auth")}
-                className="px-4 py-2 border border-border rounded-lg hover:bg-accent/10 transition-colors"
+                className="px-3 py-2 sm:px-4 text-xs sm:text-sm border border-border rounded-lg hover:bg-accent/10 transition-colors shrink-0"
               >
-                {t('logout')}
+                <span className="hidden sm:inline">{t('logout')}</span>
+                <span className="sm:hidden">↗</span>
               </button>
             </div>
           </div>
         </header>
 
-        <main className="max-w-7xl mx-auto px-6 py-12">
-          <div className="text-center mb-12 animate-fade-in-up">
-            <h2 className="text-4xl font-display font-bold mb-4 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
+        <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-12">
+          <div className="text-center mb-8 sm:mb-12 animate-fade-in-up">
+            <h2 className="text-2xl sm:text-4xl font-display font-bold mb-3 sm:mb-4 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
               {t('welcome')}
             </h2>
-            <p className="text-muted-foreground text-lg font-sans">
+            <p className="text-muted-foreground text-base sm:text-lg font-sans">
               {t('tagline')}
             </p>
           </div>
@@ -88,17 +91,17 @@ const Index = () => {
           {/* Widgets rapides - Layout intelligent */}
           {widgetsWithData === 0 && showMoodBar ? (
             // Cas 1: Aucun widget avec données → MoodBar en héros
-            <div className="max-w-3xl mx-auto mb-12">
+            <div className="max-w-3xl mx-auto mb-8 sm:mb-12">
               <MoodBarWidget onVoted={setHasVotedMood} />
             </div>
           ) : (
             // Cas 2 & 3: Au moins 1 widget avec données
-            <div className={`grid gap-6 mb-12 ${
+            <div className={`grid gap-4 sm:gap-6 mb-8 sm:mb-12 ${
               widgetsWithData >= 3 
-                ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4' 
+                ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4' 
                 : showMoodBar 
                   ? 'grid-cols-1 lg:grid-cols-2'
-                  : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
+                  : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
             }`}>
               <AgendaWidget />
               <TachesWidget onDataLoaded={setHasTasks} />
@@ -114,7 +117,7 @@ const Index = () => {
           )}
 
           {/* Modules de navigation */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {modulesLoading ? (
               <div className="col-span-full text-center py-8 text-muted-foreground">
                 {t('loading')}
@@ -130,12 +133,12 @@ const Index = () => {
                       navigate(module.path);
                     }
                   }}
-                  className="group glass-hover p-6 rounded-xl cursor-pointer hover-3d animate-fade-in"
+                  className="group glass-hover p-4 sm:p-6 rounded-xl cursor-pointer hover-3d animate-fade-in"
                 >
-                  <div className="text-4xl mb-4 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+                  <div className="text-3xl sm:text-4xl mb-3 sm:mb-4 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
                     {module.icon}
                   </div>
-                  <h3 className="text-lg font-display font-semibold group-hover:text-primary transition-colors">
+                  <h3 className="text-base sm:text-lg font-display font-semibold group-hover:text-primary transition-colors line-clamp-2">
                     {module.module_name}
                   </h3>
                 </div>
@@ -151,21 +154,21 @@ const Index = () => {
   return (
     <div className="min-h-screen flex items-center justify-center">
       <AnimatedBackground />
-      <div className="max-w-2xl mx-auto px-6 text-center relative z-10">
-        <div className="mb-8 flex justify-center animate-fade-in-up">
-          <div className="w-20 h-20 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center animate-float shadow-2xl shadow-primary/40">
-            <Sparkles className="w-12 h-12 text-white" />
+      <div className="max-w-2xl mx-auto px-4 sm:px-6 text-center relative z-10">
+        <div className="mb-6 sm:mb-8 flex justify-center animate-fade-in-up">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center animate-float shadow-2xl shadow-primary/40">
+            <Sparkles className="w-10 h-10 sm:w-12 sm:h-12 text-white" />
           </div>
         </div>
-        <h1 className="text-5xl font-display font-bold mb-6 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent animate-fade-in-up animation-delay-100">
+        <h1 className="text-3xl sm:text-5xl font-display font-bold mb-4 sm:mb-6 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent animate-fade-in-up animation-delay-100">
           {t('welcome')}
         </h1>
-        <p className="text-xl text-muted-foreground mb-8 font-sans animate-fade-in-up animation-delay-200">
+        <p className="text-lg sm:text-xl text-muted-foreground mb-6 sm:mb-8 font-sans animate-fade-in-up animation-delay-200">
           {t('tagline')}
         </p>
         <button
           onClick={() => navigate("/auth")}
-          className="bg-gradient-to-r from-primary to-accent hover:shadow-2xl hover:shadow-primary/50 text-white font-display font-semibold px-8 py-4 rounded-lg text-lg transition-all duration-300 hover:-translate-y-1 active:scale-95 animate-fade-in-up animation-delay-300"
+          className="bg-gradient-to-r from-primary to-accent hover:shadow-2xl hover:shadow-primary/50 text-white font-display font-semibold px-6 py-3 sm:px-8 sm:py-4 rounded-lg text-base sm:text-lg transition-all duration-300 hover:-translate-y-1 active:scale-95 animate-fade-in-up animation-delay-300 w-full sm:w-auto"
         >
           {t('auth:signIn')}
         </button>

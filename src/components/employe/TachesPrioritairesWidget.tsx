@@ -145,19 +145,20 @@ export const TachesPrioritairesWidget = ({ onDataLoaded }: { onDataLoaded?: (has
 
   return (
     <Card
-      className="p-6 cursor-pointer hover:shadow-lg transition-shadow"
+      variant="glass"
+      className="p-4 sm:p-6 cursor-pointer hover:shadow-lg transition-shadow hover-3d animate-fade-in"
       onClick={(e) => {
         if (!(e.target as HTMLElement).closest("button, input")) {
           navigate("/taches");
         }
       }}
     >
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="font-semibold text-lg flex items-center gap-2">
-          <AlertTriangle className="h-5 w-5 text-orange-500" />
-          {t('employee.priorityTasks.title')}
+      <div className="flex items-center justify-between mb-3 sm:mb-4">
+        <h3 className="font-semibold text-base sm:text-lg font-display flex items-center gap-2">
+          <AlertTriangle className="h-4 w-4 sm:h-5 sm:w-5 text-orange-500" />
+          <span className="line-clamp-1">{t('employee.priorityTasks.title')}</span>
         </h3>
-        <Badge variant="destructive">🔥 {tasks.length}</Badge>
+        <Badge variant="destructive" className="shrink-0">🔥 {tasks.length}</Badge>
       </div>
 
       <div className="space-y-3">
@@ -172,15 +173,16 @@ export const TachesPrioritairesWidget = ({ onDataLoaded }: { onDataLoaded?: (has
             return (
               <div
                 key={task.id}
-                className={`p-3 border rounded-lg ${
-                  showWarning ? "border-orange-300 bg-orange-50" : "border-border"
+                className={`p-2 sm:p-3 border rounded-lg glass border-border/50 hover:border-primary/50 transition-all animate-fade-in ${
+                  showWarning ? "border-orange-300 bg-orange-50 dark:bg-orange-950/20" : ""
                 }`}
+                style={{ animationDelay: `${tasks.indexOf(task) * 100}ms` }}
               >
                 <div className="flex items-start justify-between gap-2 mb-2">
-                  <div className="flex-1">
-                    <p className="font-medium text-sm">{task.titre}</p>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-medium text-xs sm:text-sm line-clamp-2">{task.titre}</p>
                     {projectInfo && !Array.isArray(projectInfo) && (
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-xs text-muted-foreground truncate">
                         {t('employee.priorityTasks.project')}: {projectInfo.titre}
                       </p>
                     )}
@@ -189,8 +191,8 @@ export const TachesPrioritairesWidget = ({ onDataLoaded }: { onDataLoaded?: (has
                     </p>
                   </div>
                   {showWarning && (
-                    <Badge variant="outline" className="text-xs bg-orange-100 border-orange-300">
-                      ⚠️ {t('employee.priorityTasks.needsUpdate')}
+                    <Badge variant="outline" className="text-xs bg-orange-100 border-orange-300 dark:bg-orange-950 shrink-0 hidden sm:flex">
+                      ⚠️ <span className="hidden lg:inline ml-1">{t('employee.priorityTasks.needsUpdate')}</span>
                     </Badge>
                   )}
                 </div>
@@ -199,22 +201,23 @@ export const TachesPrioritairesWidget = ({ onDataLoaded }: { onDataLoaded?: (has
                   <Button
                     size="sm"
                     variant="outline"
-                    className="w-full mt-2"
+                    className="w-full mt-2 h-8 text-xs"
                     onClick={(e) => {
                       e.stopPropagation();
                       setCommentingTaskId(task.id);
                     }}
                   >
-                    <MessageSquare className="h-3 w-3 mr-2" />
-                    {t('employee.priorityTasks.addProgress')}
+                    <MessageSquare className="h-3 w-3 mr-1 sm:mr-2" />
+                    <span className="hidden sm:inline">{t('employee.priorityTasks.addProgress')}</span>
+                    <span className="sm:hidden">Progression</span>
                   </Button>
                 ) : (
-                  <div className="mt-2 flex gap-2" onClick={(e) => e.stopPropagation()}>
+                  <div className="mt-2 flex flex-col sm:flex-row gap-2" onClick={(e) => e.stopPropagation()}>
                     <Input
                       placeholder={t('employee.priorityTasks.progressPlaceholder')}
                       value={comment}
                       onChange={(e) => setComment(e.target.value)}
-                      className="h-8 text-sm"
+                      className="h-8 text-xs sm:text-sm flex-1"
                       onKeyDown={(e) => {
                         if (e.key === "Enter") {
                           handleAddComment(task.id);
@@ -225,7 +228,7 @@ export const TachesPrioritairesWidget = ({ onDataLoaded }: { onDataLoaded?: (has
                       size="sm"
                       onClick={() => handleAddComment(task.id)}
                       disabled={!comment.trim()}
-                      className="h-8"
+                      className="h-8 w-full sm:w-auto"
                     >
                       <Send className="h-3 w-3" />
                     </Button>

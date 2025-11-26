@@ -199,18 +199,18 @@ const Taches = () => {
   const totalFiltered = filteredTasks.length + filteredBoomerangsSent.length + filteredBoomerangsReceived.length;
 
   return (
-    <div className="min-h-screen bg-background p-4">
+    <div className="min-h-screen bg-background p-2 sm:p-4">
       <div className="max-w-6xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
-              <ArrowLeft className="h-5 w-5" />
+        <div className="flex items-center justify-between mb-4 sm:mb-6 gap-2">
+          <div className="flex items-center gap-2 sm:gap-4 min-w-0">
+            <Button variant="ghost" size="icon" onClick={() => navigate("/")} className="shrink-0">
+              <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
             </Button>
-            <h1 className="text-3xl font-bold">{t('title')}</h1>
+            <h1 className="text-xl sm:text-3xl font-bold font-display truncate">{t('title')}</h1>
           </div>
-          <Button onClick={() => setShowCreateDialog(true)}>
-            <Plus className="h-4 w-4 mr-2" />
-            {t('createTask')}
+          <Button onClick={() => setShowCreateDialog(true)} size="sm" className="shrink-0">
+            <Plus className="h-4 w-4 sm:mr-2" />
+            <span className="hidden sm:inline">{t('createTask')}</span>
           </Button>
         </div>
 
@@ -223,15 +223,21 @@ const Taches = () => {
         />
 
         <Tabs defaultValue="my-tasks" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
-            <TabsTrigger value="my-tasks">
-              {t('tabs.myTasks')} ({filteredTasks.length})
+          <TabsList className="grid w-full grid-cols-3 h-auto">
+            <TabsTrigger value="my-tasks" className="text-xs sm:text-sm px-2 py-2">
+              <span className="hidden sm:inline">{t('tabs.myTasks')}</span>
+              <span className="sm:hidden">Mes tâches</span>
+              <span className="ml-1">({filteredTasks.length})</span>
             </TabsTrigger>
-            <TabsTrigger value="boomerangs-sent">
-              🪃 {t('tabs.boomerangsSent')} ({filteredBoomerangsSent.length})
+            <TabsTrigger value="boomerangs-sent" className="text-xs sm:text-sm px-2 py-2">
+              🪃 <span className="hidden sm:inline">{t('tabs.boomerangsSent')}</span>
+              <span className="sm:hidden">Envoyés</span>
+              <span className="ml-1">({filteredBoomerangsSent.length})</span>
             </TabsTrigger>
-            <TabsTrigger value="boomerangs-received">
-              🪃 {t('tabs.boomerangsReceived')} ({filteredBoomerangsReceived.length})
+            <TabsTrigger value="boomerangs-received" className="text-xs sm:text-sm px-2 py-2">
+              🪃 <span className="hidden sm:inline">{t('tabs.boomerangsReceived')}</span>
+              <span className="sm:hidden">Reçus</span>
+              <span className="ml-1">({filteredBoomerangsReceived.length})</span>
             </TabsTrigger>
           </TabsList>
 
