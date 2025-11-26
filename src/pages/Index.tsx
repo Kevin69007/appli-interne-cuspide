@@ -14,6 +14,9 @@ import { ThemeToggle } from "@/components/ThemeToggle";
 import { AnimatedBackground } from "@/components/AnimatedBackground";
 import { useModuleVisibility } from "@/hooks/useModuleVisibility";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
+import { EmployeeAvatar } from "@/components/ui/employee-avatar";
+import { useQuery } from "@tanstack/react-query";
+import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
   const { user, loading } = useAuth();
@@ -32,6 +35,21 @@ const Index = () => {
       console.log("User authenticated:", user.email);
     }
   }, [user, loading]);
+
+  // Fetch current employee data including photo
+  const { data: currentEmployee } = useQuery({
+    queryKey: ['current-employee', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
+      const { data } = await supabase
+        .from('employees')
+        .select('id, nom, prenom, photo_url')
+        .eq('user_id', user.id)
+        .maybeSingle();
+      return data;
+    },
+    enabled: !!user?.id,
+  });
 
   if (loading) {
     return (
@@ -65,6 +83,14 @@ const Index = () => {
             <div className="flex items-center gap-2 sm:gap-4">
               <span className="hidden md:inline-block text-sm text-muted-foreground truncate max-w-[150px] lg:max-w-none">{user.email}</span>
               <NotificationBell />
+              {currentEmployee && (
+                <EmployeeAvatar
+                  photoUrl={currentEmployee.photo_url}
+                  nom={currentEmployee.nom}
+                  prenom={currentEmployee.prenom}
+                  size="md"
+                />
+              )}
               <ThemeToggle />
               <div className="hidden sm:block">
                 <LanguageSwitcher />

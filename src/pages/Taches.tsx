@@ -29,9 +29,9 @@ interface Task {
   rappels: any;
   created_at: string;
   updated_at: string;
-  assigned_employee?: { nom: string; prenom: string };
-  creator_employee?: { nom: string; prenom: string };
-  dependency_employee?: { nom: string; prenom: string };
+  assigned_employee?: { nom: string; prenom: string; photo_url?: string };
+  creator_employee?: { nom: string; prenom: string; photo_url?: string };
+  dependency_employee?: { nom: string; prenom: string; photo_url?: string };
 }
 
 const Taches = () => {
@@ -102,8 +102,8 @@ const Taches = () => {
           .from("tasks")
           .select(`
             *,
-            assigned_employee:employees!tasks_assigned_to_fkey(nom, prenom),
-            creator_employee:employees!tasks_created_by_fkey(nom, prenom)
+            assigned_employee:employees!tasks_assigned_to_fkey(nom, prenom, photo_url),
+            creator_employee:employees!tasks_created_by_fkey(nom, prenom, photo_url)
           `)
           .eq("assigned_to", currentEmployeeId)
           .eq("boomerang_active", false)
@@ -115,9 +115,9 @@ const Taches = () => {
           .from("tasks")
           .select(`
             *,
-            assigned_employee:employees!tasks_assigned_to_fkey(nom, prenom),
-            creator_employee:employees!tasks_created_by_fkey(nom, prenom),
-            boomerang_holder:employees!tasks_boomerang_current_holder_fkey(nom, prenom)
+            assigned_employee:employees!tasks_assigned_to_fkey(nom, prenom, photo_url),
+            creator_employee:employees!tasks_created_by_fkey(nom, prenom, photo_url),
+            boomerang_holder:employees!tasks_boomerang_current_holder_fkey(nom, prenom, photo_url)
           `)
           .eq("boomerang_original_owner", currentEmployeeId)
           .eq("boomerang_active", true)
@@ -128,9 +128,9 @@ const Taches = () => {
           .from("tasks")
           .select(`
             *,
-            assigned_employee:employees!tasks_assigned_to_fkey(nom, prenom),
-            creator_employee:employees!tasks_created_by_fkey(nom, prenom),
-            boomerang_owner:employees!tasks_boomerang_original_owner_fkey(nom, prenom)
+            assigned_employee:employees!tasks_assigned_to_fkey(nom, prenom, photo_url),
+            creator_employee:employees!tasks_created_by_fkey(nom, prenom, photo_url),
+            boomerang_owner:employees!tasks_boomerang_original_owner_fkey(nom, prenom, photo_url)
           `)
           .eq("boomerang_current_holder", currentEmployeeId)
           .eq("boomerang_active", true)

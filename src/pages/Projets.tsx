@@ -20,7 +20,7 @@ interface Project {
   is_priority: boolean;
   responsable_id: string;
   created_at: string;
-  responsable?: { nom: string; prenom: string };
+  responsable?: { nom: string; prenom: string; photo_url?: string };
 }
 
 const Projets = () => {
@@ -65,7 +65,7 @@ const Projets = () => {
         .from("projects")
         .select(`
           *,
-          responsable:employees!projects_responsable_id_fkey(nom, prenom)
+          responsable:employees!projects_responsable_id_fkey(nom, prenom, photo_url)
         `)
         .order("created_at", { ascending: false });
 
