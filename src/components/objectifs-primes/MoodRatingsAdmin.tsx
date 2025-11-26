@@ -4,79 +4,134 @@ import { Card } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Star, TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { Calendar, TrendingUp } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-interface MoodRating {
+interface DailyMoodEntry {
   employee_id: string;
   nom: string;
   prenom: string;
   photo_url: string | null;
-  rating: number;
-  commentaire: string | null;
+  mood_emoji: string;
+  mood_label: string;
+  need_type: string | null;
+  date: string;
 }
 
 interface MoodStats {
-  averageRating: number;
-  totalRatings: number;
-  distribution: { [key: number]: number };
+  totalEntries: number;
+  moodDistribution: { [emoji: string]: number };
+  needDistribution: { [need: string]: number };
+  participationRate: number;
 }
 
+const moodEmojiMap: { [emoji: string]: { label: string; color: string } } = {
+  "😔": { label: "Très maussade", color: "text-red-600" },
+  "😐": { label: "Peu motivé", color: "text-orange-600" },
+  "😊": { label: "Bien", color: "text-yellow-600" },
+  "😄": { label: "Très bien", color: "text-green-600" },
+  "🔥": { label: "Au top!", color: "text-blue-600" }
+};
+
+const needTypeLabels: { [key: string]: string } = {
+  "motivation": "Motivation",
+  "fun_fact": "Culture générale",
+  "joy": "Gaieté",
+  "calm": "Sérénité",
+  "energy": "Énergie"
+};
+
 export const MoodRatingsAdmin = () => {
-  const [ratings, setRatings] = useState<MoodRating[]>([]);
+  const [entries, setEntries] = useState<DailyMoodEntry[]>([]);
   const [stats, setStats] = useState<MoodStats | null>(null);
   const [loading, setLoading] = useState(true);
-  const [selectedMonth, setSelectedMonth] = useState(new Date().getMonth() + 1);
-  const [selectedYear, setSelectedYear] = useState(new Date().getFullYear());
+  const [periodType, setPeriodType] = useState<'day' | 'week' | 'month'>('week');
+  const [selectedDate, setSelectedDate] = useState(new Date());
 
   useEffect(() => {
-    fetchRatings();
-  }, [selectedMonth, selectedYear]);
+    fetchMoodData();
+  }, [periodType, selectedDate]);
 
-  const fetchRatings = async () => {
+  const getDateRange = () => {
+    const today = new Date(selectedDate);
+    let startDate: Date;
+    let endDate: Date = new Date(today);
+
+    if (periodType === 'day') {
+      startDate = new Date(today);
+    } else if (periodType === 'week') {
+      startDate = new Date(today);
+      startDate.setDate(today.getDate() - 6);
+    } else {
+      startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+      endDate = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    }
+
+    return {
+      start: startDate.toISOString().split('T')[0],
+      end: endDate.toISOString().split('T')[0]
+    };
+  };
+
+  const fetchMoodData = async () => {
     setLoading(true);
+    const { start, end } = getDateRange();
 
     const { data, error } = await supabase
-      .from('mood_ratings')
+      .from('daily_mood')
       .select(`
         employee_id,
-        rating,
-        commentaire,
+        mood_emoji,
+        mood_label,
+        need_type,
+        date,
         employee:employees(nom, prenom, photo_url)
       `)
-      .eq('mois', selectedMonth)
-      .eq('annee', selectedYear)
-      .order('rating', { ascending: false });
+      .gte('date', start)
+      .lte('date', end)
+      .order('date', { ascending: false });
 
     if (error) {
-      console.error('Error fetching mood ratings:', error);
+      console.error('Error fetching daily mood:', error);
       setLoading(false);
       return;
     }
 
-    const ratingsData = (data || []).map((item: any) => ({
+    const moodData = (data || []).map((item: any) => ({
       employee_id: item.employee_id,
       nom: item.employee.nom,
       prenom: item.employee.prenom,
       photo_url: item.employee.photo_url,
-      rating: item.rating,
-      commentaire: item.commentaire
+      mood_emoji: item.mood_emoji,
+      mood_label: item.mood_label,
+      need_type: item.need_type,
+      date: item.date
     }));
 
-    setRatings(ratingsData);
+    setEntries(moodData);
 
     // Calculer les statistiques
-    if (ratingsData.length > 0) {
-      const avgRating = ratingsData.reduce((sum, r) => sum + r.rating, 0) / ratingsData.length;
-      const distribution = ratingsData.reduce((acc: any, r) => {
-        acc[r.rating] = (acc[r.rating] || 0) + 1;
+    if (moodData.length > 0) {
+      const moodDist = moodData.reduce((acc: any, entry) => {
+        acc[entry.mood_emoji] = (acc[entry.mood_emoji] || 0) + 1;
         return acc;
       }, {});
 
+      const needDist = moodData.reduce((acc: any, entry) => {
+        if (entry.need_type) {
+          acc[entry.need_type] = (acc[entry.need_type] || 0) + 1;
+        }
+        return acc;
+      }, {});
+
+      // Calculer le taux de participation (employés uniques)
+      const uniqueEmployees = new Set(moodData.map(e => e.employee_id)).size;
+
       setStats({
-        averageRating: avgRating,
-        totalRatings: ratingsData.length,
-        distribution
+        totalEntries: moodData.length,
+        moodDistribution: moodDist,
+        needDistribution: needDist,
+        participationRate: uniqueEmployees
       });
     } else {
       setStats(null);
@@ -85,82 +140,64 @@ export const MoodRatingsAdmin = () => {
     setLoading(false);
   };
 
-  const renderStars = (rating: number) => {
-    return (
-      <div className="flex gap-1">
-        {[1, 2, 3, 4, 5].map((star) => (
-          <Star
-            key={star}
-            className={cn(
-              "h-4 w-4",
-              star <= rating ? "text-yellow-500 fill-yellow-500" : "text-muted-foreground"
-            )}
-          />
-        ))}
-      </div>
-    );
-  };
-
-  const getMoodLabel = (rating: number) => {
-    const labels: { [key: number]: string } = {
-      1: "Très insatisfait",
-      2: "Insatisfait",
-      3: "Neutre",
-      4: "Satisfait",
-      5: "Très satisfait"
+  const formatDateLabel = () => {
+    const options: Intl.DateTimeFormatOptions = { 
+      year: 'numeric', 
+      month: 'long',
+      day: periodType === 'day' ? 'numeric' : undefined 
     };
-    return labels[rating] || "";
+    return selectedDate.toLocaleDateString('fr-FR', options);
   };
 
-  const getMoodColor = (rating: number) => {
-    if (rating >= 4) return "text-green-600";
-    if (rating === 3) return "text-orange-600";
-    return "text-red-600";
+  const navigateDate = (direction: 'prev' | 'next') => {
+    const newDate = new Date(selectedDate);
+    
+    if (periodType === 'day') {
+      newDate.setDate(newDate.getDate() + (direction === 'next' ? 1 : -1));
+    } else if (periodType === 'week') {
+      newDate.setDate(newDate.getDate() + (direction === 'next' ? 7 : -7));
+    } else {
+      newDate.setMonth(newDate.getMonth() + (direction === 'next' ? 1 : -1));
+    }
+    
+    setSelectedDate(newDate);
   };
-
-  const months = [
-    { value: 1, label: 'Janvier' },
-    { value: 2, label: 'Février' },
-    { value: 3, label: 'Mars' },
-    { value: 4, label: 'Avril' },
-    { value: 5, label: 'Mai' },
-    { value: 6, label: 'Juin' },
-    { value: 7, label: 'Juillet' },
-    { value: 8, label: 'Août' },
-    { value: 9, label: 'Septembre' },
-    { value: 10, label: 'Octobre' },
-    { value: 11, label: 'Novembre' },
-    { value: 12, label: 'Décembre' }
-  ];
 
   return (
     <Card className="p-6">
       <div className="space-y-6">
         <div>
-          <h3 className="text-lg font-semibold mb-4">Mood Bar - Satisfaction des employés</h3>
+          <h3 className="text-lg font-semibold mb-4">Mood Bar - Humeur quotidienne des employés</h3>
           
           <div className="flex gap-4 mb-6">
-            <Select value={selectedMonth.toString()} onValueChange={(v) => setSelectedMonth(parseInt(v))}>
+            <Select value={periodType} onValueChange={(v: any) => setPeriodType(v)}>
               <SelectTrigger className="w-40">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
-                {months.map(m => (
-                  <SelectItem key={m.value} value={m.value.toString()}>{m.label}</SelectItem>
-                ))}
+                <SelectItem value="day">Jour</SelectItem>
+                <SelectItem value="week">Semaine</SelectItem>
+                <SelectItem value="month">Mois</SelectItem>
               </SelectContent>
             </Select>
             
-            <Select value={selectedYear.toString()} onValueChange={(v) => setSelectedYear(parseInt(v))}>
-              <SelectTrigger className="w-32">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                {[2024, 2025, 2026].map(y => (
-                  <SelectItem key={y} value={y.toString()}>{y}</SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={() => navigateDate('prev')}
+                className="px-3 py-2 border rounded hover:bg-accent"
+              >
+                ←
+              </button>
+              <span className="px-4 py-2 border rounded bg-background min-w-[200px] text-center">
+                {formatDateLabel()}
+              </span>
+              <button
+                onClick={() => navigateDate('next')}
+                className="px-3 py-2 border rounded hover:bg-accent"
+              >
+                →
+              </button>
+            </div>
           </div>
         </div>
 
@@ -168,88 +205,97 @@ export const MoodRatingsAdmin = () => {
           <p className="text-center text-muted-foreground">Chargement...</p>
         ) : !stats ? (
           <div className="text-center py-8 text-muted-foreground">
-            <Star className="h-12 w-12 mx-auto mb-2 opacity-30" />
-            <p>Aucune notation pour cette période</p>
+            <Calendar className="h-12 w-12 mx-auto mb-2 opacity-30" />
+            <p>Aucune donnée pour cette période</p>
           </div>
         ) : (
           <>
             {/* Statistiques globales */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               <Card className="p-4">
-                <p className="text-sm text-muted-foreground mb-2">Note moyenne</p>
-                <div className="flex items-center gap-2">
-                  <p className={cn("text-3xl font-bold", getMoodColor(stats.averageRating))}>
-                    {stats.averageRating.toFixed(1)}
-                  </p>
-                  {renderStars(Math.round(stats.averageRating))}
+                <p className="text-sm text-muted-foreground mb-2">Distribution des humeurs</p>
+                <div className="space-y-2">
+                  {Object.entries(stats.moodDistribution).map(([emoji, count]) => (
+                    <div key={emoji} className="flex items-center gap-2">
+                      <span className="text-2xl">{emoji}</span>
+                      <span className={cn("text-sm font-medium", moodEmojiMap[emoji]?.color)}>
+                        {moodEmojiMap[emoji]?.label}
+                      </span>
+                      <div className="flex-1 bg-muted h-2 rounded-full overflow-hidden">
+                        <div 
+                          className="bg-primary h-full rounded-full"
+                          style={{ width: `${(count / stats.totalEntries) * 100}%` }}
+                        />
+                      </div>
+                      <span className="text-xs text-muted-foreground w-8 text-right">
+                        {count}
+                      </span>
+                    </div>
+                  ))}
                 </div>
-                <p className="text-xs text-muted-foreground mt-2">
-                  {getMoodLabel(Math.round(stats.averageRating))}
+              </Card>
+
+              <Card className="p-4">
+                <p className="text-sm text-muted-foreground mb-2">Participation</p>
+                <p className="text-3xl font-bold">{stats.participationRate}</p>
+                <p className="text-xs text-muted-foreground mt-2">employés actifs</p>
+                <p className="text-sm text-muted-foreground mt-4">
+                  {stats.totalEntries} {stats.totalEntries > 1 ? 'entrées' : 'entrée'}
                 </p>
               </Card>
 
               <Card className="p-4">
-                <p className="text-sm text-muted-foreground mb-2">Taux de participation</p>
-                <p className="text-3xl font-bold">{stats.totalRatings}</p>
-                <p className="text-xs text-muted-foreground mt-2">employés ont noté</p>
-              </Card>
-
-              <Card className="p-4">
-                <p className="text-sm text-muted-foreground mb-2">Distribution</p>
+                <p className="text-sm text-muted-foreground mb-2">Besoins exprimés</p>
                 <div className="space-y-1">
-                  {[5, 4, 3, 2, 1].map(star => (
-                    <div key={star} className="flex items-center gap-2">
-                      <span className="text-xs w-6">{star}★</span>
-                      <div className="flex-1 bg-muted h-2 rounded-full overflow-hidden">
-                        <div 
-                          className="bg-primary h-full rounded-full"
-                          style={{ 
-                            width: `${((stats.distribution[star] || 0) / stats.totalRatings) * 100}%` 
-                          }}
-                        />
-                      </div>
-                      <span className="text-xs text-muted-foreground w-8 text-right">
-                        {stats.distribution[star] || 0}
-                      </span>
+                  {Object.entries(stats.needDistribution).map(([need, count]) => (
+                    <div key={need} className="flex items-center justify-between text-sm">
+                      <span>{needTypeLabels[need] || need}</span>
+                      <Badge variant="outline">{count}</Badge>
                     </div>
                   ))}
                 </div>
               </Card>
             </div>
 
-            {/* Liste des employés */}
+            {/* Liste des entrées */}
             <div>
-              <h4 className="font-medium mb-3">Détail par employé</h4>
+              <h4 className="font-medium mb-3">Détail des entrées</h4>
               <div className="space-y-3">
-                {ratings.map((rating) => (
-                  <Card key={rating.employee_id} className="p-4">
+                {entries.map((entry, idx) => (
+                  <Card key={`${entry.employee_id}-${entry.date}-${idx}`} className="p-4">
                     <div className="flex items-start justify-between gap-4">
                       <div className="flex items-center gap-3">
                         <Avatar>
-                          <AvatarImage src={rating.photo_url || undefined} />
-                          <AvatarFallback>{rating.prenom[0]}{rating.nom[0]}</AvatarFallback>
+                          <AvatarImage src={entry.photo_url || undefined} />
+                          <AvatarFallback>{entry.prenom[0]}{entry.nom[0]}</AvatarFallback>
                         </Avatar>
                         <div>
                           <p className="font-medium">
-                            {rating.prenom} {rating.nom}
+                            {entry.prenom} {entry.nom}
                           </p>
                           <div className="flex items-center gap-2 mt-1">
-                            {renderStars(rating.rating)}
+                            <span className="text-2xl">{entry.mood_emoji}</span>
                             <Badge 
                               variant="outline" 
-                              className={cn("text-xs", getMoodColor(rating.rating))}
+                              className={cn("text-xs", moodEmojiMap[entry.mood_emoji]?.color)}
                             >
-                              {getMoodLabel(rating.rating)}
+                              {entry.mood_label}
                             </Badge>
+                            {entry.need_type && (
+                              <Badge variant="secondary" className="text-xs">
+                                {needTypeLabels[entry.need_type]}
+                              </Badge>
+                            )}
                           </div>
                         </div>
                       </div>
+                      <span className="text-xs text-muted-foreground">
+                        {new Date(entry.date).toLocaleDateString('fr-FR', { 
+                          day: 'numeric', 
+                          month: 'short' 
+                        })}
+                      </span>
                     </div>
-                    {rating.commentaire && (
-                      <p className="text-sm text-muted-foreground mt-3 pl-12 italic">
-                        "{rating.commentaire}"
-                      </p>
-                    )}
                   </Card>
                 ))}
               </div>

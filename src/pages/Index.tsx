@@ -26,7 +26,6 @@ const Index = () => {
 
   useEffect(() => {
     if (!loading && user) {
-      // User is authenticated, show dashboard
       console.log("User authenticated:", user.email);
     }
   }, [user, loading]);
@@ -40,7 +39,10 @@ const Index = () => {
   }
 
   if (user) {
-    // Show dashboard for authenticated users
+    // Compter le nombre de widgets avec données
+    const widgetsWithData = [hasTasks, hasPriorityTasks, hasInfos].filter(v => v === true).length;
+    const showMoodBar = !hasVotedMood && widgetsWithData < 3;
+
     return (
       <div className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-accent/10">
         <header className="border-b border-border bg-background/80 backdrop-blur-sm sticky top-0 z-50">
@@ -74,21 +76,35 @@ const Index = () => {
             </p>
           </div>
 
-          {/* Widgets rapides pour tous les utilisateurs */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-            <AgendaWidget />
-            <TachesWidget onDataLoaded={setHasTasks} />
-            <TachesPrioritairesWidget onDataLoaded={setHasPriorityTasks} />
-            <InfosImportantesWidget onDataLoaded={setHasInfos} />
-            
-            {/* Afficher le MoodBar si au moins un widget est vide ou si l'utilisateur n'a pas voté */}
-            {!hasVotedMood && (hasTasks === false || hasPriorityTasks === false || hasInfos === false) && (
-              <div className="col-span-full">
-                <MoodBarWidget onVoted={setHasVotedMood} />
-              </div>
-            )}
-          </div>
+          {/* Widgets rapides - Layout intelligent */}
+          {widgetsWithData === 0 && showMoodBar ? (
+            // Cas 1: Aucun widget avec données → MoodBar en héros
+            <div className="max-w-3xl mx-auto mb-12">
+              <MoodBarWidget onVoted={setHasVotedMood} />
+            </div>
+          ) : (
+            // Cas 2 & 3: Au moins 1 widget avec données
+            <div className={`grid gap-6 mb-12 ${
+              widgetsWithData >= 3 
+                ? 'grid-cols-1 md:grid-cols-2 lg:grid-cols-4' 
+                : showMoodBar 
+                  ? 'grid-cols-1 lg:grid-cols-2'
+                  : 'grid-cols-1 md:grid-cols-2 lg:grid-cols-3'
+            }`}>
+              <AgendaWidget />
+              <TachesWidget onDataLoaded={setHasTasks} />
+              <TachesPrioritairesWidget onDataLoaded={setHasPriorityTasks} />
+              <InfosImportantesWidget onDataLoaded={setHasInfos} />
+              
+              {showMoodBar && (
+                <div className={widgetsWithData >= 3 ? 'col-span-full' : 'lg:col-span-1'}>
+                  <MoodBarWidget onVoted={setHasVotedMood} />
+                </div>
+              )}
+            </div>
+          )}
 
+          {/* Modules de navigation */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {modulesLoading ? (
               <div className="col-span-full text-center py-8 text-muted-foreground">
@@ -120,7 +136,7 @@ const Index = () => {
     );
   }
 
-  // Show landing page for non-authenticated users
+  // Landing page pour utilisateurs non authentifiés
   return (
     <div className="min-h-screen bg-gradient-to-br from-primary/10 via-background to-accent/10 flex items-center justify-center">
       <div className="max-w-2xl mx-auto px-6 text-center">
