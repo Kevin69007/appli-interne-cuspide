@@ -13,6 +13,7 @@ import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { AnimatedBackground } from "@/components/AnimatedBackground";
 import { useModuleVisibility } from "@/hooks/useModuleVisibility";
+import { NotificationBell } from "@/components/notifications/NotificationBell";
 
 const Index = () => {
   const { user, loading } = useAuth();
@@ -63,6 +64,7 @@ const Index = () => {
             </div>
             <div className="flex items-center gap-2 sm:gap-4">
               <span className="hidden md:inline-block text-sm text-muted-foreground truncate max-w-[150px] lg:max-w-none">{user.email}</span>
+              <NotificationBell />
               <ThemeToggle />
               <div className="hidden sm:block">
                 <LanguageSwitcher />
