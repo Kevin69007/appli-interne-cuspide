@@ -3,6 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useNotifications } from "@/hooks/useNotifications";
 import { NotificationDropdown } from "./NotificationDropdown";
+import { NotificationsDialog } from "./NotificationsDialog";
 import { useState } from "react";
 import {
   Popover,
@@ -13,34 +14,45 @@ import {
 export const NotificationBell = () => {
   const { unreadCount } = useNotifications();
   const [open, setOpen] = useState(false);
+  const [showDialog, setShowDialog] = useState(false);
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          className="relative hover:bg-accent"
-          aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} non lues)` : ''}`}
+    <>
+      <Popover open={open} onOpenChange={setOpen}>
+        <PopoverTrigger asChild>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="relative hover:bg-accent"
+            aria-label={`Notifications${unreadCount > 0 ? ` (${unreadCount} non lues)` : ''}`}
+          >
+            <Bell className={`h-5 w-5 ${unreadCount > 0 ? 'animate-[wiggle_0.5s_ease-in-out]' : ''}`} />
+            {unreadCount > 0 && (
+              <Badge 
+                variant="destructive" 
+                className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs animate-in zoom-in-50"
+              >
+                {unreadCount > 9 ? '9+' : unreadCount}
+              </Badge>
+            )}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent 
+          className="w-80 max-sm:w-[calc(100vw-2rem)] p-0" 
+          align="end"
+          sideOffset={8}
         >
-          <Bell className={`h-5 w-5 ${unreadCount > 0 ? 'animate-[wiggle_0.5s_ease-in-out]' : ''}`} />
-          {unreadCount > 0 && (
-            <Badge 
-              variant="destructive" 
-              className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs animate-in zoom-in-50"
-            >
-              {unreadCount > 9 ? '9+' : unreadCount}
-            </Badge>
-          )}
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent 
-        className="w-80 max-sm:w-[calc(100vw-2rem)] p-0" 
-        align="end"
-        sideOffset={8}
-      >
-        <NotificationDropdown onClose={() => setOpen(false)} />
-      </PopoverContent>
-    </Popover>
+          <NotificationDropdown 
+            onClose={() => setOpen(false)}
+            onOpenDialog={() => {
+              setShowDialog(true);
+              setOpen(false);
+            }}
+          />
+        </PopoverContent>
+      </Popover>
+
+      <NotificationsDialog open={showDialog} onOpenChange={setShowDialog} />
+    </>
   );
 };
