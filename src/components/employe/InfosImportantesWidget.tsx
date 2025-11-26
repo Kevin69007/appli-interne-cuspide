@@ -111,18 +111,24 @@ export const InfosImportantesWidget = ({ onDataLoaded }: { onDataLoaded?: (hasDa
   }
 
   return (
-    <Card className="p-6">
+    <Card variant="glass" className="p-6 animate-fade-in">
       <div className="flex items-center gap-3 mb-4">
-        <Info className="h-5 w-5 text-primary" />
-        <h3 className="text-lg font-semibold">{t('employee.importantInfoWidget.title')}</h3>
+        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+          <Info className="h-5 w-5 text-white" />
+        </div>
+        <h3 className="text-lg font-display font-semibold">{t('employee.importantInfoWidget.title')}</h3>
         {communications.length > 0 && (
-          <Badge variant="destructive">{communications.length}</Badge>
+          <Badge variant="destructive" className="animate-pulse">{communications.length}</Badge>
         )}
       </div>
 
       <div className="space-y-4">
-        {communications.map((comm) => (
-          <div key={comm.id} className="p-4 border rounded-lg space-y-2">
+        {communications.map((comm, idx) => (
+          <div 
+            key={comm.id} 
+            className="p-4 glass border border-border/50 rounded-lg space-y-2 hover:border-primary/50 transition-all duration-300 animate-fade-in"
+            style={{ animationDelay: `${idx * 100}ms` }}
+          >
               <div className="flex items-start justify-between gap-2">
                 <h4 className="font-semibold">{comm.titre}</h4>
                 {comm.require_confirmation && !comm.isRead && (
