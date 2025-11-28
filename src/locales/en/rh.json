@@ -7,5 +7,27 @@
   "jobDescription": "Job Description",
   "noEmployees": "No employees found",
   "isRemote": "Remote Employee",
-  "isRemoteDescription": "An automatic task will be created daily for time declaration"
+  "isRemoteDescription": "An automatic task will be created daily for time declaration",
+  "badges": {
+    "myBadges": "My Badges",
+    "unlocked": "Unlocked",
+    "locked": "Locked",
+    "progress": "Progress",
+    "level": "Level",
+    "nextLevel": "Next level",
+    "remainingBadges": "badge(s) remaining",
+    "maxLevel": "Maximum level reached!",
+    "howToEarn": "How to earn badges?",
+    "howToEarnDesc": "Complete actions in the app: finish tasks, submit ideas, participate in projects, vote for your daily mood, and much more! The more active you are, the more badges you unlock and the higher your level.",
+    "categories": {
+      "all": "All",
+      "tasks": "Tasks",
+      "projects": "Projects",
+      "ideas": "Ideas",
+      "mood": "Mood",
+      "game": "Game",
+      "objectives": "Objectives",
+      "training": "Training"
+    }
+  }
 }

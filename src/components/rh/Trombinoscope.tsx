@@ -8,6 +8,9 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Upload, Trash2, User, FileText } from "lucide-react";
 import { FichePosteDialog } from "./FichePosteDialog";
+import { useBadges } from "@/hooks/useBadges";
+import { getEmployeeLevel } from "@/lib/badges";
+import { motion } from "framer-motion";
 
 interface Employee {
   id: string;
@@ -170,78 +173,14 @@ export const Trombinoscope = () => {
             
             <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
               {teamEmployees.map((employee) => (
-                <Card 
-                  key={employee.id} 
-                  className="overflow-hidden hover:shadow-lg transition-shadow cursor-pointer group"
+                <EmployeeCard 
+                  key={employee.id}
+                  employee={employee}
+                  canManagePhoto={canManagePhoto(employee)}
+                  onPhotoUpload={handlePhotoUpload}
+                  onPhotoDelete={handlePhotoDelete}
                   onClick={() => handleEmployeeClick(employee)}
-                >
-                  <CardContent className="p-4">
-                    <div className="relative aspect-square mb-3 bg-muted rounded-lg overflow-hidden">
-                      {employee.photo_url ? (
-                        <img 
-                          src={employee.photo_url} 
-                          alt={`${employee.prenom} ${employee.nom}`}
-                          className="w-full h-full object-cover"
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <User className="w-16 h-16 text-muted-foreground" />
-                        </div>
-                      )}
-                      
-                      {canManagePhoto(employee) && (
-                        <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
-                          <Button
-                            size="sm"
-                            variant="secondary"
-                            onClick={(e) => {
-                              e.stopPropagation();
-                              const input = document.createElement('input');
-                              input.type = 'file';
-                              input.accept = 'image/*';
-                              input.onchange = (e) => {
-                                const file = (e.target as HTMLInputElement).files?.[0];
-                                if (file) handlePhotoUpload(employee.id, file);
-                              };
-                              input.click();
-                            }}
-                          >
-                            <Upload className="w-4 h-4" />
-                          </Button>
-                          
-                          {employee.photo_url && (
-                            <Button
-                              size="sm"
-                              variant="destructive"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handlePhotoDelete(employee.id, employee.photo_url);
-                              }}
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </Button>
-                          )}
-                        </div>
-                      )}
-                      
-                      <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                        <Badge variant="outline" className="bg-background/90">
-                          <FileText className="w-3 h-3 mr-1" />
-                          Fiche
-                        </Badge>
-                      </div>
-                    </div>
-                    
-                    <div className="text-center">
-                      <p className="font-semibold text-sm">
-                        {employee.prenom} {employee.nom}
-                      </p>
-                      <p className="text-xs text-muted-foreground mt-1">
-                        {employee.poste || "Non défini"}
-                      </p>
-                    </div>
-                  </CardContent>
-                </Card>
+                />
               ))}
             </div>
           </div>
@@ -257,3 +196,173 @@ export const Trombinoscope = () => {
     </>
   );
 };
+
+// Composant séparé pour la carte employé avec badges
+interface EmployeeCardProps {
+  employee: Employee;
+  canManagePhoto: boolean;
+  onPhotoUpload: (employeeId: string, file: File) => void;
+  onPhotoDelete: (employeeId: string, photoUrl: string | null) => void;
+  onClick: () => void;
+}
+
+function EmployeeCard({ employee, canManagePhoto, onPhotoUpload, onPhotoDelete, onClick }: EmployeeCardProps) {
+  const { badges, totalUnlocked } = useBadges(employee.id);
+  const level = getEmployeeLevel(totalUnlocked);
+  
+  // Récupérer les 3 derniers badges débloqués
+  const recentBadges = badges
+    .filter(b => b.unlocked)
+    .sort((a, b) => {
+      if (!a.unlockedAt || !b.unlockedAt) return 0;
+      return b.unlockedAt.getTime() - a.unlockedAt.getTime();
+    })
+    .slice(0, 3);
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      <Card 
+        className="overflow-hidden hover:shadow-lg transition-all cursor-pointer group relative"
+        onClick={onClick}
+        style={{
+          borderWidth: '2px',
+          borderColor: level.cardColor.includes('linear-gradient') 
+            ? 'transparent' 
+            : level.cardColor,
+          backgroundImage: level.cardColor.includes('linear-gradient')
+            ? level.cardColor
+            : undefined,
+          backgroundClip: level.cardColor.includes('linear-gradient')
+            ? 'padding-box'
+            : undefined,
+        }}
+      >
+        {level.glowEffect && (
+          <div 
+            className="absolute inset-0 opacity-50 blur-xl -z-10"
+            style={{
+              background: level.cardColor,
+            }}
+          />
+        )}
+        
+        <CardContent className="p-4 bg-background/95 backdrop-blur">
+          {/* Niveau badge */}
+          <div className="absolute top-2 left-2 z-10">
+            <Badge 
+              className="text-xs px-2 py-0.5 font-semibold"
+              style={{
+                backgroundColor: level.cardColor.includes('linear-gradient') 
+                  ? undefined 
+                  : level.cardColor,
+                backgroundImage: level.cardColor.includes('linear-gradient')
+                  ? level.cardColor
+                  : undefined,
+                color: 'white',
+                textShadow: '0 1px 2px rgba(0,0,0,0.3)'
+              }}
+            >
+              {level.emoji} {level.name}
+            </Badge>
+          </div>
+
+          {/* Mini badges (3 derniers) */}
+          {recentBadges.length > 0 && (
+            <div className="absolute top-2 right-2 z-10 flex gap-1">
+              {recentBadges.map(badge => {
+                const Icon = badge.badge.icon;
+                return (
+                  <div
+                    key={badge.badgeId}
+                    className="w-6 h-6 rounded-full bg-background/90 backdrop-blur flex items-center justify-center"
+                    style={{ borderColor: badge.badge.color, borderWidth: '1px' }}
+                    title={badge.badge.name}
+                  >
+                    <Icon 
+                      className="w-3 h-3" 
+                      style={{ color: badge.badge.color }}
+                    />
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          <div className="relative aspect-square mb-3 bg-muted rounded-lg overflow-hidden mt-6">
+            {employee.photo_url ? (
+              <img 
+                src={employee.photo_url} 
+                alt={`${employee.prenom} ${employee.nom}`}
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center">
+                <User className="w-16 h-16 text-muted-foreground" />
+              </div>
+            )}
+            
+            {canManagePhoto && (
+              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+                <Button
+                  size="sm"
+                  variant="secondary"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    const input = document.createElement('input');
+                    input.type = 'file';
+                    input.accept = 'image/*';
+                    input.onchange = (e) => {
+                      const file = (e.target as HTMLInputElement).files?.[0];
+                      if (file) onPhotoUpload(employee.id, file);
+                    };
+                    input.click();
+                  }}
+                >
+                  <Upload className="w-4 h-4" />
+                </Button>
+                
+                {employee.photo_url && (
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onPhotoDelete(employee.id, employee.photo_url);
+                    }}
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                )}
+              </div>
+            )}
+            
+            <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+              <Badge variant="outline" className="bg-background/90">
+                <FileText className="w-3 h-3 mr-1" />
+                Fiche
+              </Badge>
+            </div>
+          </div>
+          
+          <div className="text-center">
+            <p className="font-semibold text-sm">
+              {employee.prenom} {employee.nom}
+            </p>
+            <p className="text-xs text-muted-foreground mt-1">
+              {employee.poste || "Non défini"}
+            </p>
+            {totalUnlocked > 0 && (
+              <p className="text-xs text-primary mt-1 font-medium">
+                🏆 {totalUnlocked} badge{totalUnlocked > 1 ? 's' : ''}
+              </p>
+            )}
+          </div>
+        </CardContent>
+      </Card>
+    </motion.div>
+  );
+}
