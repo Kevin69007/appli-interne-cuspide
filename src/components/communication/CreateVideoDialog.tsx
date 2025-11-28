@@ -7,6 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { MultiSelect } from "@/components/ui/multi-select";
+import { Progress } from "@/components/ui/progress";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { Upload } from "lucide-react";
@@ -27,6 +28,7 @@ export const CreateVideoDialog = ({
   const { toast } = useToast();
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [teams, setTeams] = useState<string[]>([]);
   const [groups, setGroups] = useState<string[]>([]);
   const [employees, setEmployees] = useState<Array<{ value: string; label: string }>>([]);
@@ -112,6 +114,15 @@ export const CreateVideoDialog = ({
     }
 
     setUploading(true);
+    setUploadProgress(0);
+
+    // Simulate smooth progress animation
+    const progressInterval = setInterval(() => {
+      setUploadProgress((prev) => {
+        if (prev >= 90) return prev; // Cap at 90% until actual upload completes
+        return prev + 10;
+      });
+    }, 300);
 
     try {
       const fileExt = file.name.split(".").pop();
@@ -124,23 +135,28 @@ export const CreateVideoDialog = ({
 
       if (uploadError) throw uploadError;
 
+      clearInterval(progressInterval);
+      setUploadProgress(100);
+
       const { data: { publicUrl } } = supabase.storage
         .from("videos")
         .getPublicUrl(filePath);
 
-      setFormData({ ...formData, video_url: publicUrl });
+      setFormData(prev => ({ ...prev, video_url: publicUrl }));
 
       toast({
         title: "Vidéo téléchargée",
         description: "La vidéo a été téléchargée avec succès"
       });
     } catch (error) {
+      clearInterval(progressInterval);
       console.error("Erreur:", error);
       toast({
         title: "Erreur",
         description: "Impossible de télécharger la vidéo",
         variant: "destructive"
       });
+      setUploadProgress(0);
     } finally {
       setUploading(false);
     }
@@ -161,11 +177,9 @@ export const CreateVideoDialog = ({
         type_destinataire: formData.type_destinataire,
         equipes: formData.equipes.length > 0 ? formData.equipes : null,
         groupes: formData.groupes.length > 0 ? formData.groupes : null,
-        destinataires_individuels: formData.destinataires_individuels.length > 0 ? formData.destinataires_individuels : null,
+        employee_ids: formData.destinataires_individuels.length > 0 ? formData.destinataires_individuels : null,
         require_confirmation: formData.require_confirmation,
         date_expiration: formData.date_expiration || null,
-        is_tutorial: isTutorial,
-        module_id: isTutorial ? formData.module_id : null,
         created_by: user.id
       };
 
@@ -250,13 +264,15 @@ export const CreateVideoDialog = ({
                   disabled={uploading}
                   className="flex-1"
                 />
-                {uploading && (
-                  <Button type="button" disabled>
-                    <Upload className="h-4 w-4 mr-2 animate-spin" />
-                    Upload...
-                  </Button>
-                )}
               </div>
+              {uploading && (
+                <div className="space-y-2">
+                  <Progress value={uploadProgress} className="w-full" />
+                  <p className="text-sm text-muted-foreground text-center">
+                    {uploadProgress}% téléchargé
+                  </p>
+                </div>
+              )}
               {formData.video_url && (
                 <p className="text-sm text-green-600">✓ Vidéo téléchargée</p>
               )}
