@@ -26,6 +26,8 @@ export const EditEmployeeDialog = ({ open, onOpenChange, employeeId, onEmployeeU
     prenom: "",
     poste: "",
     email: "",
+    equipe: "",
+    groupe: "",
     role: "user" as "user" | "manager" | "admin",
     is_remote: false
   });
@@ -39,7 +41,7 @@ export const EditEmployeeDialog = ({ open, onOpenChange, employeeId, onEmployeeU
 
   const fetchEmployeeData = async () => {
     try {
-      // Fetch employee data including email and is_remote
+      // Fetch employee data including email, is_remote, equipe, and groupe
       const { data: empData, error: empError } = await supabase
         .from("employees")
         .select("*, user_id")
@@ -71,6 +73,8 @@ export const EditEmployeeDialog = ({ open, onOpenChange, employeeId, onEmployeeU
         prenom: empData.prenom,
         poste: empData.poste || "",
         email: empData.email || "",
+        equipe: empData.equipe || "",
+        groupe: empData.groupe || "",
         role: role as "user" | "manager" | "admin",
         is_remote: empData.is_remote || false
       });
@@ -92,6 +96,8 @@ export const EditEmployeeDialog = ({ open, onOpenChange, employeeId, onEmployeeU
           nom: formData.nom,
           prenom: formData.prenom,
           poste: formData.poste,
+          equipe: formData.equipe,
+          groupe: formData.groupe,
           is_remote: formData.is_remote
         })
         .eq("id", employeeId);
@@ -202,6 +208,32 @@ export const EditEmployeeDialog = ({ open, onOpenChange, employeeId, onEmployeeU
                   value={formData.poste}
                   onChange={(e) => setFormData({ ...formData, poste: e.target.value })}
                 />
+              </div>
+
+              <div>
+                <Label htmlFor="equipe">Équipe</Label>
+                <Input
+                  id="equipe"
+                  value={formData.equipe}
+                  onChange={(e) => setFormData({ ...formData, equipe: e.target.value })}
+                  placeholder="Ex: Production, Direction..."
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="groupe">Groupe</Label>
+                <Select
+                  value={formData.groupe}
+                  onValueChange={(value) => setFormData({ ...formData, groupe: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sélectionnez un groupe" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Cuspide">Cuspide</SelectItem>
+                    <SelectItem value="Jak">Jak</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div>

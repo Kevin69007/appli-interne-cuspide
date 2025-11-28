@@ -1,6 +1,10 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
-import { User, Briefcase, Users } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { User, Briefcase, Users, Edit } from "lucide-react";
+import { useState } from "react";
+import { EditEmployeeDialog } from "@/components/objectifs-primes/EditEmployeeDialog";
+import { useUserRole } from "@/hooks/useUserRole";
 
 interface Employee {
   id: string;
@@ -10,23 +14,41 @@ interface Employee {
   equipe: string;
   photo_url: string | null;
   email: string | null;
-  atelier: string | null;
+  groupe: string | null;
 }
 
 interface FichePosteDialogProps {
   employee: Employee | null;
   open: boolean;
   onOpenChange: (open: boolean) => void;
+  onEmployeeUpdated?: () => void;
 }
 
-export const FichePosteDialog = ({ employee, open, onOpenChange }: FichePosteDialogProps) => {
+export const FichePosteDialog = ({ employee, open, onOpenChange, onEmployeeUpdated }: FichePosteDialogProps) => {
+  const { isAdmin, isManager } = useUserRole();
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+
   if (!employee) return null;
+
+  const canEdit = isAdmin || isManager;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl">
         <DialogHeader>
-          <DialogTitle>Fiche de poste</DialogTitle>
+          <div className="flex items-center justify-between">
+            <DialogTitle>Fiche de poste</DialogTitle>
+            {canEdit && (
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setEditDialogOpen(true)}
+              >
+                <Edit className="w-4 h-4 mr-2" />
+                Modifier
+              </Button>
+            )}
+          </div>
         </DialogHeader>
 
         <div className="space-y-6">
@@ -77,8 +99,8 @@ export const FichePosteDialog = ({ employee, open, onOpenChange }: FichePosteDia
             </div>
 
             <div>
-              <p className="text-sm text-muted-foreground mb-1">Atelier</p>
-              <p className="font-medium">{employee.atelier || "Non renseigné"}</p>
+              <p className="text-sm text-muted-foreground mb-1">Groupe</p>
+              <p className="font-medium">{employee.groupe || "Non renseigné"}</p>
             </div>
 
             <div>
@@ -103,6 +125,18 @@ export const FichePosteDialog = ({ employee, open, onOpenChange }: FichePosteDia
           </div>
         </div>
       </DialogContent>
+
+      {canEdit && (
+        <EditEmployeeDialog
+          open={editDialogOpen}
+          onOpenChange={setEditDialogOpen}
+          employeeId={employee.id}
+          onEmployeeUpdated={() => {
+            onEmployeeUpdated?.();
+            setEditDialogOpen(false);
+          }}
+        />
+      )}
     </Dialog>
   );
 };

@@ -871,10 +871,10 @@ export type Database = {
       }
       employees: {
         Row: {
-          atelier: string | null
           created_at: string
           email: string | null
           equipe: string | null
+          groupe: string | null
           id: string
           is_remote: boolean | null
           manager_id: string | null
@@ -887,10 +887,10 @@ export type Database = {
           user_id: string | null
         }
         Insert: {
-          atelier?: string | null
           created_at?: string
           email?: string | null
           equipe?: string | null
+          groupe?: string | null
           id?: string
           is_remote?: boolean | null
           manager_id?: string | null
@@ -903,10 +903,10 @@ export type Database = {
           user_id?: string | null
         }
         Update: {
-          atelier?: string | null
           created_at?: string
           email?: string | null
           equipe?: string | null
+          groupe?: string | null
           id?: string
           is_remote?: boolean | null
           manager_id?: string | null
