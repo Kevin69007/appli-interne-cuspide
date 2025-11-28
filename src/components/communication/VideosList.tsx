@@ -19,17 +19,15 @@ export interface VideoCommunication {
   id: string;
   titre: string;
   video_url: string;
-  description?: string;
+  description?: string | null;
   created_at: string;
   type_destinataire: string;
-  equipes?: string[];
-  groupes?: string[];
-  destinataires_individuels?: string[];
+  equipes?: string[] | null;
+  groupes?: string[] | null;
+  employee_ids?: string[] | null;
   require_confirmation: boolean;
-  date_expiration?: string;
+  date_expiration?: string | null;
   is_active: boolean;
-  is_tutorial: boolean;
-  module_id?: string;
 }
 
 interface VideosListProps {
@@ -90,7 +88,7 @@ export const VideosList = ({ videos, onRefresh }: VideosListProps) => {
 
     try {
       const { data: lectures, error: lecturesError } = await supabase
-        .from("video_views")
+        .from("video_communication_lectures")
         .select(`
           viewed_at,
           employee_id,
@@ -99,7 +97,7 @@ export const VideosList = ({ videos, onRefresh }: VideosListProps) => {
             prenom
           )
         `)
-        .eq("video_id", videoId);
+        .eq("video_communication_id", videoId);
 
       if (lecturesError) throw lecturesError;
 
@@ -121,8 +119,8 @@ export const VideosList = ({ videos, onRefresh }: VideosListProps) => {
         employeesQuery = employeesQuery.in("equipe", video.equipes);
       } else if (video.type_destinataire === "groupe" && video.groupes) {
         employeesQuery = employeesQuery.in("groupe", video.groupes);
-      } else if (video.type_destinataire === "selection_individuelle" && video.destinataires_individuels) {
-        employeesQuery = employeesQuery.in("id", video.destinataires_individuels);
+      } else if (video.type_destinataire === "selection_individuelle" && video.employee_ids) {
+        employeesQuery = employeesQuery.in("id", video.employee_ids);
       }
 
       const { data: allEmployees, error: empError } = await employeesQuery;
@@ -153,7 +151,7 @@ export const VideosList = ({ videos, onRefresh }: VideosListProps) => {
       case "groupe":
         return `Groupes: ${video.groupes?.join(", ") || "Non spécifié"}`;
       case "selection_individuelle":
-        return `${video.destinataires_individuels?.length || 0} employé(s)`;
+        return `${video.employee_ids?.length || 0} employé(s)`;
       default:
         return video.type_destinataire;
     }
@@ -216,10 +214,6 @@ export const VideosList = ({ videos, onRefresh }: VideosListProps) => {
                 <Users className="h-3 w-3" />
                 {getDestinataireLabel(video)}
               </Badge>
-
-              {video.is_tutorial && (
-                <Badge variant="secondary">Tutoriel</Badge>
-              )}
 
               {video.require_confirmation && (
                 <Badge variant="secondary">Confirmation requise</Badge>
