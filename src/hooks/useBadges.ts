@@ -95,25 +95,55 @@ export function useBadges(employeeId: string | null) {
 }
 
 async function calculateStats(employeeId: string): Promise<BadgeStats> {
-  // Tâches terminées
-  const { count: completedTasks } = await supabase
-    .from("tasks")
-    .select("*", { count: "exact", head: true })
-    .eq("assigned_to", employeeId)
-    .eq("statut", "terminee");
+  // Exécuter toutes les requêtes en parallèle pour éviter les timeouts
+  const [
+    tasksResult,
+    boomerangTasksResult,
+    employeeTasksResult,
+    projectsCreatedResult,
+    projectsCompletedResult,
+    ideasSubmittedResult,
+    ideasValidatedResult,
+    moodDataResult,
+    positiveMoodsResult,
+    gameSessionsResult,
+    gameStatsResult,
+    objectivesValidatedResult,
+    cagnotteDataResult,
+    topThreeDataResult
+  ] = await Promise.all([
+    // Tâches terminées
+    supabase.from("tasks").select("*", { count: "exact", head: true }).eq("assigned_to", employeeId).eq("statut", "terminee"),
+    // Boomerangs
+    supabase.from("tasks").select("boomerang_history").eq("boomerang_original_owner", employeeId).not("boomerang_history", "is", null),
+    // Tâches de l'employé pour les projets
+    supabase.from("tasks").select("id").eq("assigned_to", employeeId),
+    // Projets créés
+    supabase.from("projects").select("*", { count: "exact", head: true }).eq("created_by", employeeId),
+    // Projets terminés
+    supabase.from("projects").select("*", { count: "exact", head: true }).eq("created_by", employeeId).eq("progression", 100),
+    // Idées soumises
+    supabase.from("ideas").select("*", { count: "exact", head: true }).eq("employee_id", employeeId),
+    // Idées validées
+    supabase.from("ideas").select("*", { count: "exact", head: true }).eq("employee_id", employeeId).in("statut", ["implementee", "approuvee"]),
+    // Humeur
+    supabase.from("daily_mood").select("date").eq("employee_id", employeeId).order("date", { ascending: false }).limit(30),
+    // Humeurs positives
+    supabase.from("daily_mood").select("*", { count: "exact", head: true }).eq("employee_id", employeeId).in("mood_emoji", ["😊", "😄", "🔥"]),
+    // Sessions de jeu
+    supabase.from("game_participants").select("*", { count: "exact", head: true }).eq("employee_id", employeeId),
+    // Stats de jeu
+    supabase.from("game_player_stats").select("times_investigator_won, times_target_won").eq("employee_id", employeeId).maybeSingle(),
+    // Objectifs validés
+    supabase.from("agenda_entries").select("*", { count: "exact", head: true }).eq("employee_id", employeeId).eq("categorie", "indicateurs").eq("statut_validation", "valide"),
+    // Points cagnotte
+    supabase.from("annual_cagnotte").select("total_points").eq("employee_id", employeeId).maybeSingle(),
+    // Top 3
+    supabase.from("best_of_month").select("*").eq("employee_id", employeeId)
+  ]);
 
-  // Tâches à temps - pour l'instant on compte toutes les tâches terminées
-  // TODO: Améliorer avec un système de tracking de date de complétion
-  const onTimeCount = Math.floor((completedTasks || 0) * 0.8); // Estimation 80%
-
-  // Boomerangs envoyés - comptés via boomerang_history
-  const { data: boomerangTasks } = await supabase
-    .from("tasks")
-    .select("boomerang_history")
-    .eq("boomerang_original_owner", employeeId)
-    .not("boomerang_history", "is", null);
-
-  const boomerangsSent = boomerangTasks?.reduce((count, task) => {
+  // Calculer les boomerangs
+  const boomerangsSent = boomerangTasksResult.data?.reduce((count, task) => {
     try {
       const history = task.boomerang_history as any[];
       return count + (history?.length || 0);
@@ -122,121 +152,43 @@ async function calculateStats(employeeId: string): Promise<BadgeStats> {
     }
   }, 0) || 0;
 
-  // Projets participés - via les tâches assignées à l'employé dans des projets
-  const { data: employeeTasks } = await supabase
-    .from("tasks")
-    .select("id")
-    .eq("assigned_to", employeeId);
+  // Calculer les projets participés
+  const taskIds = employeeTasksResult.data?.map(t => t.id) || [];
+  let projectsParticipated = 0;
+  if (taskIds.length > 0) {
+    const { data: projectTasks } = await supabase
+      .from("project_tasks")
+      .select("project_id")
+      .in("task_id", taskIds);
+    projectsParticipated = new Set(projectTasks?.map(pt => pt.project_id)).size;
+  }
 
-  const taskIds = employeeTasks?.map(t => t.id) || [];
-  
-  const { data: projectTasks } = await supabase
-    .from("project_tasks")
-    .select("project_id")
-    .in("task_id", taskIds);
+  // Calculer la série d'humeur
+  const moodStreak = calculateStreak(moodDataResult.data?.map(m => m.date) || []);
 
-  const projectsParticipated = new Set(projectTasks?.map(pt => pt.project_id)).size;
-
-  // Projets créés
-  const { count: projectsCreated } = await supabase
-    .from("projects")
-    .select("*", { count: "exact", head: true })
-    .eq("created_by", employeeId);
-
-  // Projets terminés
-  const { count: projectsCompleted } = await supabase
-    .from("projects")
-    .select("*", { count: "exact", head: true })
-    .eq("created_by", employeeId)
-    .eq("progression", 100);
-
-  // Idées soumises
-  const { count: ideasSubmitted } = await supabase
-    .from("ideas")
-    .select("*", { count: "exact", head: true })
-    .eq("employee_id", employeeId);
-
-  // Idées validées (implementee ou approuvee)
-  const { count: ideasValidated } = await supabase
-    .from("ideas")
-    .select("*", { count: "exact", head: true })
-    .eq("employee_id", employeeId)
-    .in("statut", ["implementee", "approuvee"]);
-
-  // Humeur - série actuelle
-  const { data: moodData } = await supabase
-    .from("daily_mood")
-    .select("date")
-    .eq("employee_id", employeeId)
-    .order("date", { ascending: false })
-    .limit(30);
-
-  const moodStreak = calculateStreak(moodData?.map(m => m.date) || []);
-
-  // Humeurs positives
-  const { count: positiveMoods } = await supabase
-    .from("daily_mood")
-    .select("*", { count: "exact", head: true })
-    .eq("employee_id", employeeId)
-    .in("mood_emoji", ["😊", "😄", "🔥"]);
-
-  // Sessions de jeu
-  const { count: gameSessions } = await supabase
-    .from("game_participants")
-    .select("*", { count: "exact", head: true })
-    .eq("employee_id", employeeId);
-
-  // Statistiques de jeu
-  const { data: gameStats } = await supabase
-    .from("game_player_stats")
-    .select("times_investigator_won, times_target_won")
-    .eq("employee_id", employeeId)
-    .single();
-
-  // Objectifs validés
-  const { count: objectivesValidated } = await supabase
-    .from("agenda_entries")
-    .select("*", { count: "exact", head: true })
-    .eq("employee_id", employeeId)
-    .eq("categorie", "indicateurs")
-    .eq("statut_validation", "valide");
-
-  // Points cagnotte
-  const { data: cagnotteData } = await supabase
-    .from("annual_cagnotte")
-    .select("total_points")
-    .eq("employee_id", employeeId)
-    .single();
-
-  // Top 3 du mois
-  const { data: topThreeData } = await supabase
-    .from("best_of_month")
-    .select("*")
-    .eq("employee_id", employeeId);
-
-  // Quiz (à implémenter selon votre structure)
-  const quizzesCompleted = 0; // TODO
-  const quizAverage = 0; // TODO
+  // Tâches à temps - estimation 80%
+  const completedTasks = tasksResult.count || 0;
+  const onTimeCount = Math.floor(completedTasks * 0.8);
 
   return {
-    completed_tasks: completedTasks || 0,
+    completed_tasks: completedTasks,
     on_time_tasks: onTimeCount,
-    boomerangs_sent: boomerangsSent || 0,
-    projects_participated: projectsParticipated || 0,
-    projects_created: projectsCreated || 0,
-    projects_completed: projectsCompleted || 0,
-    ideas_submitted: ideasSubmitted || 0,
-    ideas_validated: ideasValidated || 0,
+    boomerangs_sent: boomerangsSent,
+    projects_participated: projectsParticipated,
+    projects_created: projectsCreatedResult.count || 0,
+    projects_completed: projectsCompletedResult.count || 0,
+    ideas_submitted: ideasSubmittedResult.count || 0,
+    ideas_validated: ideasValidatedResult.count || 0,
     mood_streak: moodStreak,
-    positive_moods: positiveMoods || 0,
-    game_sessions: gameSessions || 0,
-    investigator_wins: gameStats?.times_investigator_won || 0,
-    target_survivals: gameStats?.times_target_won || 0,
-    objectives_validated: objectivesValidated || 0,
-    cagnotte_points: cagnotteData?.total_points || 0,
-    top_three: topThreeData?.length || 0,
-    quizzes_completed: quizzesCompleted,
-    quiz_average: quizAverage
+    positive_moods: positiveMoodsResult.count || 0,
+    game_sessions: gameSessionsResult.count || 0,
+    investigator_wins: gameStatsResult.data?.times_investigator_won || 0,
+    target_survivals: gameStatsResult.data?.times_target_won || 0,
+    objectives_validated: objectivesValidatedResult.count || 0,
+    cagnotte_points: cagnotteDataResult.data?.total_points || 0,
+    top_three: topThreeDataResult.data?.length || 0,
+    quizzes_completed: 0,
+    quiz_average: 0
   };
 }
 
