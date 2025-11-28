@@ -170,6 +170,17 @@ export const CreateVideoDialog = ({
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) throw new Error("Non authentifié");
 
+      // Récupérer l'employee_id correspondant à l'utilisateur connecté
+      const { data: employeeData, error: employeeError } = await supabase
+        .from("employees")
+        .select("id")
+        .eq("user_id", user.id)
+        .maybeSingle();
+
+      if (employeeError || !employeeData) {
+        throw new Error("Impossible de trouver votre profil employé");
+      }
+
       const insertData: any = {
         titre: formData.titre,
         description: formData.description,
@@ -180,7 +191,7 @@ export const CreateVideoDialog = ({
         employee_ids: formData.destinataires_individuels.length > 0 ? formData.destinataires_individuels : null,
         require_confirmation: formData.require_confirmation,
         date_expiration: formData.date_expiration || null,
-        created_by: user.id
+        created_by: employeeData.id
       };
 
       const { error } = await supabase
