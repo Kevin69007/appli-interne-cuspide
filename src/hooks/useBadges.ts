@@ -36,12 +36,15 @@ export function useBadges(employeeId: string | null, month?: number, year?: numb
   const currentYear = year || new Date().getFullYear();
 
   useEffect(() => {
+    let isMounted = true;
+
     if (!employeeId) {
       setLoading(false);
       return;
     }
 
     const fetchBadgesAndStats = async () => {
+      if (!isMounted) return;
       try {
         // Utiliser la fonction SQL côté serveur pour les performances
         const { data: statsData, error: statsError } = await supabase
@@ -109,7 +112,11 @@ export function useBadges(employeeId: string | null, month?: number, year?: numb
     };
 
     fetchBadgesAndStats();
-  }, [employeeId, currentMonth, currentYear, toast]);
+
+    return () => {
+      isMounted = false;
+    };
+  }, [employeeId, currentMonth, currentYear]);
 
   return { 
     badges, 
