@@ -36,7 +36,7 @@ export function Combobox({
   const [open, setOpen] = React.useState(false)
 
   return (
-    <Popover open={open} onOpenChange={setOpen}>
+    <Popover open={open} onOpenChange={setOpen} modal={true}>
       <PopoverTrigger asChild>
         <Button
           variant="outline"
@@ -50,7 +50,16 @@ export function Combobox({
           <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-[var(--radix-popover-trigger-width)] p-0" align="start">
+      <PopoverContent 
+        className="w-[var(--radix-popover-trigger-width)] p-0" 
+        align="start"
+        onPointerDownOutside={(e) => {
+          if (e.target && (e.target as Element).closest('[role="dialog"]')) {
+            e.preventDefault();
+          }
+        }}
+        onCloseAutoFocus={(e) => e.preventDefault()}
+      >
         <Command>
           <CommandInput placeholder={searchPlaceholder} />
           <CommandList>
