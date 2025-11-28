@@ -106,262 +106,161 @@ export const EMPLOYEE_LEVELS: EmployeeLevel[] = [
   }
 ];
 
-// Définition de tous les badges
+// Définition de tous les badges (OBJECTIFS MENSUELS)
 export const BADGE_DEFINITIONS: BadgeDefinition[] = [
-  // BADGES TÂCHES (bleu)
+  // BADGES TÂCHES (bleu) - Objectifs mensuels
   {
     id: "finisher",
     name: "Finisseur",
-    description: "Terminer 10 tâches",
+    description: "Terminer 5 tâches dans le mois",
     icon: CheckCircle2,
     category: "tasks",
     level: "bronze",
     condition: "completed_tasks",
-    requiredCount: 10,
+    requiredCount: 5,
     color: "hsl(217 91% 60%)"
   },
   {
     id: "productive",
     name: "Productif",
-    description: "Terminer 50 tâches",
+    description: "Terminer 15 tâches dans le mois",
     icon: Rocket,
     category: "tasks",
     level: "silver",
     condition: "completed_tasks",
-    requiredCount: 50,
+    requiredCount: 15,
     color: "hsl(217 91% 60%)"
   },
   {
     id: "machine",
     name: "Machine",
-    description: "Terminer 100 tâches",
+    description: "Terminer 30 tâches dans le mois",
     icon: Zap,
     category: "tasks",
     level: "gold",
     condition: "completed_tasks",
-    requiredCount: 100,
-    color: "hsl(217 91% 60%)"
-  },
-  {
-    id: "deadline_master",
-    name: "Mr/Mme Deadline",
-    description: "Terminer 20 tâches à temps",
-    icon: Clock,
-    category: "tasks",
-    level: "silver",
-    condition: "on_time_tasks",
-    requiredCount: 20,
+    requiredCount: 30,
     color: "hsl(217 91% 60%)"
   },
   {
     id: "boomerang_master",
     name: "Boomerang Master",
-    description: "Renvoyer 10 boomerangs",
+    description: "Renvoyer 3 boomerangs dans le mois",
     icon: RotateCcw,
     category: "tasks",
-    level: "gold",
+    level: "silver",
     condition: "boomerangs_sent",
-    requiredCount: 10,
+    requiredCount: 3,
     color: "hsl(217 91% 60%)"
   },
 
-  // BADGES PROJETS (vert)
+  // BADGES PROJETS (vert) - Objectifs mensuels
   {
     id: "collaborator",
     name: "Collaborateur",
-    description: "Participer à 5 projets",
+    description: "Participer à 2 projets dans le mois",
     icon: Handshake,
     category: "projects",
     level: "bronze",
     condition: "projects_participated",
-    requiredCount: 5,
+    requiredCount: 2,
     color: "hsl(142 71% 45%)"
   },
   {
     id: "project_manager",
     name: "Chef de projet",
-    description: "Être responsable de 3 projets",
+    description: "Créer 1 projet dans le mois",
     icon: Briefcase,
     category: "projects",
     level: "silver",
     condition: "projects_created",
-    requiredCount: 3,
-    color: "hsl(142 71% 45%)"
-  },
-  {
-    id: "builder",
-    name: "Bâtisseur",
-    description: "Terminer 5 projets à 100%",
-    icon: Building2,
-    category: "projects",
-    level: "gold",
-    condition: "projects_completed",
-    requiredCount: 5,
+    requiredCount: 1,
     color: "hsl(142 71% 45%)"
   },
 
-  // BADGES IDÉES (jaune)
+  // BADGES IDÉES (jaune) - Objectifs mensuels
   {
     id: "creative",
     name: "Créatif",
-    description: "Soumettre 5 idées",
+    description: "Soumettre 2 idées dans le mois",
     icon: Lightbulb,
     category: "ideas",
     level: "bronze",
     condition: "ideas_submitted",
-    requiredCount: 5,
+    requiredCount: 2,
     color: "hsl(43 96% 56%)"
   },
   {
     id: "visionary",
     name: "Visionnaire",
-    description: "Avoir 3 idées validées",
+    description: "Avoir 1 idée validée dans le mois",
     icon: Gem,
     category: "ideas",
     level: "gold",
     condition: "ideas_validated",
-    requiredCount: 3,
-    color: "hsl(43 96% 56%)"
-  },
-  {
-    id: "innovator",
-    name: "Innovateur",
-    description: "Avoir 10 idées validées",
-    icon: Sparkles,
-    category: "ideas",
-    level: "platinum",
-    condition: "ideas_validated",
-    requiredCount: 10,
+    requiredCount: 1,
     color: "hsl(43 96% 56%)"
   },
 
-  // BADGES HUMEUR (rose)
+  // BADGES HUMEUR (rose) - Objectifs mensuels
   {
     id: "regular",
     name: "Régulier",
-    description: "Voter 7 jours consécutifs",
+    description: "Voter 20 jours dans le mois",
     icon: Calendar,
     category: "mood",
     level: "bronze",
-    condition: "mood_streak",
-    requiredCount: 7,
+    condition: "mood_days",
+    requiredCount: 20,
     color: "hsl(330 81% 60%)"
   },
   {
     id: "sunshine",
     name: "Soleil",
-    description: "Avoir 20 humeurs positives",
+    description: "Avoir 15 humeurs positives dans le mois",
     icon: Sun,
     category: "mood",
     level: "silver",
     condition: "positive_moods",
-    requiredCount: 20,
-    color: "hsl(330 81% 60%)"
-  },
-  {
-    id: "good_mood",
-    name: "Mr/Mme Bonne Humeur",
-    description: "Voter 30 jours consécutifs",
-    icon: Star,
-    category: "mood",
-    level: "gold",
-    condition: "mood_streak",
-    requiredCount: 30,
+    requiredCount: 15,
     color: "hsl(330 81% 60%)"
   },
 
-  // BADGES JEU DÉTENTE (violet)
+  // BADGES JEU DÉTENTE (violet) - Objectifs mensuels
   {
     id: "investigator",
     name: "Enquêteur",
-    description: "Participer à 5 sessions",
+    description: "Participer à 2 sessions dans le mois",
     icon: Search,
     category: "game",
     level: "bronze",
     condition: "game_sessions",
-    requiredCount: 5,
-    color: "hsl(280 89% 66%)"
-  },
-  {
-    id: "sherlock",
-    name: "Sherlock",
-    description: "Gagner 3 fois en enquêteur",
-    icon: CrownIcon,
-    category: "game",
-    level: "silver",
-    condition: "investigator_wins",
-    requiredCount: 3,
-    color: "hsl(280 89% 66%)"
-  },
-  {
-    id: "mysterious",
-    name: "Mystérieux",
-    description: "Survivre 3 fois en cible",
-    icon: Drama,
-    category: "game",
-    level: "gold",
-    condition: "target_survivals",
-    requiredCount: 3,
+    requiredCount: 2,
     color: "hsl(280 89% 66%)"
   },
 
-  // BADGES OBJECTIFS (orange)
+  // BADGES OBJECTIFS (orange) - Objectifs mensuels
   {
     id: "goal_achiever",
     name: "Objectif atteint",
-    description: "Valider 10 objectifs",
+    description: "Valider 5 objectifs dans le mois",
     icon: Target,
     category: "objectives",
     level: "bronze",
     condition: "objectives_validated",
-    requiredCount: 10,
+    requiredCount: 5,
     color: "hsl(25 95% 53%)"
   },
   {
     id: "performer",
     name: "Performant",
-    description: "Atteindre 500 pts cagnotte",
+    description: "Valider 10 objectifs dans le mois",
     icon: TrendingUp,
     category: "objectives",
     level: "silver",
-    condition: "cagnotte_points",
-    requiredCount: 500,
+    condition: "objectives_validated",
+    requiredCount: 10,
     color: "hsl(25 95% 53%)"
-  },
-  {
-    id: "champion",
-    name: "Champion",
-    description: "Top 3 du mois 3 fois",
-    icon: Award,
-    category: "objectives",
-    level: "gold",
-    condition: "top_three",
-    requiredCount: 3,
-    color: "hsl(25 95% 53%)"
-  },
-
-  // BADGES FORMATION (cyan)
-  {
-    id: "learner",
-    name: "Apprenant",
-    description: "Compléter 5 quiz",
-    icon: BookOpen,
-    category: "training",
-    level: "bronze",
-    condition: "quizzes_completed",
-    requiredCount: 5,
-    color: "hsl(189 94% 43%)"
-  },
-  {
-    id: "expert",
-    name: "Expert",
-    description: "Score moyen > 80%",
-    icon: GraduationCap,
-    category: "training",
-    level: "silver",
-    condition: "quiz_average",
-    requiredCount: 80,
-    color: "hsl(189 94% 43%)"
   }
 ];
 
@@ -418,5 +317,22 @@ export function getBadgeLevelColor(level: BadgeLevel): string {
       return "hsl(280 89% 66%)";
     default:
       return "hsl(var(--muted))";
+  }
+}
+
+// Obtenir le niveau d'un badge selon son compteur annuel
+export function getBadgeTierFromCount(annualCount: number): {
+  tier: "bronze" | "silver" | "gold" | "platinum";
+  emoji: string;
+  color: string;
+} {
+  if (annualCount >= 9) {
+    return { tier: "platinum", emoji: "💎", color: "hsl(280 89% 66%)" };
+  } else if (annualCount >= 6) {
+    return { tier: "gold", emoji: "🥇", color: "hsl(43 96% 56%)" };
+  } else if (annualCount >= 3) {
+    return { tier: "silver", emoji: "🥈", color: "hsl(0 0% 70%)" };
+  } else {
+    return { tier: "bronze", emoji: "🥉", color: "hsl(25 95% 53%)" };
   }
 }

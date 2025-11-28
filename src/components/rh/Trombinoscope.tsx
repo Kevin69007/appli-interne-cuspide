@@ -8,8 +8,8 @@ import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/hooks/use-toast";
 import { Upload, Trash2, User, FileText } from "lucide-react";
 import { FichePosteDialog } from "./FichePosteDialog";
-import { useBadges } from "@/hooks/useBadges";
-import { getEmployeeLevel } from "@/lib/badges";
+import { useEmployeeBadgeSummary } from "@/hooks/useEmployeeBadgeSummary";
+import { getEmployeeLevel, getBadgeTierFromCount } from "@/lib/badges";
 import { motion } from "framer-motion";
 
 interface Employee {
@@ -207,17 +207,17 @@ interface EmployeeCardProps {
 }
 
 function EmployeeCard({ employee, canManagePhoto, onPhotoUpload, onPhotoDelete, onClick }: EmployeeCardProps) {
-  const { badges, totalUnlocked } = useBadges(employee.id);
+  const { summary, loading } = useEmployeeBadgeSummary(employee.id);
+  
+  if (loading) {
+    return <Card className="p-4"><div className="animate-pulse h-48 bg-muted rounded" /></Card>;
+  }
+
+  const totalUnlocked = summary?.total_unique_badges || 0;
   const level = getEmployeeLevel(totalUnlocked);
   
-  // Récupérer les 3 derniers badges débloqués
-  const recentBadges = badges
-    .filter(b => b.unlocked)
-    .sort((a, b) => {
-      if (!a.unlockedAt || !b.unlockedAt) return 0;
-      return b.unlockedAt.getTime() - a.unlockedAt.getTime();
-    })
-    .slice(0, 3);
+  // Récupérer les 3 derniers badges avec leur tier
+  const recentBadges = (summary?.recent_badges || []).slice(0, 3);
 
   return (
     <motion.div
@@ -270,22 +270,19 @@ function EmployeeCard({ employee, canManagePhoto, onPhotoUpload, onPhotoDelete, 
             </Badge>
           </div>
 
-          {/* Mini badges (3 derniers) */}
+          {/* Mini badges (3 derniers) avec tier */}
           {recentBadges.length > 0 && (
             <div className="absolute top-2 right-2 z-10 flex gap-1">
-              {recentBadges.map(badge => {
-                const Icon = badge.badge.icon;
+              {recentBadges.map(badgeData => {
+                const tier = getBadgeTierFromCount(badgeData.annual_count);
                 return (
                   <div
-                    key={badge.badgeId}
-                    className="w-6 h-6 rounded-full bg-background/90 backdrop-blur flex items-center justify-center"
-                    style={{ borderColor: badge.badge.color, borderWidth: '1px' }}
-                    title={badge.badge.name}
+                    key={badgeData.badge_id}
+                    className="w-7 h-7 rounded-full bg-background/90 backdrop-blur flex items-center justify-center text-xs"
+                    style={{ borderColor: tier.color, borderWidth: '2px' }}
+                    title={`x${badgeData.annual_count} ${tier.emoji}`}
                   >
-                    <Icon 
-                      className="w-3 h-3" 
-                      style={{ color: badge.badge.color }}
-                    />
+                    {tier.emoji}
                   </div>
                 );
               })}

@@ -15,7 +15,10 @@ interface BadgesSectionProps {
 }
 
 export function BadgesSection({ employeeId }: BadgesSectionProps) {
-  const { badges, stats, loading, totalUnlocked } = useBadges(employeeId);
+  const currentMonth = new Date().getMonth() + 1;
+  const currentYear = new Date().getFullYear();
+  
+  const { badges, stats, loading, totalUnlocked } = useBadges(employeeId, currentMonth, currentYear);
 
   if (loading) {
     return (
@@ -80,15 +83,15 @@ export function BadgesSection({ employeeId }: BadgesSectionProps) {
           )}
         </Card>
 
-        {/* Info sur comment gagner des badges */}
+        {/* Info sur le système mensuel */}
         <Alert>
           <Info className="h-4 w-4" />
           <AlertDescription>
-            <strong>Comment gagner des badges ?</strong>
+            <strong>Système de badges mensuels</strong>
             <br />
-            Accomplissez des actions dans l'application : terminez des tâches, soumettez des idées,
-            participez aux projets, votez pour votre humeur quotidienne, et bien plus encore !
-            Plus vous êtes actif, plus vous débloqué de badges et montez de niveau.
+            Chaque mois, accomplissez les objectifs pour débloquer des badges. 
+            Plus vous obtenez un badge dans l'année, plus il évolue : 🥉 Bronze → 🥈 Argent → 🥇 Or → 💎 Platine.
+            Les compteurs se réinitialisent chaque mois pour maintenir le challenge !
           </AlertDescription>
         </Alert>
       </div>
@@ -113,8 +116,12 @@ export function BadgesSection({ employeeId }: BadgesSectionProps) {
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
             {badges
               .sort((a, b) => {
-                if (a.unlocked && !b.unlocked) return -1;
-                if (!a.unlocked && b.unlocked) return 1;
+                // Trier par badges du mois en cours d'abord
+                if (a.currentMonthUnlocked && !b.currentMonthUnlocked) return -1;
+                if (!a.currentMonthUnlocked && b.currentMonthUnlocked) return 1;
+                // Ensuite par compteur annuel
+                if (a.annualCount !== b.annualCount) return b.annualCount - a.annualCount;
+                // Enfin par progression
                 return b.progress - a.progress;
               })
               .map((badgeProgress) => (
@@ -134,8 +141,9 @@ export function BadgesSection({ employeeId }: BadgesSectionProps) {
                 {badges
                   .filter((b) => b.badge.category === category)
                   .sort((a, b) => {
-                    if (a.unlocked && !b.unlocked) return -1;
-                    if (!a.unlocked && b.unlocked) return 1;
+                    if (a.currentMonthUnlocked && !b.currentMonthUnlocked) return -1;
+                    if (!a.currentMonthUnlocked && b.currentMonthUnlocked) return 1;
+                    if (a.annualCount !== b.annualCount) return b.annualCount - a.annualCount;
                     return b.progress - a.progress;
                   })
                   .map((badgeProgress) => (
