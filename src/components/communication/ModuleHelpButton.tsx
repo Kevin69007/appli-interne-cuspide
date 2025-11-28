@@ -3,7 +3,18 @@ import { Button } from "@/components/ui/button";
 import { HelpCircle } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { VideoPlayerDialog } from "./VideoPlayerDialog";
-import type { VideoCommunication } from "./VideosList";
+
+interface VideoTutorial {
+  id: string;
+  titre: string;
+  video_url: string;
+  description: string | null;
+  created_at: string;
+  is_active: boolean;
+  module_key: string;
+  require_confirmation?: boolean;
+  type_destinataire?: string;
+}
 
 interface ModuleHelpButtonProps {
   moduleId: string;
@@ -11,7 +22,7 @@ interface ModuleHelpButtonProps {
 }
 
 export const ModuleHelpButton = ({ moduleId, variant = "icon" }: ModuleHelpButtonProps) => {
-  const [tutorial, setTutorial] = useState<VideoCommunication | null>(null);
+  const [tutorial, setTutorial] = useState<VideoTutorial | null>(null);
   const [showVideo, setShowVideo] = useState(false);
 
   useEffect(() => {
@@ -21,10 +32,9 @@ export const ModuleHelpButton = ({ moduleId, variant = "icon" }: ModuleHelpButto
   const fetchTutorial = async () => {
     try {
       const { data } = await supabase
-        .from("video_communications")
+        .from("video_tutorials")
         .select("*")
-        .eq("module_id", moduleId)
-        .eq("is_tutorial", true)
+        .eq("module_key", moduleId)
         .eq("is_active", true)
         .single();
 

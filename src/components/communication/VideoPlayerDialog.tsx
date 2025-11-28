@@ -7,8 +7,16 @@ import { useAuth } from "@/contexts/AuthContext";
 import { CheckCircle } from "lucide-react";
 import type { VideoCommunication } from "./VideosList";
 
+type VideoType = VideoCommunication | {
+  id: string;
+  titre: string;
+  video_url: string;
+  description: string | null;
+  require_confirmation?: boolean;
+};
+
 interface VideoPlayerDialogProps {
-  video: VideoCommunication;
+  video: VideoType;
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onVideoComplete?: () => void;
@@ -43,9 +51,9 @@ export const VideoPlayerDialog = ({
 
         // Check if already viewed
         const { data: viewData } = await supabase
-          .from("video_views")
+          .from("video_communication_lectures")
           .select("id")
-          .eq("video_id", video.id)
+          .eq("video_communication_id", video.id)
           .eq("employee_id", empData.id)
           .single();
 
@@ -82,12 +90,10 @@ export const VideoPlayerDialog = ({
 
     try {
       const { error } = await supabase
-        .from("video_views")
+        .from("video_communication_lectures")
         .insert({
-          video_id: video.id,
-          employee_id: employeeId,
-          watched_duration: videoRef.current?.currentTime || 0,
-          completion_percentage: watchedPercentage
+          video_communication_id: video.id,
+          employee_id: employeeId
         });
 
       if (error) throw error;

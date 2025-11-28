@@ -89,7 +89,6 @@ const CommunicationGenerale = () => {
       const { data } = await supabase
         .from("video_communications")
         .select("*")
-        .eq("is_tutorial", false)
         .order("created_at", { ascending: false });
 
       setVideos(data || []);
