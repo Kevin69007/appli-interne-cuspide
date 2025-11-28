@@ -4599,6 +4599,7 @@ export type Database = {
         | "selection_equipe"
         | "groupe"
         | "selection_employes"
+        | "selection_individuelle"
       game_role: "target" | "investigator"
       game_status:
         | "registration_open"
@@ -4785,6 +4786,7 @@ export const Constants = {
         "selection_equipe",
         "groupe",
         "selection_employes",
+        "selection_individuelle",
       ],
       game_role: ["target", "investigator"],
       game_status: [
