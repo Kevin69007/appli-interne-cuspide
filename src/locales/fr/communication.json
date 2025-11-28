@@ -8,5 +8,14 @@
   "recipients": "Destinataires",
   "publishDate": "Date de publication",
   "expirationDate": "Date d'expiration",
-  "noCommunications": "Aucune communication trouvée"
+  "noCommunications": "Aucune communication trouvée",
+  "videos": "Vidéos",
+  "newVideo": "Nouvelle vidéo",
+  "tutorial": "Tutoriel",
+  "helpButton": "Besoin d'aide ?",
+  "videoPlayer": "Lecteur vidéo",
+  "confirmView": "Confirmer le visionnage",
+  "viewingProgress": "Progression",
+  "alreadyViewed": "Déjà visionné",
+  "watchComplete": "Visionnage complet"
 }

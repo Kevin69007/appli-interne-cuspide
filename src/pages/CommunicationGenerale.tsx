@@ -8,6 +8,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ChevronLeft } from "lucide-react";
 import { CommunicationsList } from "@/components/communication/CommunicationsList";
 import { CreateCommunicationDialog } from "@/components/communication/CreateCommunicationDialog";
+import { VideosList } from "@/components/communication/VideosList";
+import { CreateVideoDialog } from "@/components/communication/CreateVideoDialog";
+import type { VideoCommunication } from "@/components/communication/VideosList";
 import { CreateIdeaDialog } from "@/components/ideas/CreateIdeaDialog";
 import { IdeasList } from "@/components/ideas/IdeasList";
 import { CreateSurveyDialog } from "@/components/surveys/CreateSurveyDialog";
@@ -35,8 +38,10 @@ const CommunicationGenerale = () => {
   const { user } = useAuth();
   const { isAdmin, isManager, loading: roleLoading } = useUserRole();
   const [communications, setCommunications] = useState<Communication[]>([]);
+  const [videos, setVideos] = useState<VideoCommunication[]>([]);
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
+  const [videoDialogOpen, setVideoDialogOpen] = useState(false);
   const [employeeId, setEmployeeId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -61,6 +66,7 @@ const CommunicationGenerale = () => {
 
     fetchEmployee();
     fetchCommunications();
+    fetchVideos();
   }, [user, roleLoading, navigate]);
 
   const fetchCommunications = async () => {
@@ -75,6 +81,20 @@ const CommunicationGenerale = () => {
       console.error("Erreur:", error);
     } finally {
       setLoading(false);
+    }
+  };
+
+  const fetchVideos = async () => {
+    try {
+      const { data } = await supabase
+        .from("video_communications")
+        .select("*")
+        .eq("is_tutorial", false)
+        .order("created_at", { ascending: false });
+
+      setVideos(data || []);
+    } catch (error) {
+      console.error("Erreur:", error);
     }
   };
 
@@ -104,8 +124,9 @@ const CommunicationGenerale = () => {
 
       <main className="container mx-auto px-4 py-8">
         <Tabs defaultValue="communications" className="w-full">
-          <TabsList className="grid w-full grid-cols-3">
+          <TabsList className="grid w-full grid-cols-4">
             <TabsTrigger value="communications">Communications</TabsTrigger>
+            <TabsTrigger value="videos">Vidéos</TabsTrigger>
             <TabsTrigger value="surveys">Enquêtes</TabsTrigger>
             <TabsTrigger value="ideas">Idées</TabsTrigger>
           </TabsList>
@@ -134,6 +155,33 @@ const CommunicationGenerale = () => {
               open={dialogOpen}
               onOpenChange={setDialogOpen}
               onSuccess={fetchCommunications}
+            />
+          </TabsContent>
+
+          <TabsContent value="videos" className="space-y-4 mt-6">
+            {(isAdmin || isManager) && (
+              <div className="flex justify-end">
+                <Button onClick={() => setVideoDialogOpen(true)}>
+                  Nouvelle vidéo
+                </Button>
+              </div>
+            )}
+            
+            {loading ? (
+              <div className="text-center py-12">
+                <p className="text-muted-foreground">Chargement...</p>
+              </div>
+            ) : (
+              <VideosList 
+                videos={videos}
+                onRefresh={fetchVideos}
+              />
+            )}
+
+            <CreateVideoDialog
+              open={videoDialogOpen}
+              onOpenChange={setVideoDialogOpen}
+              onSuccess={fetchVideos}
             />
           </TabsContent>
 
