@@ -91,7 +91,6 @@ export function BadgesSection({ employeeId }: BadgesSectionProps) {
             <br />
             Chaque mois, accomplissez les objectifs pour débloquer des badges. 
             Plus vous obtenez un badge dans l'année, plus il évolue : 🥉 Bronze → 🥈 Argent → 🥇 Or → 💎 Platine.
-            Les compteurs se réinitialisent chaque mois pour maintenir le challenge !
           </AlertDescription>
         </Alert>
       </div>
