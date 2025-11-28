@@ -2,9 +2,9 @@ import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { Lock } from "lucide-react";
+import { Lock, TrendingUp } from "lucide-react";
 import type { BadgeProgress } from "@/hooks/useBadges";
-import { getBadgeLevelColor } from "@/lib/badges";
+import { getBadgeTierFromCount } from "@/lib/badges";
 
 interface BadgeCardProps {
   badgeProgress: BadgeProgress;
@@ -12,8 +12,9 @@ interface BadgeCardProps {
 }
 
 export function BadgeCard({ badgeProgress, size = "medium" }: BadgeCardProps) {
-  const { badge, unlocked, progress } = badgeProgress;
+  const { badge, currentMonthUnlocked, progress, annualCount } = badgeProgress;
   const Icon = badge.icon;
+  const tier = getBadgeTierFromCount(annualCount);
 
   const sizes = {
     small: {
@@ -36,6 +37,10 @@ export function BadgeCard({ badgeProgress, size = "medium" }: BadgeCardProps) {
     }
   };
 
+  // Utiliser la couleur du tier si le badge a été obtenu au moins une fois
+  const displayColor = annualCount > 0 ? tier.color : badge.color;
+  const isUnlocked = annualCount > 0;
+
   return (
     <motion.div
       initial={{ opacity: 0, scale: 0.9 }}
@@ -44,39 +49,50 @@ export function BadgeCard({ badgeProgress, size = "medium" }: BadgeCardProps) {
     >
       <Card
         className={`${sizes[size].card} relative overflow-hidden transition-all hover:shadow-lg ${
-          unlocked
+          isUnlocked
             ? "bg-gradient-to-br from-background to-muted border-2"
             : "bg-muted/50 opacity-60"
         }`}
         style={{
-          borderColor: unlocked ? badge.color : "transparent"
+          borderColor: isUnlocked ? displayColor : "transparent"
         }}
       >
-        {/* Badge Level */}
-        {unlocked && (
-          <Badge
-            className={`absolute top-2 right-2 ${sizes[size].badge}`}
-            style={{
-              backgroundColor: getBadgeLevelColor(badge.level),
-              color: "white"
-            }}
-          >
-            {badge.level}
-          </Badge>
+        {/* Compteur annuel + Tier */}
+        {annualCount > 0 && (
+          <div className="absolute top-2 right-2 flex items-center gap-1">
+            <Badge
+              className={`${sizes[size].badge} font-bold`}
+              style={{
+                backgroundColor: tier.color,
+                color: "white"
+              }}
+            >
+              {tier.emoji} x{annualCount}
+            </Badge>
+          </div>
+        )}
+
+        {/* Badge ce mois */}
+        {currentMonthUnlocked && (
+          <div className="absolute top-2 left-2">
+            <Badge variant="default" className={`${sizes[size].badge} bg-green-500`}>
+              ✓ Ce mois
+            </Badge>
+          </div>
         )}
 
         {/* Icon */}
-        <div className="flex items-center justify-center mb-2">
+        <div className="flex items-center justify-center mb-2 mt-6">
           <div
-            className={`rounded-full p-2 ${unlocked ? "bg-background" : "bg-muted"}`}
+            className={`rounded-full p-2 ${isUnlocked ? "bg-background" : "bg-muted"}`}
             style={{
-              backgroundColor: unlocked ? `${badge.color}20` : undefined
+              backgroundColor: isUnlocked ? `${displayColor}20` : undefined
             }}
           >
-            {unlocked ? (
+            {isUnlocked ? (
               <Icon
                 className={sizes[size].icon}
-                style={{ color: badge.color }}
+                style={{ color: displayColor }}
               />
             ) : (
               <Lock className={`${sizes[size].icon} text-muted-foreground`} />
@@ -87,7 +103,7 @@ export function BadgeCard({ badgeProgress, size = "medium" }: BadgeCardProps) {
         {/* Name */}
         <h4
           className={`font-semibold text-center mb-1 ${sizes[size].text} ${
-            unlocked ? "text-foreground" : "text-muted-foreground"
+            isUnlocked ? "text-foreground" : "text-muted-foreground"
           }`}
         >
           {badge.name}
@@ -102,18 +118,34 @@ export function BadgeCard({ badgeProgress, size = "medium" }: BadgeCardProps) {
           {badge.description}
         </p>
 
-        {/* Progress */}
-        {!unlocked && (
+        {/* Progress du mois en cours */}
+        {!currentMonthUnlocked && (
           <div className="space-y-1">
+            <div className="flex items-center justify-between text-[10px] text-muted-foreground mb-1">
+              <span>Progression ce mois</span>
+              <span className="flex items-center gap-1">
+                <TrendingUp className="w-3 h-3" />
+                {progress}%
+              </span>
+            </div>
             <Progress value={progress} className="h-1.5" />
-            <p className="text-center text-[10px] text-muted-foreground">
-              {progress}%
+          </div>
+        )}
+
+        {/* Progression vers le tier suivant */}
+        {isUnlocked && (
+          <div className="mt-2 text-center">
+            <p className="text-[10px] text-muted-foreground flex items-center justify-center gap-1">
+              {annualCount < 3 && `Vers 🥈: ${3 - annualCount} restant(s)`}
+              {annualCount >= 3 && annualCount < 6 && `Vers 🥇: ${6 - annualCount} restant(s)`}
+              {annualCount >= 6 && annualCount < 9 && `Vers 💎: ${9 - annualCount} restant(s)`}
+              {annualCount >= 9 && `💎 Platine atteint!`}
             </p>
           </div>
         )}
 
         {/* Unlocked indicator */}
-        {unlocked && (
+        {isUnlocked && (
           <motion.div
             initial={{ scale: 0 }}
             animate={{ scale: 1 }}
@@ -122,7 +154,7 @@ export function BadgeCard({ badgeProgress, size = "medium" }: BadgeCardProps) {
             <div
               className="absolute inset-0 bg-gradient-to-tr opacity-10"
               style={{
-                backgroundImage: `linear-gradient(to top right, ${badge.color}, transparent)`
+                backgroundImage: `linear-gradient(to top right, ${displayColor}, transparent)`
               }}
             />
           </motion.div>
