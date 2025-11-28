@@ -4431,7 +4431,11 @@ export type Database = {
         | "absence"
         | "incident"
         | "a_faire"
-      destinataire_type: "tout_le_monde" | "selection_equipe" | "groupe"
+      destinataire_type:
+        | "tout_le_monde"
+        | "selection_equipe"
+        | "groupe"
+        | "selection_employes"
       game_role: "target" | "investigator"
       game_status:
         | "registration_open"
@@ -4613,7 +4617,12 @@ export const Constants = {
         "incident",
         "a_faire",
       ],
-      destinataire_type: ["tout_le_monde", "selection_equipe", "groupe"],
+      destinataire_type: [
+        "tout_le_monde",
+        "selection_equipe",
+        "groupe",
+        "selection_employes",
+      ],
       game_role: ["target", "investigator"],
       game_status: [
         "registration_open",
