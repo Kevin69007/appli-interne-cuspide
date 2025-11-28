@@ -212,12 +212,19 @@ export const EditEmployeeDialog = ({ open, onOpenChange, employeeId, onEmployeeU
 
               <div>
                 <Label htmlFor="equipe">Équipe</Label>
-                <Input
-                  id="equipe"
+                <Select
                   value={formData.equipe}
-                  onChange={(e) => setFormData({ ...formData, equipe: e.target.value })}
-                  placeholder="Ex: Production, Direction..."
-                />
+                  onValueChange={(value) => setFormData({ ...formData, equipe: value })}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="Sélectionnez une équipe" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Direction">Direction</SelectItem>
+                    <SelectItem value="Management">Management</SelectItem>
+                    <SelectItem value="Opérationnel">Opérationnel</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
 
               <div>
