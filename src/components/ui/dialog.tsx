@@ -30,7 +30,7 @@ DialogOverlay.displayName = DialogPrimitive.Overlay.displayName
 const DialogContent = React.forwardRef<
   React.ElementRef<typeof DialogPrimitive.Content>,
   React.ComponentPropsWithoutRef<typeof DialogPrimitive.Content>
->(({ className, children, ...props }, ref) => (
+>(({ className, children, onInteractOutside, ...props }, ref) => (
   <DialogPortal>
     <DialogOverlay />
     <DialogPrimitive.Content
@@ -42,6 +42,17 @@ const DialogContent = React.forwardRef<
         "md:max-w-2xl",
         className
       )}
+      onInteractOutside={(e) => {
+        const target = e.target as Element | null
+        if (
+          target?.closest('[data-radix-popper-content-wrapper]') ||
+          target?.closest('[cmdk-root]') ||
+          target?.closest('[cmdk-item]')
+        ) {
+          e.preventDefault()
+        }
+        onInteractOutside?.(e)
+      }}
       {...props}
     >
       {children}
