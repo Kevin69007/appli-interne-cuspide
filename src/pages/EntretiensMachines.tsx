@@ -115,10 +115,12 @@ const EntretiensMachines = () => {
               <Book className="h-4 w-4 mr-2" />
               Journal d'entretien
             </Button>
-            <Button onClick={() => setShowCreateDialog(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Nouvelle tâche d'entretien
-            </Button>
+            {(isAdmin || isManager) && (
+              <Button onClick={() => setShowCreateDialog(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Nouvelle tâche d'entretien
+              </Button>
+            )}
           </div>
         </div>
 
