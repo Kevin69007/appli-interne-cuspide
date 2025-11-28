@@ -4208,6 +4208,169 @@ export type Database = {
           },
         ]
       }
+      video_communication_lectures: {
+        Row: {
+          employee_id: string
+          id: string
+          video_communication_id: string
+          viewed_at: string
+        }
+        Insert: {
+          employee_id: string
+          id?: string
+          video_communication_id: string
+          viewed_at?: string
+        }
+        Update: {
+          employee_id?: string
+          id?: string
+          video_communication_id?: string
+          viewed_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "video_communication_lectures_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employee_badge_summary"
+            referencedColumns: ["employee_id"]
+          },
+          {
+            foreignKeyName: "video_communication_lectures_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "video_communication_lectures_video_communication_id_fkey"
+            columns: ["video_communication_id"]
+            isOneToOne: false
+            referencedRelation: "video_communications"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      video_communications: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          date_expiration: string | null
+          description: string | null
+          employee_ids: string[] | null
+          equipes: string[] | null
+          groupes: string[] | null
+          id: string
+          is_active: boolean
+          require_confirmation: boolean
+          show_on_homepage: boolean
+          titre: string
+          type_destinataire: Database["public"]["Enums"]["destinataire_type"]
+          updated_at: string
+          video_url: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          date_expiration?: string | null
+          description?: string | null
+          employee_ids?: string[] | null
+          equipes?: string[] | null
+          groupes?: string[] | null
+          id?: string
+          is_active?: boolean
+          require_confirmation?: boolean
+          show_on_homepage?: boolean
+          titre: string
+          type_destinataire?: Database["public"]["Enums"]["destinataire_type"]
+          updated_at?: string
+          video_url: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          date_expiration?: string | null
+          description?: string | null
+          employee_ids?: string[] | null
+          equipes?: string[] | null
+          groupes?: string[] | null
+          id?: string
+          is_active?: boolean
+          require_confirmation?: boolean
+          show_on_homepage?: boolean
+          titre?: string
+          type_destinataire?: Database["public"]["Enums"]["destinataire_type"]
+          updated_at?: string
+          video_url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "video_communications_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "employee_badge_summary"
+            referencedColumns: ["employee_id"]
+          },
+          {
+            foreignKeyName: "video_communications_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      video_tutorials: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean
+          module_key: string
+          titre: string
+          updated_at: string
+          video_url: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          module_key: string
+          titre: string
+          updated_at?: string
+          video_url: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          module_key?: string
+          titre?: string
+          updated_at?: string
+          video_url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "video_tutorials_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "employee_badge_summary"
+            referencedColumns: ["employee_id"]
+          },
+          {
+            foreignKeyName: "video_tutorials_created_by_fkey"
+            columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       weekly_game_sessions: {
         Row: {
           anecdote: string | null
