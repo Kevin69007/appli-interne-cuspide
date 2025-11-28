@@ -18,7 +18,7 @@ interface Employee {
   photo_url: string | null;
   user_id: string | null;
   email: string | null;
-  atelier: string | null;
+  groupe: string | null;
 }
 
 export const Trombinoscope = () => {
@@ -252,6 +252,7 @@ export const Trombinoscope = () => {
         employee={selectedEmployee}
         open={fichePosteOpen}
         onOpenChange={setFichePosteOpen}
+        onEmployeeUpdated={fetchEmployees}
       />
     </>
   );
