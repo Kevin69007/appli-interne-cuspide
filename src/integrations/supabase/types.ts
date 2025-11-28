@@ -869,6 +869,41 @@ export type Database = {
         }
         Relationships: []
       }
+      employee_badges: {
+        Row: {
+          badge_id: string
+          created_at: string | null
+          employee_id: string
+          id: string
+          progress: number | null
+          unlocked_at: string | null
+        }
+        Insert: {
+          badge_id: string
+          created_at?: string | null
+          employee_id: string
+          id?: string
+          progress?: number | null
+          unlocked_at?: string | null
+        }
+        Update: {
+          badge_id?: string
+          created_at?: string | null
+          employee_id?: string
+          id?: string
+          progress?: number | null
+          unlocked_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_badges_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       employees: {
         Row: {
           created_at: string

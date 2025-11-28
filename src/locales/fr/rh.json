@@ -7,5 +7,27 @@
   "jobDescription": "Fiche de poste",
   "noEmployees": "Aucun employé trouvé",
   "isRemote": "Employé en distanciel",
-  "isRemoteDescription": "Une tâche automatique sera créée chaque jour pour la déclaration d'heures"
+  "isRemoteDescription": "Une tâche automatique sera créée chaque jour pour la déclaration d'heures",
+  "badges": {
+    "myBadges": "Mes Badges",
+    "unlocked": "Débloqué",
+    "locked": "Verrouillé",
+    "progress": "Progression",
+    "level": "Niveau",
+    "nextLevel": "Prochain niveau",
+    "remainingBadges": "badge(s) restant(s)",
+    "maxLevel": "Niveau maximum atteint !",
+    "howToEarn": "Comment gagner des badges ?",
+    "howToEarnDesc": "Accomplissez des actions dans l'application : terminez des tâches, soumettez des idées, participez aux projets, votez pour votre humeur quotidienne, et bien plus encore ! Plus vous êtes actif, plus vous débloquez de badges et montez de niveau.",
+    "categories": {
+      "all": "Tous",
+      "tasks": "Tâches",
+      "projects": "Projets",
+      "ideas": "Idées",
+      "mood": "Humeur",
+      "game": "Jeu",
+      "objectives": "Objectifs",
+      "training": "Formation"
+    }
+  }
 }
