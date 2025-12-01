@@ -43,11 +43,10 @@ export const useUserRole = () => {
     },
     enabled: !!user?.id,
     staleTime: 1000 * 60 * 5, // Cache 5 minutes
-    initialData: "user" as UserRole,
   });
 
   return { 
-    role: role || "user", 
+    role: role ?? null,
     loading: isLoading, 
     isAdmin: role === "admin", 
     isManager: role === "manager" 
