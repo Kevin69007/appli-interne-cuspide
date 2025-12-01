@@ -35,7 +35,7 @@ const Projets = () => {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [filters, setFilters] = useState<ProjectFiltersType>({
     responsableId: null,
-    statut: null,
+    statut: [],
     sortBy: null,
     sortOrder: "desc",
   });
@@ -83,8 +83,8 @@ const Projets = () => {
       if (filters.responsableId && p.responsable_id !== filters.responsableId) {
         return false;
       }
-      // Filtre par statut
-      if (filters.statut && p.statut !== filters.statut) {
+      // Filtre par statut (multi-select)
+      if (filters.statut.length > 0 && !filters.statut.includes(p.statut)) {
         return false;
       }
       return true;

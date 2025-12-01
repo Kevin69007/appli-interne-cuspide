@@ -17,11 +17,12 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Badge } from "@/components/ui/badge";
+import { MultiSelect } from "@/components/ui/multi-select";
 import { cn } from "@/lib/utils";
 
 export interface ProjectFilters {
   responsableId: string | null;
-  statut: string | null;
+  statut: string[];
   sortBy: string | null;
   sortOrder: "asc" | "desc";
 }
@@ -43,13 +44,13 @@ export const ProjectFilters = ({
 }: ProjectFiltersProps) => {
   const activeFiltersCount =
     (filters.responsableId ? 1 : 0) +
-    (filters.statut ? 1 : 0) +
+    (filters.statut.length > 0 ? 1 : 0) +
     (filters.sortBy ? 1 : 0);
 
   const handleReset = () => {
     onFiltersChange({
       responsableId: null,
-      statut: null,
+      statut: [],
       sortBy: null,
       sortOrder: "desc",
     });
@@ -91,26 +92,19 @@ export const ProjectFilters = ({
           <label className="text-sm font-medium mb-2 block">
             📊 Statut
           </label>
-          <Select
-            value={filters.statut || "tous"}
-            onValueChange={(value) =>
-              onFiltersChange({
-                ...filters,
-                statut: value === "tous" ? null : value,
-              })
+          <MultiSelect
+            selectedValues={filters.statut}
+            onSelectedValuesChange={(values) =>
+              onFiltersChange({ ...filters, statut: values })
             }
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Tous les statuts" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="tous">Tous les statuts</SelectItem>
-              <SelectItem value="en_cours">🟢 En cours</SelectItem>
-              <SelectItem value="a_venir">🔵 À venir</SelectItem>
-              <SelectItem value="en_pause">🟠 En pause</SelectItem>
-              <SelectItem value="termine">✅ Terminé</SelectItem>
-            </SelectContent>
-          </Select>
+            options={[
+              { value: "en_cours", label: "🟢 En cours" },
+              { value: "a_venir", label: "🔵 À venir" },
+              { value: "en_pause", label: "🟠 En pause" },
+              { value: "termine", label: "✅ Terminé" },
+            ]}
+            placeholder="Tous les statuts"
+          />
         </div>
 
         {/* Tri */}
@@ -121,12 +115,14 @@ export const ProjectFilters = ({
           <Select
             value={`${filters.sortBy || "default"}_${filters.sortOrder}`}
             onValueChange={(value) => {
-              const [sortBy, sortOrder] = value.split("_");
-              onFiltersChange({
-                ...filters,
-                sortBy: sortBy === "default" ? null : sortBy,
-                sortOrder: (sortOrder as "asc" | "desc") || "desc",
-              });
+              if (value === "default_desc") {
+                onFiltersChange({ ...filters, sortBy: null, sortOrder: "desc" });
+                return;
+              }
+              const lastUnderscoreIndex = value.lastIndexOf("_");
+              const sortBy = value.substring(0, lastUnderscoreIndex);
+              const sortOrder = value.substring(lastUnderscoreIndex + 1) as "asc" | "desc";
+              onFiltersChange({ ...filters, sortBy, sortOrder });
             }}
           >
             <SelectTrigger>
