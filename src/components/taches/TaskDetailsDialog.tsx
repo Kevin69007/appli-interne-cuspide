@@ -2,12 +2,16 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { Switch } from "@/components/ui/switch";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Combobox } from "@/components/ui/combobox";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Calendar, User, CheckCircle2, XCircle, RotateCcw, Send, Info, Lock, CalendarPlus, History, MessageSquare } from "lucide-react";
+import { Calendar, User, CheckCircle2, XCircle, RotateCcw, Send, Info, Lock, CalendarPlus, History, MessageSquare, Edit2, Star } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { TaskCommentsHierarchical } from "./TaskCommentsHierarchical";
 import { SubTasksList } from "./SubTasksList";
@@ -36,9 +40,15 @@ export const TaskDetailsDialog = ({
   const [currentEmployeeName, setCurrentEmployeeName] = useState("");
   const [isEditingDeadline, setIsEditingDeadline] = useState(false);
   const [tempDeadline, setTempDeadline] = useState(task.date_echeance);
+  const [isEditingTitle, setIsEditingTitle] = useState(false);
+  const [isEditingDescription, setIsEditingDescription] = useState(false);
+  const [tempTitle, setTempTitle] = useState(task.titre);
+  const [tempDescription, setTempDescription] = useState(task.description || "");
+  const [employees, setEmployees] = useState<{id: string, nom: string, prenom: string}[]>([]);
 
   useEffect(() => {
     fetchCurrentEmployeeName();
+    fetchEmployees();
   }, [currentEmployeeId]);
 
   const fetchCurrentEmployeeName = async () => {
@@ -53,6 +63,14 @@ export const TaskDetailsDialog = ({
     }
   };
 
+  const fetchEmployees = async () => {
+    const { data } = await supabase
+      .from("employees")
+      .select("id, nom, prenom")
+      .order("nom");
+    if (data) setEmployees(data);
+  };
+
   const handleInlineDeadlineUpdate = async () => {
     if (!tempDeadline) return;
     setLoading(true);
@@ -65,6 +83,109 @@ export const TaskDetailsDialog = ({
       toast.success("Date mise à jour");
       setIsEditingDeadline(false);
       onUpdate();
+    } catch (error) {
+      toast.error("Erreur lors de la mise à jour");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUpdateTitle = async () => {
+    if (!tempTitle.trim()) {
+      toast.error("Le titre ne peut pas être vide");
+      return;
+    }
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from("tasks")
+        .update({ titre: tempTitle.trim() })
+        .eq("id", task.id);
+      if (error) throw error;
+      toast.success("Titre mis à jour");
+      setIsEditingTitle(false);
+      onUpdate();
+    } catch (error) {
+      toast.error("Erreur lors de la mise à jour");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUpdateDescription = async () => {
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from("tasks")
+        .update({ description: tempDescription.trim() || null })
+        .eq("id", task.id);
+      if (error) throw error;
+      toast.success("Description mise à jour");
+      setIsEditingDescription(false);
+      onUpdate();
+    } catch (error) {
+      toast.error("Erreur lors de la mise à jour");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUpdatePriority = async (newPriority: string) => {
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from("tasks")
+        .update({ priorite: newPriority })
+        .eq("id", task.id);
+      if (error) throw error;
+      toast.success("Priorité mise à jour");
+      onUpdate();
+    } catch (error) {
+      toast.error("Erreur lors de la mise à jour");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleToggleIsPriority = async (checked: boolean) => {
+    setLoading(true);
+    try {
+      const updates: any = { is_priority: checked };
+      if (checked) updates.priorite = "haute";
+      
+      const { error } = await supabase
+        .from("tasks")
+        .update(updates)
+        .eq("id", task.id);
+      if (error) throw error;
+      toast.success(checked ? "Tâche marquée comme prioritaire" : "Tâche retirée des prioritaires");
+      onUpdate();
+    } catch (error) {
+      toast.error("Erreur lors de la mise à jour");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleUpdateAssignee = async (newAssigneeId: string) => {
+    setLoading(true);
+    try {
+      const { error } = await supabase
+        .from("tasks")
+        .update({ assigned_to: newAssigneeId })
+        .eq("id", task.id);
+      if (error) throw error;
+      toast.success("Assignation mise à jour");
+      onUpdate();
+      
+      // Notification au nouvel assigné
+      await supabase.from("notifications").insert({
+        employee_id: newAssigneeId,
+        titre: "Tâche assignée",
+        message: `Vous êtes maintenant assigné à la tâche : ${task.titre}`,
+        type: "task_assigned",
+        url: "/taches",
+      });
     } catch (error) {
       toast.error("Erreur lors de la mise à jour");
     } finally {
@@ -189,17 +310,101 @@ export const TaskDetailsDialog = ({
           <DialogHeader>
             <div className="flex items-start justify-between">
               <div className="flex-1">
-                <DialogTitle className="text-2xl">{task.titre}</DialogTitle>
-                {task.description && (
-                  <p className="text-muted-foreground mt-2">{task.description}</p>
+                {isCreator ? (
+                  isEditingTitle ? (
+                    <div className="flex items-center gap-2">
+                      <Input
+                        value={tempTitle}
+                        onChange={(e) => setTempTitle(e.target.value)}
+                        className="text-2xl font-semibold"
+                        autoFocus
+                      />
+                      <Button size="sm" onClick={handleUpdateTitle} disabled={loading}>OK</Button>
+                      <Button size="sm" variant="ghost" onClick={() => {
+                        setIsEditingTitle(false);
+                        setTempTitle(task.titre);
+                      }}>Annuler</Button>
+                    </div>
+                  ) : (
+                    <button 
+                      onClick={() => setIsEditingTitle(true)} 
+                      className="text-2xl font-semibold hover:text-primary underline decoration-dotted cursor-pointer text-left w-full"
+                    >
+                      {task.titre}
+                      <Edit2 className="h-4 w-4 ml-2 inline opacity-50" />
+                    </button>
+                  )
+                ) : (
+                  <DialogTitle className="text-2xl">{task.titre}</DialogTitle>
+                )}
+                
+                {isCreator ? (
+                  isEditingDescription ? (
+                    <div className="mt-2 space-y-2">
+                      <Textarea
+                        value={tempDescription}
+                        onChange={(e) => setTempDescription(e.target.value)}
+                        placeholder="Description..."
+                        rows={3}
+                        autoFocus
+                      />
+                      <div className="flex gap-2">
+                        <Button size="sm" onClick={handleUpdateDescription} disabled={loading}>OK</Button>
+                        <Button size="sm" variant="ghost" onClick={() => {
+                          setIsEditingDescription(false);
+                          setTempDescription(task.description || "");
+                        }}>Annuler</Button>
+                      </div>
+                    </div>
+                  ) : (
+                    <button 
+                      onClick={() => setIsEditingDescription(true)}
+                      className="text-muted-foreground mt-2 hover:text-primary underline decoration-dotted cursor-pointer text-left w-full"
+                    >
+                      {task.description || "Ajouter une description..."}
+                      <Edit2 className="h-3 w-3 ml-2 inline opacity-50" />
+                    </button>
+                  )
+                ) : (
+                  task.description && (
+                    <p className="text-muted-foreground mt-2">{task.description}</p>
+                  )
                 )}
               </div>
             </div>
           </DialogHeader>
 
           <div className="space-y-4">
-            <div className="flex flex-wrap gap-2">
-              <Badge className={getPriorityColor(task.priorite)}>{task.priorite}</Badge>
+            <div className="flex flex-wrap gap-2 items-center">
+              {isCreator ? (
+                <Select value={task.priorite} onValueChange={handleUpdatePriority} disabled={loading}>
+                  <SelectTrigger className="w-auto border-none p-0 h-auto">
+                    <Badge className={getPriorityColor(task.priorite)}>{task.priorite}</Badge>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="basse">Basse</SelectItem>
+                    <SelectItem value="normale">Normale</SelectItem>
+                    <SelectItem value="haute">Haute</SelectItem>
+                  </SelectContent>
+                </Select>
+              ) : (
+                <Badge className={getPriorityColor(task.priorite)}>{task.priorite}</Badge>
+              )}
+              
+              {isCreator && (
+                <div className="flex items-center gap-2 ml-2">
+                  <Switch 
+                    checked={task.is_priority || false} 
+                    onCheckedChange={handleToggleIsPriority}
+                    disabled={loading}
+                  />
+                  <Label className="text-sm cursor-pointer" onClick={() => handleToggleIsPriority(!task.is_priority)}>
+                    <Star className="h-3 w-3 inline mr-1" />
+                    Prioritaire (suivi quotidien)
+                  </Label>
+                </div>
+              )}
+              
               {task.statut === "terminee" ? (
                 <Badge className="bg-green-500/20 text-green-700">
                   <CheckCircle2 className="h-3 w-3 mr-1" />
@@ -295,9 +500,25 @@ export const TaskDetailsDialog = ({
               {task.assigned_employee && (
                 <div className="flex items-center gap-2 text-sm">
                   <User className="h-4 w-4 text-muted-foreground" />
-                  <span>
-                    Assigné à : {task.assigned_employee.prenom} {task.assigned_employee.nom}
-                  </span>
+                  {isCreator ? (
+                    <div className="flex items-center gap-2">
+                      <span className="text-muted-foreground">Assigné à :</span>
+                      <Combobox
+                        value={task.assigned_to}
+                        onValueChange={handleUpdateAssignee}
+                        options={employees.map(emp => ({
+                          value: emp.id,
+                          label: `${emp.prenom} ${emp.nom}`
+                        }))}
+                        placeholder="Changer l'assigné"
+                        className="w-auto"
+                      />
+                    </div>
+                  ) : (
+                    <span>
+                      Assigné à : {task.assigned_employee.prenom} {task.assigned_employee.nom}
+                    </span>
+                  )}
                 </div>
               )}
 
