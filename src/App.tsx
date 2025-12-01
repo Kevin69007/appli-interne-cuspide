@@ -2,6 +2,7 @@ import { Toaster } from "sonner";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AuthProvider } from "@/contexts/AuthContext";
+import { EmployeeProvider } from "@/contexts/EmployeeContext";
 import ErrorBoundary from "@/components/ErrorBoundary";
 import { ThemeProvider } from "@/components/ThemeProvider";
 import { useEffect } from "react";
@@ -66,40 +67,42 @@ const App = () => {
           <Toaster />
           <BrowserRouter>
             <AuthProvider>
-            <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/auth" element={<Auth />} />
-            <Route path="/fiches-de-poste" element={<JobDocuments />} />
-            <Route path="/protocoles" element={<Protocols />} />
-            <Route path="/quiz" element={<Quiz />} />
-            <Route path="/indicateurs-primes" element={<IndicateursPrimes />} />
-            <Route path="/indicateurs-primes/employe" element={<IndicateursPrimesEmploye />} />
-            <Route path="/indicateurs-primes/admin" element={<IndicateursPrimesAdmin />} />
-            {/* Backwards compatibility */}
-            <Route path="/objectifs-primes" element={<IndicateursPrimes />} />
-            <Route path="/objectifs-primes/employe" element={<IndicateursPrimesEmploye />} />
-            <Route path="/objectifs-primes/admin" element={<IndicateursPrimesAdmin />} />
-            <Route path="/communication-generale" element={<CommunicationGenerale />} />
-            <Route path="/taches" element={<Taches />} />
-            <Route path="/conges-mood-bar" element={<CongesMoodBar />} />
-            <Route path="/agenda" element={<Agenda />} />
-            <Route path="/logs" element={<Logs />} />
-            <Route path="/detente" element={<Detente />} />
-            <Route path="/detente-test" element={<DetenteTest />} />
-            <Route path="/entretiens-machines" element={<EntretiensMachines />} />
-            <Route path="/commandes-stock" element={<CommandesStock />} />
-            <Route path="/formation" element={<Formation />} />
-          <Route path="/suivi-direction" element={<SuiviDirection />} />
-          <Route path="/projets" element={<Projets />} />
-          <Route path="/projets/:id" element={<ProjetDetails />} />
-          <Route path="/reunions" element={<Reunions />} />
-          <Route path="/reunions/:id" element={<ReunionDetails />} />
-          <Route path="/reunions/admin" element={<AdminReunions />} />
-          <Route path="/calendrier-projets" element={<CalendrierProjets />} />
-          <Route path="*" element={<NotFound />} />
-            </Routes>
-          </AuthProvider>
-        </BrowserRouter>
+              <EmployeeProvider>
+                <Routes>
+                  <Route path="/" element={<Index />} />
+                  <Route path="/auth" element={<Auth />} />
+                  <Route path="/fiches-de-poste" element={<JobDocuments />} />
+                  <Route path="/protocoles" element={<Protocols />} />
+                  <Route path="/quiz" element={<Quiz />} />
+                  <Route path="/indicateurs-primes" element={<IndicateursPrimes />} />
+                  <Route path="/indicateurs-primes/employe" element={<IndicateursPrimesEmploye />} />
+                  <Route path="/indicateurs-primes/admin" element={<IndicateursPrimesAdmin />} />
+                  {/* Backwards compatibility */}
+                  <Route path="/objectifs-primes" element={<IndicateursPrimes />} />
+                  <Route path="/objectifs-primes/employe" element={<IndicateursPrimesEmploye />} />
+                  <Route path="/objectifs-primes/admin" element={<IndicateursPrimesAdmin />} />
+                  <Route path="/communication-generale" element={<CommunicationGenerale />} />
+                  <Route path="/taches" element={<Taches />} />
+                  <Route path="/conges-mood-bar" element={<CongesMoodBar />} />
+                  <Route path="/agenda" element={<Agenda />} />
+                  <Route path="/logs" element={<Logs />} />
+                  <Route path="/detente" element={<Detente />} />
+                  <Route path="/detente-test" element={<DetenteTest />} />
+                  <Route path="/entretiens-machines" element={<EntretiensMachines />} />
+                  <Route path="/commandes-stock" element={<CommandesStock />} />
+                  <Route path="/formation" element={<Formation />} />
+                  <Route path="/suivi-direction" element={<SuiviDirection />} />
+                  <Route path="/projets" element={<Projets />} />
+                  <Route path="/projets/:id" element={<ProjetDetails />} />
+                  <Route path="/reunions" element={<Reunions />} />
+                  <Route path="/reunions/:id" element={<ReunionDetails />} />
+                  <Route path="/reunions/admin" element={<AdminReunions />} />
+                  <Route path="/calendrier-projets" element={<CalendrierProjets />} />
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </EmployeeProvider>
+            </AuthProvider>
+          </BrowserRouter>
         </ThemeProvider>
       </QueryClientProvider>
     </ErrorBoundary>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
+import { useEmployee } from "@/contexts/EmployeeContext";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useTranslation } from "react-i18next";
 import { Sparkles } from "lucide-react";
@@ -15,11 +16,10 @@ import { AnimatedBackground } from "@/components/AnimatedBackground";
 import { useModuleVisibility } from "@/hooks/useModuleVisibility";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { EmployeeAvatar } from "@/components/ui/employee-avatar";
-import { useQuery } from "@tanstack/react-query";
-import { supabase } from "@/integrations/supabase/client";
 
 const Index = () => {
   const { user, loading } = useAuth();
+  const { employee } = useEmployee();
   const { isAdmin, isManager } = useUserRole();
   const navigate = useNavigate();
   const { t } = useTranslation();
@@ -35,21 +35,6 @@ const Index = () => {
       console.log("User authenticated:", user.email);
     }
   }, [user, loading]);
-
-  // Fetch current employee data including photo
-  const { data: currentEmployee } = useQuery({
-    queryKey: ['current-employee', user?.id],
-    queryFn: async () => {
-      if (!user?.id) return null;
-      const { data } = await supabase
-        .from('employees')
-        .select('id, nom, prenom, photo_url')
-        .eq('user_id', user.id)
-        .maybeSingle();
-      return data;
-    },
-    enabled: !!user?.id,
-  });
 
   if (loading) {
     return (
@@ -83,11 +68,11 @@ const Index = () => {
             <div className="flex items-center gap-2 sm:gap-4">
               <span className="hidden md:inline-block text-sm text-muted-foreground truncate max-w-[150px] lg:max-w-none">{user.email}</span>
               <NotificationBell />
-              {currentEmployee && (
+              {employee && (
                 <EmployeeAvatar
-                  photoUrl={currentEmployee.photo_url}
-                  nom={currentEmployee.nom}
-                  prenom={currentEmployee.prenom}
+                  photoUrl={employee.photo_url}
+                  nom={employee.nom}
+                  prenom={employee.prenom}
                   size="md"
                 />
               )}

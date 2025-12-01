@@ -25,6 +25,7 @@ interface ProjectCardProps {
   };
   onUpdate: () => void;
   currentEmployeeId: string | null;
+  canEdit: boolean;
 }
 
 const getStatutColor = (statut: string) => {
@@ -57,12 +58,9 @@ const getStatutLabel = (statut: string) => {
   }
 };
 
-export const ProjectCard = memo(({ project, onUpdate, currentEmployeeId }: ProjectCardProps) => {
+export const ProjectCard = memo(({ project, onUpdate, currentEmployeeId, canEdit }: ProjectCardProps) => {
   const navigate = useNavigate();
-  const { isAdmin, isManager } = useUserRole();
   const [showEditDialog, setShowEditDialog] = useState(false);
-
-  const canEdit = isAdmin || isManager;
 
   const statutColor = useMemo(() => getStatutColor(project.statut), [project.statut]);
   const statutLabel = useMemo(() => getStatutLabel(project.statut), [project.statut]);

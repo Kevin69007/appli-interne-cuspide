@@ -1,9 +1,12 @@
-import { useState, useEffect, useMemo, useCallback } from "react";
+import { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useEmployee } from "@/contexts/EmployeeContext";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, ArrowLeft, Briefcase } from "lucide-react";
 import { CreateProjectDialog } from "@/components/projects/CreateProjectDialog";
@@ -27,40 +30,13 @@ const Projets = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { isAdmin, isManager } = useUserRole();
-  const [projects, setProjects] = useState<Project[]>([]);
-  const [loading, setLoading] = useState(true);
+  const { employee } = useEmployee();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
-  const [currentEmployeeId, setCurrentEmployeeId] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!user) {
-      navigate("/auth");
-      return;
-    }
-    fetchCurrentEmployee();
-  }, [user, navigate]);
-
-  useEffect(() => {
-    if (currentEmployeeId) {
-      fetchProjects();
-    }
-  }, [currentEmployeeId]);
-
-  const fetchCurrentEmployee = async () => {
-    const { data, error } = await supabase
-      .from("employees")
-      .select("id")
-      .eq("user_id", user?.id)
-      .maybeSingle();
-
-    if (!error && data) {
-      setCurrentEmployeeId(data.id);
-    }
-  };
-
-  const fetchProjects = useCallback(async () => {
-    setLoading(true);
-    try {
+  // Parallelize employee and projects queries
+  const { data: projects = [], isLoading: loading, refetch: refetchProjects } = useQuery({
+    queryKey: ['projects'],
+    queryFn: async () => {
       const { data, error } = await supabase
         .from("projects")
         .select(`
@@ -70,31 +46,66 @@ const Projets = () => {
         .order("created_at", { ascending: false });
 
       if (error) throw error;
-      setProjects(data || []);
-    } catch (error) {
-      console.error("Error fetching projects:", error);
-      toast.error("Erreur lors du chargement des projets");
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+      return data || [];
+    },
+    staleTime: 1000 * 60 * 2, // Cache 2 minutes
+  });
 
-  const enCoursProjects = useMemo(
-    () => projects.filter((p) => p.statut === "en_cours"),
-    [projects]
+  const canEdit = isAdmin || isManager;
+
+  const enCoursProjects = useMemo(() => projects.filter((p) => p.statut === "en_cours"), [projects]);
+  const aVenirProjects = useMemo(() => projects.filter((p) => p.statut === "a_venir"), [projects]);
+  const terminesProjects = useMemo(() => projects.filter((p) => p.statut === "termine"), [projects]);
+  const enPauseProjects = useMemo(() => projects.filter((p) => p.statut === "en_pause"), [projects]);
+
+  const SkeletonCard = () => (
+    <Card className="p-6 animate-pulse">
+      <div className="space-y-4">
+        <div className="h-5 bg-muted rounded w-3/4" />
+        <div className="h-4 bg-muted rounded w-1/2" />
+        <div className="space-y-2">
+          <div className="h-3 bg-muted rounded w-full" />
+          <div className="h-2 bg-muted rounded w-full" />
+        </div>
+        <div className="flex gap-2">
+          <div className="h-6 bg-muted rounded w-20" />
+          <div className="h-6 bg-muted rounded w-24" />
+        </div>
+      </div>
+    </Card>
   );
-  const aVenirProjects = useMemo(
-    () => projects.filter((p) => p.statut === "a_venir"),
-    [projects]
-  );
-  const terminesProjects = useMemo(
-    () => projects.filter((p) => p.statut === "termine"),
-    [projects]
-  );
-  const enPauseProjects = useMemo(
-    () => projects.filter((p) => p.statut === "en_pause"),
-    [projects]
-  );
+
+  const renderProjects = (projectList: Project[]) => {
+    if (loading) {
+      return (
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          {[1, 2, 3].map((i) => <SkeletonCard key={i} />)}
+        </div>
+      );
+    }
+
+    if (projectList.length === 0) {
+      return (
+        <p className="text-center text-muted-foreground py-8">
+          Aucun projet dans cette catégorie
+        </p>
+      );
+    }
+
+    return (
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        {projectList.map((project) => (
+          <ProjectCard
+            key={project.id}
+            project={project}
+            onUpdate={refetchProjects}
+            currentEmployeeId={employee?.id || null}
+            canEdit={canEdit}
+          />
+        ))}
+      </div>
+    );
+  };
 
   return (
     <div className="min-h-screen bg-background p-4">
@@ -134,87 +145,19 @@ const Projets = () => {
           </TabsList>
 
           <TabsContent value="en_cours" className="mt-6">
-            {loading ? (
-              <p className="text-center text-muted-foreground">Chargement...</p>
-            ) : enCoursProjects.length === 0 ? (
-              <p className="text-center text-muted-foreground">
-                Aucun projet en cours
-              </p>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {enCoursProjects.map((project) => (
-                  <ProjectCard
-                    key={project.id}
-                    project={project}
-                    onUpdate={fetchProjects}
-                    currentEmployeeId={currentEmployeeId}
-                  />
-                ))}
-              </div>
-            )}
+            {renderProjects(enCoursProjects)}
           </TabsContent>
 
           <TabsContent value="a_venir" className="mt-6">
-            {loading ? (
-              <p className="text-center text-muted-foreground">Chargement...</p>
-            ) : aVenirProjects.length === 0 ? (
-              <p className="text-center text-muted-foreground">
-                Aucun projet à venir
-              </p>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {aVenirProjects.map((project) => (
-                  <ProjectCard
-                    key={project.id}
-                    project={project}
-                    onUpdate={fetchProjects}
-                    currentEmployeeId={currentEmployeeId}
-                  />
-                ))}
-              </div>
-            )}
+            {renderProjects(aVenirProjects)}
           </TabsContent>
 
           <TabsContent value="en_pause" className="mt-6">
-            {loading ? (
-              <p className="text-center text-muted-foreground">Chargement...</p>
-            ) : enPauseProjects.length === 0 ? (
-              <p className="text-center text-muted-foreground">
-                Aucun projet en pause
-              </p>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {enPauseProjects.map((project) => (
-                  <ProjectCard
-                    key={project.id}
-                    project={project}
-                    onUpdate={fetchProjects}
-                    currentEmployeeId={currentEmployeeId}
-                  />
-                ))}
-              </div>
-            )}
+            {renderProjects(enPauseProjects)}
           </TabsContent>
 
           <TabsContent value="termines" className="mt-6">
-            {loading ? (
-              <p className="text-center text-muted-foreground">Chargement...</p>
-            ) : terminesProjects.length === 0 ? (
-              <p className="text-center text-muted-foreground">
-                Aucun projet terminé
-              </p>
-            ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {terminesProjects.map((project) => (
-                  <ProjectCard
-                    key={project.id}
-                    project={project}
-                    onUpdate={fetchProjects}
-                    currentEmployeeId={currentEmployeeId}
-                  />
-                ))}
-              </div>
-            )}
+            {renderProjects(terminesProjects)}
           </TabsContent>
         </Tabs>
       </div>
@@ -222,8 +165,8 @@ const Projets = () => {
       <CreateProjectDialog
         open={showCreateDialog}
         onOpenChange={setShowCreateDialog}
-        currentEmployeeId={currentEmployeeId}
-        onProjectCreated={fetchProjects}
+        currentEmployeeId={employee?.id || null}
+        onProjectCreated={refetchProjects}
       />
     </div>
   );

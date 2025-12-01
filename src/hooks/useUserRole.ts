@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 
@@ -6,16 +6,11 @@ export type UserRole = "admin" | "manager" | "user" | null;
 
 export const useUserRole = () => {
   const { user } = useAuth();
-  const [role, setRole] = useState<UserRole>(null);
-  const [loading, setLoading] = useState(true);
 
-  useEffect(() => {
-    const fetchUserRole = async () => {
-      if (!user) {
-        setRole(null);
-        setLoading(false);
-        return;
-      }
+  const { data: role, isLoading } = useQuery({
+    queryKey: ['user-role', user?.id],
+    queryFn: async () => {
+      if (!user?.id) return null;
 
       try {
         const { data, error } = await supabase
@@ -25,30 +20,36 @@ export const useUserRole = () => {
 
         if (error) {
           console.error("Error fetching user role:", error);
-          setRole("user");
-        } else if (data && data.length > 0) {
+          return "user" as UserRole;
+        }
+
+        if (data && data.length > 0) {
           // Prioritize admin > manager > user
           const roles = data.map(r => r.role);
           if (roles.includes("admin")) {
-            setRole("admin");
+            return "admin" as UserRole;
           } else if (roles.includes("manager")) {
-            setRole("manager");
+            return "manager" as UserRole;
           } else {
-            setRole("user");
+            return "user" as UserRole;
           }
-        } else {
-          setRole("user");
         }
+
+        return "user" as UserRole;
       } catch (error) {
         console.error("Error:", error);
-        setRole("user");
-      } finally {
-        setLoading(false);
+        return "user" as UserRole;
       }
-    };
+    },
+    enabled: !!user?.id,
+    staleTime: 1000 * 60 * 5, // Cache 5 minutes
+    initialData: "user" as UserRole,
+  });
 
-    fetchUserRole();
-  }, [user]);
-
-  return { role, loading, isAdmin: role === "admin", isManager: role === "manager" };
+  return { 
+    role: role || "user", 
+    loading: isLoading, 
+    isAdmin: role === "admin", 
+    isManager: role === "manager" 
+  };
 };

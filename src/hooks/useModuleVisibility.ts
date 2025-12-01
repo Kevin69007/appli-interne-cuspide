@@ -1,4 +1,5 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useUserRole } from "./useUserRole";
 
@@ -17,39 +18,34 @@ export interface ModuleConfig {
 }
 
 export const useModuleVisibility = () => {
-  const [modules, setModules] = useState<ModuleConfig[]>([]);
-  const [loading, setLoading] = useState(true);
   const { isAdmin, isManager } = useUserRole();
+  const queryClient = useQueryClient();
 
+  const { data: modules = [], isLoading } = useQuery({
+    queryKey: ['modules', isAdmin, isManager],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("module_visibility")
+        .select("*")
+        .eq("is_enabled", true)
+        .order("display_order", { ascending: true });
+
+      if (error) throw error;
+
+      // Filter modules based on user role
+      const filteredModules = data?.filter((module) => {
+        if (isAdmin) return module.visible_to_admin;
+        if (isManager) return module.visible_to_manager;
+        return module.visible_to_user;
+      }) || [];
+
+      return filteredModules;
+    },
+    staleTime: 1000 * 60 * 5, // Cache 5 minutes
+  });
+
+  // Subscribe to realtime changes
   useEffect(() => {
-    const fetchModules = async () => {
-      try {
-        const { data, error } = await supabase
-          .from("module_visibility")
-          .select("*")
-          .eq("is_enabled", true)
-          .order("display_order", { ascending: true });
-
-        if (error) throw error;
-
-        // Filter modules based on user role
-        const filteredModules = data?.filter((module) => {
-          if (isAdmin) return module.visible_to_admin;
-          if (isManager) return module.visible_to_manager;
-          return module.visible_to_user;
-        }) || [];
-
-        setModules(filteredModules);
-      } catch (error) {
-        console.error("Error fetching modules:", error);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    fetchModules();
-
-    // Subscribe to changes
     const channel = supabase
       .channel("module_visibility_changes")
       .on(
@@ -60,7 +56,7 @@ export const useModuleVisibility = () => {
           table: "module_visibility",
         },
         () => {
-          fetchModules();
+          queryClient.invalidateQueries({ queryKey: ['modules'] });
         }
       )
       .subscribe();
@@ -68,7 +64,7 @@ export const useModuleVisibility = () => {
     return () => {
       supabase.removeChannel(channel);
     };
-  }, [isAdmin, isManager]);
+  }, [queryClient]);
 
-  return { modules, loading };
+  return { modules, loading: isLoading };
 };
