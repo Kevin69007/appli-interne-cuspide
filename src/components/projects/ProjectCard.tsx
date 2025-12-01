@@ -146,6 +146,7 @@ export const ProjectCard = memo(({ project, onUpdate, currentEmployeeId, canEdit
       open={showEditDialog}
       onOpenChange={setShowEditDialog}
       project={project}
+      currentEmployeeId={currentEmployeeId}
       onProjectUpdated={onUpdate}
     />
     </>

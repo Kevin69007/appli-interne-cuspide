@@ -6,8 +6,10 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
+import { Lock } from "lucide-react";
 
 interface Employee {
   id: string;
@@ -19,6 +21,7 @@ interface EditProjectDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   project: any;
+  currentEmployeeId: string | null;
   onProjectUpdated: () => void;
 }
 
@@ -26,8 +29,10 @@ export const EditProjectDialog = ({
   open,
   onOpenChange,
   project,
+  currentEmployeeId,
   onProjectUpdated,
 }: EditProjectDialogProps) => {
+  const isCreator = project.created_by === currentEmployeeId;
   const [loading, setLoading] = useState(false);
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [formData, setFormData] = useState({
@@ -148,12 +153,33 @@ export const EditProjectDialog = ({
 
           <div>
             <Label htmlFor="date_echeance">Date d'échéance</Label>
-            <Input
-              id="date_echeance"
-              type="date"
-              value={formData.date_echeance}
-              onChange={(e) => setFormData({ ...formData, date_echeance: e.target.value })}
-            />
+            {isCreator ? (
+              <Input
+                id="date_echeance"
+                type="date"
+                value={formData.date_echeance}
+                onChange={(e) => setFormData({ ...formData, date_echeance: e.target.value })}
+              />
+            ) : (
+              <div className="flex items-center gap-2 p-2 border rounded bg-muted/50">
+                <span className="text-sm">
+                  {formData.date_echeance 
+                    ? new Date(formData.date_echeance).toLocaleDateString("fr-FR")
+                    : "Non définie"}
+                </span>
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger>
+                      <Lock className="h-4 w-4 text-muted-foreground" />
+                    </TooltipTrigger>
+                    <TooltipContent className="max-w-xs">
+                      Ce projet a été créé par une autre personne.
+                      Vous devez lui demander de changer la date.
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              </div>
+            )}
           </div>
 
           <div>

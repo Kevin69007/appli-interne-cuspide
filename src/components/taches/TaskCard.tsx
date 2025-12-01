@@ -443,19 +443,36 @@ export const TaskCard = ({ task, currentEmployeeId, onUpdate, isHelpRequest, isM
                 <MessageSquare className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
                 <span className="hidden sm:inline">Commenter</span>
               </Button>
-              <Button
-                size="sm"
-                variant="ghost"
-                className="h-8 px-2 sm:px-3 text-xs"
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setActiveAction(activeAction === "date" ? null : "date");
-                  setActionInput("");
-                }}
-              >
-                <Calendar className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
-                <span className="hidden sm:inline">Date</span>
-              </Button>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <span>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="h-8 px-2 sm:px-3 text-xs"
+                        disabled={task.created_by !== currentEmployeeId}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          if (task.created_by === currentEmployeeId) {
+                            setActiveAction(activeAction === "date" ? null : "date");
+                            setActionInput("");
+                          }
+                        }}
+                      >
+                        <Calendar className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
+                        <span className="hidden sm:inline">Date</span>
+                      </Button>
+                    </span>
+                  </TooltipTrigger>
+                  {task.created_by !== currentEmployeeId && task.creator_employee && (
+                    <TooltipContent>
+                      Cette tâche a été créée par {task.creator_employee.prenom} {task.creator_employee.nom}.
+                      Vous devez lui demander de changer la date.
+                    </TooltipContent>
+                  )}
+                </Tooltip>
+              </TooltipProvider>
               <Button
                 size="sm"
                 variant="ghost"
