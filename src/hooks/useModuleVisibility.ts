@@ -18,7 +18,7 @@ export interface ModuleConfig {
 }
 
 export const useModuleVisibility = () => {
-  const { isAdmin, isManager } = useUserRole();
+  const { isAdmin, isManager, loading: roleLoading } = useUserRole();
   const queryClient = useQueryClient();
 
   const { data: modules = [], isLoading } = useQuery({
@@ -41,6 +41,7 @@ export const useModuleVisibility = () => {
 
       return filteredModules;
     },
+    enabled: !roleLoading,
     staleTime: 1000 * 60 * 5, // Cache 5 minutes
   });
 
@@ -66,5 +67,5 @@ export const useModuleVisibility = () => {
     };
   }, [queryClient]);
 
-  return { modules, loading: isLoading };
+  return { modules, loading: roleLoading || isLoading };
 };
