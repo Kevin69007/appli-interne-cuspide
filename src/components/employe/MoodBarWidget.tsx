@@ -59,6 +59,7 @@ export const MoodBarWidget = ({ onVoted }: { onVoted?: (voted: boolean) => void 
   const [submitting, setSubmitting] = useState(false);
   const [employeeId, setEmployeeId] = useState<string | null>(null);
   const [showResult, setShowResult] = useState(false);
+  const [loadingQuote, setLoadingQuote] = useState(false);
 
   useEffect(() => {
     checkIfVotedToday();
@@ -100,6 +101,7 @@ export const MoodBarWidget = ({ onVoted }: { onVoted?: (voted: boolean) => void 
   };
 
   const fetchQuote = async (category: string) => {
+    setLoadingQuote(true);
     try {
       const { data, error } = await supabase
         .from("daily_quotes")
@@ -115,6 +117,8 @@ export const MoodBarWidget = ({ onVoted }: { onVoted?: (voted: boolean) => void 
       }
     } catch (error) {
       console.error("Error fetching quote:", error);
+    } finally {
+      setLoadingQuote(false);
     }
   };
 
@@ -273,7 +277,18 @@ export const MoodBarWidget = ({ onVoted }: { onVoted?: (voted: boolean) => void 
           </div>
         )}
 
-        {selectedNeed && quote && (
+        {selectedNeed && loadingQuote && (
+          <div className="p-6 bg-background/50 rounded-lg border border-border animate-fade-in">
+            <div className="flex flex-col items-center gap-3">
+              <div className="w-8 h-8 border-3 border-primary/30 border-t-primary rounded-full animate-spin" />
+              <p className="text-muted-foreground text-center animate-pulse">
+                On te prépare une citation pour te mettre bien... ✨
+              </p>
+            </div>
+          </div>
+        )}
+
+        {selectedNeed && !loadingQuote && quote && (
           <div className="space-y-4 animate-fade-in">
             <div className="p-4 bg-background/50 rounded-lg border border-border">
               <div className="flex items-center justify-center gap-2 mb-3">
@@ -298,7 +313,7 @@ export const MoodBarWidget = ({ onVoted }: { onVoted?: (voted: boolean) => void 
           </div>
         )}
 
-        {selectedMood && selectedNeed && (
+        {selectedMood && selectedNeed && !loadingQuote && quote && (
           <Button
             variant="gradient"
             onClick={handleSubmit}
