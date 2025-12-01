@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Calendar, User, CheckCircle2, XCircle, RotateCcw, Send, Info, Lock } from "lucide-react";
+import { Calendar, User, CheckCircle2, XCircle, RotateCcw, Send, Info, Lock, CalendarPlus, History, MessageSquare } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { TaskCommentsHierarchical } from "./TaskCommentsHierarchical";
 import { SubTasksList } from "./SubTasksList";
@@ -306,6 +306,14 @@ export const TaskDetailsDialog = ({
                   Créé par : {task.creator_employee.prenom} {task.creator_employee.nom}
                 </div>
               )}
+
+              {task.created_at && (
+                <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                  <CalendarPlus className="h-4 w-4" />
+                  Créée le {new Date(task.created_at).toLocaleDateString("fr-FR")} 
+                  à {new Date(task.created_at).toLocaleTimeString("fr-FR", { hour: '2-digit', minute: '2-digit' })}
+                </div>
+              )}
             </div>
 
             {/* Boomerang Info */}
@@ -386,12 +394,16 @@ export const TaskDetailsDialog = ({
             )}
 
             <Tabs defaultValue="subtasks" className="w-full">
-              <TabsList className="grid w-full grid-cols-3">
+              <TabsList className="grid w-full grid-cols-4">
                 <TabsTrigger value="subtasks">Sous-tâches</TabsTrigger>
                 <TabsTrigger value="comments">
                   Commentaires ({task.commentaires?.length || 0})
                 </TabsTrigger>
                 <TabsTrigger value="reminders">Rappels</TabsTrigger>
+                <TabsTrigger value="history">
+                  <History className="h-4 w-4 mr-1" />
+                  Historique
+                </TabsTrigger>
               </TabsList>
 
               <TabsContent value="subtasks">
@@ -416,6 +428,96 @@ export const TaskDetailsDialog = ({
                   rappels={task.rappels || []}
                   onUpdate={onUpdate}
                 />
+              </TabsContent>
+
+              <TabsContent value="history">
+                <div className="space-y-4 mt-4">
+                  <div className="space-y-3">
+                    {/* Création */}
+                    {task.created_at && (
+                      <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
+                        <CalendarPlus className="h-5 w-5 text-primary mt-0.5" />
+                        <div className="flex-1">
+                          <p className="font-medium">Tâche créée</p>
+                          <p className="text-sm text-muted-foreground">
+                            {new Date(task.created_at).toLocaleDateString("fr-FR", { 
+                              weekday: 'long', 
+                              year: 'numeric', 
+                              month: 'long', 
+                              day: 'numeric' 
+                            })} à {new Date(task.created_at).toLocaleTimeString("fr-FR", { 
+                              hour: '2-digit', 
+                              minute: '2-digit' 
+                            })}
+                          </p>
+                          {task.creator_employee && (
+                            <p className="text-sm text-muted-foreground">
+                              par {task.creator_employee.prenom} {task.creator_employee.nom}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Dernière modification */}
+                    {task.updated_at && task.updated_at !== task.created_at && (
+                      <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
+                        <RotateCcw className="h-5 w-5 text-blue-500 mt-0.5" />
+                        <div className="flex-1">
+                          <p className="font-medium">Dernière modification</p>
+                          <p className="text-sm text-muted-foreground">
+                            {new Date(task.updated_at).toLocaleDateString("fr-FR", { 
+                              weekday: 'long', 
+                              year: 'numeric', 
+                              month: 'long', 
+                              day: 'numeric' 
+                            })} à {new Date(task.updated_at).toLocaleTimeString("fr-FR", { 
+                              hour: '2-digit', 
+                              minute: '2-digit' 
+                            })}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Dernier commentaire d'avancement */}
+                    {task.last_progress_comment_at && (
+                      <div className="flex items-start gap-3 p-3 rounded-lg bg-muted/50">
+                        <MessageSquare className="h-5 w-5 text-green-500 mt-0.5" />
+                        <div className="flex-1">
+                          <p className="font-medium">Dernier commentaire d'avancement</p>
+                          <p className="text-sm text-muted-foreground">
+                            {new Date(task.last_progress_comment_at).toLocaleDateString("fr-FR", { 
+                              weekday: 'long', 
+                              year: 'numeric', 
+                              month: 'long', 
+                              day: 'numeric' 
+                            })} à {new Date(task.last_progress_comment_at).toLocaleTimeString("fr-FR", { 
+                              hour: '2-digit', 
+                              minute: '2-digit' 
+                            })}
+                          </p>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Historique boomerang intégré */}
+                    {task.boomerang_history && task.boomerang_history.length > 0 && (
+                      <div className="p-3 rounded-lg bg-orange-50 dark:bg-orange-950/20">
+                        <h4 className="font-semibold text-orange-700 dark:text-orange-400 mb-3 flex items-center gap-2">
+                          🪃 Historique Boomerang
+                        </h4>
+                        <BoomerangHistoryTimeline history={task.boomerang_history} />
+                      </div>
+                    )}
+
+                    {!task.created_at && !task.updated_at && !task.last_progress_comment_at && (!task.boomerang_history || task.boomerang_history.length === 0) && (
+                      <p className="text-sm text-muted-foreground text-center py-8">
+                        Aucun historique disponible pour cette tâche.
+                      </p>
+                    )}
+                  </div>
+                </div>
               </TabsContent>
             </Tabs>
           </div>

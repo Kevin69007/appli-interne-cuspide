@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Calendar, MessageSquare, Bell, Plus, ChevronDown, ChevronUp } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface QuickSubTasksPanelProps {
   parentTaskId: string;
@@ -32,7 +33,10 @@ export const QuickSubTasksPanel = ({ parentTaskId, currentEmployeeId, totalCount
   const fetchSubTasks = async () => {
     const { data, error } = await supabase
       .from("tasks")
-      .select("*")
+      .select(`
+        *,
+        creator_employee:employees!tasks_created_by_fkey(nom, prenom)
+      `)
       .eq("parent_task_id", parentTaskId)
       .neq("statut", "annulee")
       .order("created_at");
@@ -234,11 +238,25 @@ export const QuickSubTasksPanel = ({ parentTaskId, currentEmployeeId, totalCount
             subTasks.map((subTask) => (
               <div key={subTask.id} className="border rounded-lg p-2 space-y-2">
                 <div className="flex items-start gap-2">
-                  <Checkbox
-                    checked={subTask.statut === "terminee"}
-                    onCheckedChange={() => handleToggleSubTask(subTask.id, subTask.statut)}
-                    onClick={(e) => e.stopPropagation()}
-                  />
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div>
+                          <Checkbox
+                            checked={subTask.statut === "terminee"}
+                            onCheckedChange={() => handleToggleSubTask(subTask.id, subTask.statut)}
+                            onClick={(e) => e.stopPropagation()}
+                            disabled={subTask.created_by !== currentEmployeeId}
+                          />
+                        </div>
+                      </TooltipTrigger>
+                      {subTask.created_by !== currentEmployeeId && (
+                        <TooltipContent>
+                          Seul {subTask.creator_employee?.prenom} {subTask.creator_employee?.nom} peut clôturer cette sous-tâche.
+                        </TooltipContent>
+                      )}
+                    </Tooltip>
+                  </TooltipProvider>
                   <div className="flex-1">
                     <span
                       className={`text-sm ${

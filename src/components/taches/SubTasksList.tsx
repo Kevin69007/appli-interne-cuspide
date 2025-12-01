@@ -6,6 +6,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Plus, Trash2, MessageSquare, Calendar, Bell } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface SubTasksListProps {
   parentTaskId: string;
@@ -27,7 +28,10 @@ export const SubTasksList = ({ parentTaskId, currentEmployeeId, onUpdate }: SubT
   const fetchSubTasks = async () => {
     const { data, error } = await supabase
       .from("tasks")
-      .select("*")
+      .select(`
+        *,
+        creator_employee:employees!tasks_created_by_fkey(nom, prenom)
+      `)
       .eq("parent_task_id", parentTaskId)
       .order("created_at");
 
@@ -287,10 +291,24 @@ export const SubTasksList = ({ parentTaskId, currentEmployeeId, onUpdate }: SubT
             .map((subTask) => (
               <div key={subTask.id} className="border rounded-lg p-3 space-y-2">
                 <div className="flex items-center gap-2">
-                  <Checkbox
-                    checked={subTask.statut === "terminee"}
-                    onCheckedChange={() => handleToggleSubTask(subTask.id, subTask.statut)}
-                  />
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div>
+                          <Checkbox
+                            checked={subTask.statut === "terminee"}
+                            onCheckedChange={() => handleToggleSubTask(subTask.id, subTask.statut)}
+                            disabled={subTask.created_by !== currentEmployeeId}
+                          />
+                        </div>
+                      </TooltipTrigger>
+                      {subTask.created_by !== currentEmployeeId && (
+                        <TooltipContent>
+                          Seul {subTask.creator_employee?.prenom} {subTask.creator_employee?.nom} peut clôturer cette sous-tâche.
+                        </TooltipContent>
+                      )}
+                    </Tooltip>
+                  </TooltipProvider>
                   <span
                     className={`flex-1 ${
                       subTask.statut === "terminee" ? "line-through text-muted-foreground" : ""
