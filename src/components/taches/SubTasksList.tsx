@@ -4,9 +4,11 @@ import { Input } from "@/components/ui/input";
 import { Checkbox } from "@/components/ui/checkbox";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Plus, Trash2, MessageSquare, Calendar, Bell } from "lucide-react";
+import { Plus, Trash2, MessageSquare, Calendar, Bell, User } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Combobox } from "@/components/ui/combobox";
+import { EmployeeAvatar } from "@/components/ui/employee-avatar";
 
 interface SubTasksListProps {
   parentTaskId: string;
@@ -20,17 +22,28 @@ export const SubTasksList = ({ parentTaskId, currentEmployeeId, onUpdate }: SubT
   const [newSubTaskTitle, setNewSubTaskTitle] = useState("");
   const [activeActions, setActiveActions] = useState<{[key: string]: string}>({});
   const [actionInputs, setActionInputs] = useState<{[key: string]: string}>({});
+  const [employees, setEmployees] = useState<{id: string, nom: string, prenom: string}[]>([]);
 
   useEffect(() => {
     fetchSubTasks();
+    fetchEmployees();
   }, [parentTaskId]);
+
+  const fetchEmployees = async () => {
+    const { data } = await supabase
+      .from("employees")
+      .select("id, nom, prenom")
+      .order("nom");
+    if (data) setEmployees(data);
+  };
 
   const fetchSubTasks = async () => {
     const { data, error } = await supabase
       .from("tasks")
       .select(`
         *,
-        creator_employee:employees!tasks_created_by_fkey(nom, prenom)
+        creator_employee:employees!tasks_created_by_fkey(nom, prenom),
+        assigned_employee:employees!tasks_assigned_to_fkey(id, nom, prenom, photo_url)
       `)
       .eq("parent_task_id", parentTaskId)
       .order("created_at");
@@ -221,6 +234,46 @@ export const SubTasksList = ({ parentTaskId, currentEmployeeId, onUpdate }: SubT
     }
   };
 
+  const handleUpdateAssignee = async (subTaskId: string, newAssigneeId: string) => {
+    const subTask = subTasks.find(st => st.id === subTaskId);
+    if (!subTask || subTask.created_by !== currentEmployeeId) {
+      toast.error("Seul le créateur peut modifier l'assignation");
+      return;
+    }
+
+    const { error } = await supabase
+      .from("tasks")
+      .update({ assigned_to: newAssigneeId })
+      .eq("id", subTaskId);
+
+    if (!error) {
+      toast.success("Assignation mise à jour");
+      
+      // Notification au nouvel assigné
+      const { data: taskData } = await supabase
+        .from("tasks")
+        .select("titre")
+        .eq("id", subTaskId)
+        .single();
+
+      if (taskData) {
+        await supabase.from("notifications").insert({
+          employee_id: newAssigneeId,
+          titre: "Sous-tâche assignée",
+          message: `Vous êtes maintenant assigné à la sous-tâche : ${taskData.titre}`,
+          type: "task_assigned",
+          url: "/taches",
+        });
+      }
+
+      const newActiveActions = { ...activeActions };
+      newActiveActions[subTaskId] = "";
+      setActiveActions(newActiveActions);
+      fetchSubTasks();
+      onUpdate();
+    }
+  };
+
   const renderActionInput = (subTaskId: string, action: string) => {
     if (activeActions[subTaskId] !== action) return null;
 
@@ -277,6 +330,27 @@ export const SubTasksList = ({ parentTaskId, currentEmployeeId, onUpdate }: SubT
             </Button>
           </div>
         );
+      case "assignee":
+        return (
+          <div className="flex gap-2 mt-2 ml-8">
+            <Combobox
+              value={actionInputs[subTaskId] || ""}
+              onValueChange={(value) => {
+                const newInputs = { ...actionInputs };
+                newInputs[subTaskId] = value;
+                setActionInputs(newInputs);
+              }}
+              options={employees.map(emp => ({
+                value: emp.id,
+                label: `${emp.prenom} ${emp.nom}`
+              }))}
+              placeholder="Sélectionner un employé"
+            />
+            <Button size="sm" onClick={() => handleUpdateAssignee(subTaskId, actionInputs[subTaskId])}>
+              OK
+            </Button>
+          </div>
+        );
       default:
         return null;
     }
@@ -325,6 +399,21 @@ export const SubTasksList = ({ parentTaskId, currentEmployeeId, onUpdate }: SubT
                   </Button>
                 </div>
                 
+                {/* Affichage de l'assigné */}
+                {subTask.assigned_employee && (
+                  <div className="flex items-center gap-2 ml-8 text-sm text-muted-foreground">
+                    <EmployeeAvatar
+                      photoUrl={subTask.assigned_employee.photo_url}
+                      nom={subTask.assigned_employee.nom}
+                      prenom={subTask.assigned_employee.prenom}
+                      size="sm"
+                    />
+                    <span>
+                      Assigné à : {subTask.assigned_employee.prenom} {subTask.assigned_employee.nom}
+                    </span>
+                  </div>
+                )}
+                
                 {/* Actions rapides */}
                 <div className="flex gap-1 ml-8">
                   <Button
@@ -366,6 +455,33 @@ export const SubTasksList = ({ parentTaskId, currentEmployeeId, onUpdate }: SubT
                     <Bell className="h-4 w-4 mr-1" />
                     Rappel
                   </Button>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <div>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-8 px-3"
+                            onClick={() => {
+                              const newActiveActions = { ...activeActions };
+                              newActiveActions[subTask.id] = activeActions[subTask.id] === "assignee" ? "" : "assignee";
+                              setActiveActions(newActiveActions);
+                            }}
+                            disabled={subTask.created_by !== currentEmployeeId}
+                          >
+                            <User className="h-4 w-4 mr-1" />
+                            Affecter
+                          </Button>
+                        </div>
+                      </TooltipTrigger>
+                      {subTask.created_by !== currentEmployeeId && (
+                        <TooltipContent>
+                          Seul {subTask.creator_employee?.prenom} {subTask.creator_employee?.nom} peut modifier l'assignation.
+                        </TooltipContent>
+                      )}
+                    </Tooltip>
+                  </TooltipProvider>
                 </div>
                 
                 {/* Input conditionnel */}
