@@ -87,7 +87,14 @@ export const TaskCard = ({ task, currentEmployeeId, onUpdate, isHelpRequest, isM
   const priorityColor = useMemo(() => getPriorityColor(task.priorite), [task.priorite]);
   const statusIcon = useMemo(() => getStatusIcon(task.statut), [task.statut]);
 
+  const isCreator = task.created_by === currentEmployeeId;
+
   const toggleStatus = async () => {
+    if (!isCreator) {
+      toast.error("Seul le créateur de cette tâche peut la clôturer");
+      return;
+    }
+
     const newStatut = task.statut === "terminee" ? "en_cours" : "terminee";
 
     const { error } = await supabase
@@ -337,15 +344,27 @@ export const TaskCard = ({ task, currentEmployeeId, onUpdate, isHelpRequest, isM
         <div className="flex items-start justify-between gap-2 sm:gap-4">
           <div className="flex-1 space-y-2 min-w-0">
             <div className="flex items-center gap-2 sm:gap-3">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  toggleStatus();
-                }}
-                className="hover:scale-110 transition-transform shrink-0"
-              >
-                {statusIcon}
-              </button>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        if (isCreator) toggleStatus();
+                      }}
+                      disabled={!isCreator}
+                      className={`transition-transform shrink-0 ${isCreator ? 'hover:scale-110' : 'opacity-50 cursor-not-allowed'}`}
+                    >
+                      {statusIcon}
+                    </button>
+                  </TooltipTrigger>
+                  {!isCreator && task.creator_employee && (
+                    <TooltipContent>
+                      Seul {task.creator_employee.prenom} {task.creator_employee.nom} peut clôturer cette tâche.
+                    </TooltipContent>
+                  )}
+                </Tooltip>
+              </TooltipProvider>
               <h3 className={`font-semibold text-base sm:text-lg ${task.statut === "terminee" ? "line-through" : ""} line-clamp-2`}>
                 {highlightText(task.titre)}
               </h3>
