@@ -396,6 +396,7 @@ const ProjetDetails = () => {
         open={showEditProjectDialog}
         onOpenChange={setShowEditProjectDialog}
         project={project}
+        currentEmployeeId={currentEmployeeId}
         onProjectUpdated={() => {
           fetchProjectDetails();
           fetchProjectTasks();

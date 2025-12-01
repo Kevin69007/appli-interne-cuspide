@@ -7,7 +7,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Calendar, User, CheckCircle2, XCircle, RotateCcw, Send, Info } from "lucide-react";
+import { Calendar, User, CheckCircle2, XCircle, RotateCcw, Send, Info, Lock } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { TaskCommentsHierarchical } from "./TaskCommentsHierarchical";
 import { SubTasksList } from "./SubTasksList";
@@ -180,6 +180,7 @@ export const TaskDetailsDialog = ({
   const isBoomerangHolder = task.boomerang_active && task.boomerang_current_holder === currentEmployeeId;
   const isBoomerangOwner = task.boomerang_active && task.boomerang_original_owner === currentEmployeeId;
   const canSendBoomerang = !task.boomerang_active && (task.assigned_to === currentEmployeeId || task.created_by === currentEmployeeId);
+  const isCreator = task.created_by === currentEmployeeId;
 
   return (
     <>
@@ -240,31 +241,54 @@ export const TaskDetailsDialog = ({
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="flex items-center gap-2 text-sm">
                 <Calendar className="h-4 w-4 text-muted-foreground" />
-                {isEditingDeadline ? (
-                  <div className="flex items-center gap-2">
-                    <Input
-                      type="date"
-                      value={tempDeadline}
-                      onChange={(e) => setTempDeadline(e.target.value)}
-                      className="h-8 w-auto"
-                    />
-                    <Button size="sm" onClick={handleInlineDeadlineUpdate} disabled={loading}>
-                      OK
-                    </Button>
-                    <Button size="sm" variant="ghost" onClick={() => {
-                      setIsEditingDeadline(false);
-                      setTempDeadline(task.date_echeance);
-                    }}>
-                      Annuler
-                    </Button>
-                  </div>
+                {isCreator ? (
+                  isEditingDeadline ? (
+                    <div className="flex items-center gap-2">
+                      <Input
+                        type="date"
+                        value={tempDeadline}
+                        onChange={(e) => setTempDeadline(e.target.value)}
+                        className="h-8 w-auto"
+                      />
+                      <Button size="sm" onClick={handleInlineDeadlineUpdate} disabled={loading}>
+                        OK
+                      </Button>
+                      <Button size="sm" variant="ghost" onClick={() => {
+                        setIsEditingDeadline(false);
+                        setTempDeadline(task.date_echeance);
+                      }}>
+                        Annuler
+                      </Button>
+                    </div>
+                  ) : (
+                    <button 
+                      onClick={() => setIsEditingDeadline(true)}
+                      className="hover:text-primary underline decoration-dotted cursor-pointer"
+                    >
+                      Échéance : {new Date(task.date_echeance).toLocaleDateString("fr-FR")}
+                    </button>
+                  )
                 ) : (
-                  <button 
-                    onClick={() => setIsEditingDeadline(true)}
-                    className="hover:text-primary underline decoration-dotted cursor-pointer"
-                  >
-                    Échéance : {new Date(task.date_echeance).toLocaleDateString("fr-FR")}
-                  </button>
+                  <div className="flex items-center gap-2">
+                    <span>Échéance : {new Date(task.date_echeance).toLocaleDateString("fr-FR")}</span>
+                    <TooltipProvider>
+                      <Tooltip>
+                        <TooltipTrigger>
+                          <Lock className="h-4 w-4 text-muted-foreground" />
+                        </TooltipTrigger>
+                        <TooltipContent>
+                          {task.creator_employee ? (
+                            <>
+                              Seul {task.creator_employee.prenom} {task.creator_employee.nom} peut modifier cette date.
+                              Contactez-le pour toute modification.
+                            </>
+                          ) : (
+                            "Seul le créateur de cette tâche peut modifier la date."
+                          )}
+                        </TooltipContent>
+                      </Tooltip>
+                    </TooltipProvider>
+                  </div>
                 )}
               </div>
 
