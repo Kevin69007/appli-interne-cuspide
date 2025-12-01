@@ -4,7 +4,6 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useEmployee } from "@/contexts/EmployeeContext";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useTranslation } from "react-i18next";
-import { Sparkles } from "lucide-react";
 import { AgendaWidget } from "@/components/employe/AgendaWidget";
 import { TachesWidget } from "@/components/employe/TachesWidget";
 import { InfosImportantesWidget } from "@/components/employe/InfosImportantesWidget";
@@ -16,6 +15,7 @@ import { AnimatedBackground } from "@/components/AnimatedBackground";
 import { useModuleVisibility } from "@/hooks/useModuleVisibility";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { EmployeeAvatar } from "@/components/ui/employee-avatar";
+import tuttiLogo from "@/assets/tutti-logo.png";
 
 const Index = () => {
   const { user, loading } = useAuth();
@@ -58,9 +58,11 @@ const Index = () => {
         <header className="glass border-b border-border/50 sticky top-0 z-50 backdrop-blur-xl">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
             <div className="flex items-center gap-2 sm:gap-3">
-              <div className="w-8 h-8 sm:w-10 sm:h-10 bg-gradient-to-br from-primary to-accent rounded-xl flex items-center justify-center animate-pulse-glow shrink-0">
-                <Sparkles className="w-4 h-4 sm:w-6 sm:h-6 text-white" />
-              </div>
+              <img 
+                src={tuttiLogo} 
+                alt="Tutti" 
+                className="w-8 h-8 sm:w-10 sm:h-10 object-contain shrink-0 animate-pulse-glow"
+              />
               <h1 className="text-lg sm:text-2xl font-display font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
                 {t('appName')}
               </h1>
@@ -174,9 +176,11 @@ const Index = () => {
       <AnimatedBackground />
       <div className="max-w-2xl mx-auto px-4 sm:px-6 text-center relative z-10">
         <div className="mb-6 sm:mb-8 flex justify-center animate-fade-in-up">
-          <div className="w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-primary to-accent rounded-2xl flex items-center justify-center animate-float shadow-2xl shadow-primary/40">
-            <Sparkles className="w-10 h-10 sm:w-12 sm:h-12 text-white" />
-          </div>
+          <img 
+            src={tuttiLogo} 
+            alt="Tutti" 
+            className="w-24 h-24 sm:w-32 sm:h-32 object-contain animate-float drop-shadow-2xl"
+          />
         </div>
         <h1 className="text-3xl sm:text-5xl font-display font-bold mb-4 sm:mb-6 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent animate-fade-in-up animation-delay-100">
           {t('welcome')}
