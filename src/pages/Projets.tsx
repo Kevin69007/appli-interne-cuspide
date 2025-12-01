@@ -7,7 +7,7 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+
 import { Plus, ArrowLeft, Briefcase } from "lucide-react";
 import { CreateProjectDialog } from "@/components/projects/CreateProjectDialog";
 import { ProjectCard } from "@/components/projects/ProjectCard";
@@ -35,8 +35,9 @@ const Projets = () => {
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [filters, setFilters] = useState<ProjectFiltersType>({
     responsableId: null,
-    dateDebut: null,
-    dateFin: null,
+    statut: null,
+    sortBy: null,
+    sortOrder: "desc",
   });
 
   // Parallelize employee and projects queries
@@ -74,29 +75,40 @@ const Projets = () => {
     return Array.from(responsablesMap.values());
   }, [projects]);
 
-  // Appliquer les filtres
-  const filteredProjects = useMemo(() => {
-    return projects.filter((p) => {
+  // Appliquer les filtres et le tri
+  const filteredAndSortedProjects = useMemo(() => {
+    // 1. Filtrer
+    let result = projects.filter((p) => {
       // Filtre par responsable
       if (filters.responsableId && p.responsable_id !== filters.responsableId) {
         return false;
       }
-      // Filtre par date début
-      if (filters.dateDebut && new Date(p.date_echeance) < filters.dateDebut) {
-        return false;
-      }
-      // Filtre par date fin
-      if (filters.dateFin && new Date(p.date_echeance) > filters.dateFin) {
+      // Filtre par statut
+      if (filters.statut && p.statut !== filters.statut) {
         return false;
       }
       return true;
     });
-  }, [projects, filters]);
 
-  const enCoursProjects = useMemo(() => filteredProjects.filter((p) => p.statut === "en_cours"), [filteredProjects]);
-  const aVenirProjects = useMemo(() => filteredProjects.filter((p) => p.statut === "a_venir"), [filteredProjects]);
-  const terminesProjects = useMemo(() => filteredProjects.filter((p) => p.statut === "termine"), [filteredProjects]);
-  const enPauseProjects = useMemo(() => filteredProjects.filter((p) => p.statut === "en_pause"), [filteredProjects]);
+    // 2. Trier
+    if (filters.sortBy) {
+      result = [...result].sort((a, b) => {
+        if (filters.sortBy === "priorite") {
+          return filters.sortOrder === "desc"
+            ? (b.is_priority ? 1 : 0) - (a.is_priority ? 1 : 0)
+            : (a.is_priority ? 1 : 0) - (b.is_priority ? 1 : 0);
+        }
+        if (filters.sortBy === "date_echeance" || filters.sortBy === "created_at") {
+          const dateA = new Date(a[filters.sortBy] || 0).getTime();
+          const dateB = new Date(b[filters.sortBy] || 0).getTime();
+          return filters.sortOrder === "asc" ? dateA - dateB : dateB - dateA;
+        }
+        return 0;
+      });
+    }
+
+    return result;
+  }, [projects, filters]);
 
   const SkeletonCard = () => (
     <Card className="p-6 animate-pulse">
@@ -173,41 +185,12 @@ const Projets = () => {
           onFiltersChange={setFilters}
           responsables={uniqueResponsables}
           totalProjects={projects.length}
-          filteredCount={filteredProjects.length}
+          filteredCount={filteredAndSortedProjects.length}
         />
 
-        <Tabs defaultValue="en_cours" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
-            <TabsTrigger value="en_cours">
-              En cours ({enCoursProjects.length})
-            </TabsTrigger>
-            <TabsTrigger value="a_venir">
-              À venir ({aVenirProjects.length})
-            </TabsTrigger>
-            <TabsTrigger value="en_pause">
-              En pause ({enPauseProjects.length})
-            </TabsTrigger>
-            <TabsTrigger value="termines">
-              Terminés ({terminesProjects.length})
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="en_cours" className="mt-6">
-            {renderProjects(enCoursProjects)}
-          </TabsContent>
-
-          <TabsContent value="a_venir" className="mt-6">
-            {renderProjects(aVenirProjects)}
-          </TabsContent>
-
-          <TabsContent value="en_pause" className="mt-6">
-            {renderProjects(enPauseProjects)}
-          </TabsContent>
-
-          <TabsContent value="termines" className="mt-6">
-            {renderProjects(terminesProjects)}
-          </TabsContent>
-        </Tabs>
+        <div className="mt-6">
+          {renderProjects(filteredAndSortedProjects)}
+        </div>
       </div>
 
       <CreateProjectDialog
