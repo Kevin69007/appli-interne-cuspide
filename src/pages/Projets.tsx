@@ -11,6 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, ArrowLeft, Briefcase } from "lucide-react";
 import { CreateProjectDialog } from "@/components/projects/CreateProjectDialog";
 import { ProjectCard } from "@/components/projects/ProjectCard";
+import { ProjectFilters, type ProjectFilters as ProjectFiltersType } from "@/components/projects/ProjectFilters";
 import { toast } from "sonner";
 
 interface Project {
@@ -32,6 +33,11 @@ const Projets = () => {
   const { isAdmin, isManager } = useUserRole();
   const { employee } = useEmployee();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [filters, setFilters] = useState<ProjectFiltersType>({
+    responsableId: null,
+    dateDebut: null,
+    dateFin: null,
+  });
 
   // Parallelize employee and projects queries
   const { data: projects = [], isLoading: loading, refetch: refetchProjects } = useQuery({
@@ -53,10 +59,44 @@ const Projets = () => {
 
   const canEdit = isAdmin || isManager;
 
-  const enCoursProjects = useMemo(() => projects.filter((p) => p.statut === "en_cours"), [projects]);
-  const aVenirProjects = useMemo(() => projects.filter((p) => p.statut === "a_venir"), [projects]);
-  const terminesProjects = useMemo(() => projects.filter((p) => p.statut === "termine"), [projects]);
-  const enPauseProjects = useMemo(() => projects.filter((p) => p.statut === "en_pause"), [projects]);
+  // Extraire les responsables uniques
+  const uniqueResponsables = useMemo(() => {
+    const responsablesMap = new Map();
+    projects.forEach((p) => {
+      if (p.responsable && p.responsable_id) {
+        responsablesMap.set(p.responsable_id, {
+          id: p.responsable_id,
+          nom: p.responsable.nom,
+          prenom: p.responsable.prenom,
+        });
+      }
+    });
+    return Array.from(responsablesMap.values());
+  }, [projects]);
+
+  // Appliquer les filtres
+  const filteredProjects = useMemo(() => {
+    return projects.filter((p) => {
+      // Filtre par responsable
+      if (filters.responsableId && p.responsable_id !== filters.responsableId) {
+        return false;
+      }
+      // Filtre par date début
+      if (filters.dateDebut && new Date(p.date_echeance) < filters.dateDebut) {
+        return false;
+      }
+      // Filtre par date fin
+      if (filters.dateFin && new Date(p.date_echeance) > filters.dateFin) {
+        return false;
+      }
+      return true;
+    });
+  }, [projects, filters]);
+
+  const enCoursProjects = useMemo(() => filteredProjects.filter((p) => p.statut === "en_cours"), [filteredProjects]);
+  const aVenirProjects = useMemo(() => filteredProjects.filter((p) => p.statut === "a_venir"), [filteredProjects]);
+  const terminesProjects = useMemo(() => filteredProjects.filter((p) => p.statut === "termine"), [filteredProjects]);
+  const enPauseProjects = useMemo(() => filteredProjects.filter((p) => p.statut === "en_pause"), [filteredProjects]);
 
   const SkeletonCard = () => (
     <Card className="p-6 animate-pulse">
@@ -127,6 +167,14 @@ const Projets = () => {
             </Button>
           )}
         </div>
+
+        <ProjectFilters
+          filters={filters}
+          onFiltersChange={setFilters}
+          responsables={uniqueResponsables}
+          totalProjects={projects.length}
+          filteredCount={filteredProjects.length}
+        />
 
         <Tabs defaultValue="en_cours" className="w-full">
           <TabsList className="grid w-full grid-cols-4">
