@@ -21,8 +21,9 @@ import { cn } from "@/lib/utils";
 
 export interface ProjectFilters {
   responsableId: string | null;
-  dateDebut: Date | null;
-  dateFin: Date | null;
+  statut: string | null;
+  sortBy: string | null;
+  sortOrder: "asc" | "desc";
 }
 
 interface ProjectFiltersProps {
@@ -42,13 +43,15 @@ export const ProjectFilters = ({
 }: ProjectFiltersProps) => {
   const activeFiltersCount =
     (filters.responsableId ? 1 : 0) +
-    (filters.dateDebut || filters.dateFin ? 1 : 0);
+    (filters.statut ? 1 : 0) +
+    (filters.sortBy ? 1 : 0);
 
   const handleReset = () => {
     onFiltersChange({
       responsableId: null,
-      dateDebut: null,
-      dateFin: null,
+      statut: null,
+      sortBy: null,
+      sortOrder: "desc",
     });
   };
 
@@ -83,72 +86,61 @@ export const ProjectFilters = ({
           </Select>
         </div>
 
-        {/* Filtre par date de début */}
+        {/* Filtre par statut */}
         <div className="flex-1">
           <label className="text-sm font-medium mb-2 block">
-            📅 Date début échéance
+            📊 Statut
           </label>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className={cn(
-                  "w-full justify-start text-left font-normal",
-                  !filters.dateDebut && "text-muted-foreground"
-                )}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {filters.dateDebut
-                  ? format(filters.dateDebut, "PPP", { locale: fr })
-                  : "Toutes dates"}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                mode="single"
-                selected={filters.dateDebut || undefined}
-                onSelect={(date) =>
-                  onFiltersChange({ ...filters, dateDebut: date || null })
-                }
-                initialFocus
-                className="pointer-events-auto"
-              />
-            </PopoverContent>
-          </Popover>
+          <Select
+            value={filters.statut || "tous"}
+            onValueChange={(value) =>
+              onFiltersChange({
+                ...filters,
+                statut: value === "tous" ? null : value,
+              })
+            }
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Tous les statuts" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="tous">Tous les statuts</SelectItem>
+              <SelectItem value="en_cours">🟢 En cours</SelectItem>
+              <SelectItem value="a_venir">🔵 À venir</SelectItem>
+              <SelectItem value="en_pause">🟠 En pause</SelectItem>
+              <SelectItem value="termine">✅ Terminé</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
 
-        {/* Filtre par date de fin */}
+        {/* Tri */}
         <div className="flex-1">
           <label className="text-sm font-medium mb-2 block">
-            📅 Date fin échéance
+            ↕️ Trier par
           </label>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className={cn(
-                  "w-full justify-start text-left font-normal",
-                  !filters.dateFin && "text-muted-foreground"
-                )}
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {filters.dateFin
-                  ? format(filters.dateFin, "PPP", { locale: fr })
-                  : "Toutes dates"}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                mode="single"
-                selected={filters.dateFin || undefined}
-                onSelect={(date) =>
-                  onFiltersChange({ ...filters, dateFin: date || null })
-                }
-                initialFocus
-                className="pointer-events-auto"
-              />
-            </PopoverContent>
-          </Popover>
+          <Select
+            value={`${filters.sortBy || "default"}_${filters.sortOrder}`}
+            onValueChange={(value) => {
+              const [sortBy, sortOrder] = value.split("_");
+              onFiltersChange({
+                ...filters,
+                sortBy: sortBy === "default" ? null : sortBy,
+                sortOrder: (sortOrder as "asc" | "desc") || "desc",
+              });
+            }}
+          >
+            <SelectTrigger>
+              <SelectValue placeholder="Par défaut" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="default_desc">Par défaut</SelectItem>
+              <SelectItem value="date_echeance_asc">📅 Échéance (proche → loin)</SelectItem>
+              <SelectItem value="date_echeance_desc">📅 Échéance (loin → proche)</SelectItem>
+              <SelectItem value="created_at_desc">🕐 Plus récent d'abord</SelectItem>
+              <SelectItem value="created_at_asc">🕐 Plus ancien d'abord</SelectItem>
+              <SelectItem value="priorite_desc">⭐ Prioritaires d'abord</SelectItem>
+            </SelectContent>
+          </Select>
         </div>
       </div>
 
