@@ -48,10 +48,6 @@ const Index = () => {
   }
 
   if (user) {
-    // Compter le nombre de widgets avec données
-    const widgetsWithData = [hasTasks, hasPriorityTasks, hasInfos].filter(v => v === true).length;
-    const showMoodBar = !hasVotedMood && widgetsWithData < 3;
-
     return (
       <div className="min-h-screen">
         <AnimatedBackground />
@@ -103,31 +99,18 @@ const Index = () => {
             </p>
           </div>
 
-          {/* Widgets rapides - Layout intelligent */}
-          {widgetsWithData === 0 && showMoodBar ? (
-            // Cas 1: Aucun widget avec données → MoodBar en héros
+          {/* Widgets rapides - Toujours visibles */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8 sm:mb-12">
+            <AgendaWidget />
+            <TachesWidget onDataLoaded={setHasTasks} />
+            <TachesPrioritairesWidget onDataLoaded={setHasPriorityTasks} />
+            <InfosImportantesWidget onDataLoaded={setHasInfos} />
+          </div>
+
+          {/* MoodBar - En dessous des widgets, disparaît après le vote */}
+          {!hasVotedMood && (
             <div className="max-w-3xl mx-auto mb-8 sm:mb-12">
               <MoodBarWidget onVoted={setHasVotedMood} />
-            </div>
-          ) : (
-            // Cas 2 & 3: Au moins 1 widget avec données
-            <div className={`grid gap-4 sm:gap-6 mb-8 sm:mb-12 ${
-              widgetsWithData >= 3 
-                ? 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-4' 
-                : showMoodBar 
-                  ? 'grid-cols-1 lg:grid-cols-2'
-                  : 'grid-cols-1 sm:grid-cols-2 lg:grid-cols-3'
-            }`}>
-              <AgendaWidget />
-              <TachesWidget onDataLoaded={setHasTasks} />
-              <TachesPrioritairesWidget onDataLoaded={setHasPriorityTasks} />
-              <InfosImportantesWidget onDataLoaded={setHasInfos} />
-              
-              {showMoodBar && (
-                <div className={widgetsWithData >= 3 ? 'col-span-full' : 'lg:col-span-1'}>
-                  <MoodBarWidget onVoted={setHasVotedMood} />
-                </div>
-              )}
             </div>
           )}
 
