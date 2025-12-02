@@ -5,6 +5,9 @@ import { useState, useEffect } from "react";
 import { AddEventDialog } from "./AddEventDialog";
 import { EventDetailsDialog } from "./EventDetailsDialog";
 import { DayPlanningDialog } from "@/components/agenda/DayPlanningDialog";
+import { CalendarViewSelector, CalendarView } from "@/components/agenda/CalendarViewSelector";
+import { WeekCalendar } from "@/components/agenda/WeekCalendar";
+import { MultiMonthCalendar } from "@/components/agenda/MultiMonthCalendar";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
@@ -130,6 +133,7 @@ const DroppableDay = ({ day, isToday, events, onDayClick, onEventClick }: Droppa
 
 export const MonthCalendar = () => {
   const { user } = useAuth();
+  const [viewMode, setViewMode] = useState<CalendarView>("month");
   const [currentDate, setCurrentDate] = useState(new Date());
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -388,6 +392,29 @@ export const MonthCalendar = () => {
   const today = new Date();
   const isCurrentMonth = today.getMonth() === month && today.getFullYear() === year;
 
+  // Render week or multi-month view if selected
+  if (viewMode === "week") {
+    return (
+      <div className="space-y-4">
+        <div className="flex justify-end">
+          <CalendarViewSelector currentView={viewMode} onViewChange={setViewMode} />
+        </div>
+        <WeekCalendar />
+      </div>
+    );
+  }
+
+  if (viewMode === "multi") {
+    return (
+      <div className="space-y-4">
+        <div className="flex justify-end">
+          <CalendarViewSelector currentView={viewMode} onViewChange={setViewMode} />
+        </div>
+        <MultiMonthCalendar />
+      </div>
+    );
+  }
+
   return (
     <Card className="p-6">
       <div className="flex items-center justify-between mb-6">
@@ -395,13 +422,16 @@ export const MonthCalendar = () => {
           <CalendarIcon className="h-5 w-5 text-primary" />
           <h3 className="text-lg font-semibold capitalize">{monthName}</h3>
         </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="icon" onClick={handlePreviousMonth}>
-            <ChevronLeft className="h-4 w-4" />
-          </Button>
-          <Button variant="outline" size="icon" onClick={handleNextMonth}>
-            <ChevronRight className="h-4 w-4" />
-          </Button>
+        <div className="flex items-center gap-4">
+          <CalendarViewSelector currentView={viewMode} onViewChange={setViewMode} />
+          <div className="flex gap-2">
+            <Button variant="outline" size="icon" onClick={handlePreviousMonth}>
+              <ChevronLeft className="h-4 w-4" />
+            </Button>
+            <Button variant="outline" size="icon" onClick={handleNextMonth}>
+              <ChevronRight className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </div>
 
