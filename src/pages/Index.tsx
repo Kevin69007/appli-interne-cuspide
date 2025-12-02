@@ -99,20 +99,33 @@ const Index = () => {
             </p>
           </div>
 
-          {/* Widgets rapides - Toujours visibles */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 mb-8 sm:mb-12">
-            <AgendaWidget />
-            <TachesWidget onDataLoaded={setHasTasks} />
-            <TachesPrioritairesWidget onDataLoaded={setHasPriorityTasks} />
-            <InfosImportantesWidget onDataLoaded={setHasInfos} />
-          </div>
-
-          {/* MoodBar - En dessous des widgets, disparaît après le vote */}
+          {/* MoodBar - Au-dessus des widgets, disparaît après le vote */}
           {!hasVotedMood && (
             <div className="max-w-3xl mx-auto mb-8 sm:mb-12">
               <MoodBarWidget onVoted={setHasVotedMood} />
             </div>
           )}
+
+          {/* Widgets rapides - Layout adaptatif centré selon le nombre */}
+          {(() => {
+            const visibleCount = 1 + (hasTasks ? 1 : 0) + (hasPriorityTasks ? 1 : 0) + (hasInfos ? 1 : 0);
+            const gridClasses = 
+              visibleCount === 1 ? "flex justify-center" :
+              visibleCount === 2 ? "grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 max-w-2xl mx-auto" :
+              visibleCount === 3 ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 max-w-4xl mx-auto" :
+              "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6";
+            
+            return (
+              <div className={`${gridClasses} mb-8 sm:mb-12`}>
+                <div className={visibleCount === 1 ? "max-w-sm w-full" : ""}>
+                  <AgendaWidget />
+                </div>
+                <TachesWidget onDataLoaded={setHasTasks} />
+                <TachesPrioritairesWidget onDataLoaded={setHasPriorityTasks} />
+                <InfosImportantesWidget onDataLoaded={setHasInfos} />
+              </div>
+            );
+          })()}
 
           {/* Modules de navigation */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
