@@ -939,6 +939,64 @@ export type Database = {
         }
         Relationships: []
       }
+      daily_task_planning: {
+        Row: {
+          created_at: string | null
+          duration_slots: number
+          employee_id: string
+          id: string
+          order_index: number
+          planning_date: string
+          start_hour: number
+          task_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          duration_slots?: number
+          employee_id: string
+          id?: string
+          order_index?: number
+          planning_date: string
+          start_hour?: number
+          task_id: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          duration_slots?: number
+          employee_id?: string
+          id?: string
+          order_index?: number
+          planning_date?: string
+          start_hour?: number
+          task_id?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "daily_task_planning_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employee_badge_summary"
+            referencedColumns: ["employee_id"]
+          },
+          {
+            foreignKeyName: "daily_task_planning_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "daily_task_planning_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       employee_badges: {
         Row: {
           annee: number | null
@@ -3804,6 +3862,11 @@ export type Database = {
           completed_by: string | null
           created_at: string
           created_by: string
+          date_change_new_date: string | null
+          date_change_original_date: string | null
+          date_change_pending: boolean | null
+          date_change_requested_at: string | null
+          date_change_requested_by: string | null
           date_echeance: string
           depend_de: string | null
           dernier_commentaire_avancement: string | null
@@ -3836,6 +3899,11 @@ export type Database = {
           completed_by?: string | null
           created_at?: string
           created_by: string
+          date_change_new_date?: string | null
+          date_change_original_date?: string | null
+          date_change_pending?: boolean | null
+          date_change_requested_at?: string | null
+          date_change_requested_by?: string | null
           date_echeance: string
           depend_de?: string | null
           dernier_commentaire_avancement?: string | null
@@ -3868,6 +3936,11 @@ export type Database = {
           completed_by?: string | null
           created_at?: string
           created_by?: string
+          date_change_new_date?: string | null
+          date_change_original_date?: string | null
+          date_change_pending?: boolean | null
+          date_change_requested_at?: string | null
+          date_change_requested_by?: string | null
           date_echeance?: string
           depend_de?: string | null
           dernier_commentaire_avancement?: string | null
@@ -3953,6 +4026,20 @@ export type Database = {
           {
             foreignKeyName: "tasks_created_by_fkey"
             columns: ["created_by"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_date_change_requested_by_fkey"
+            columns: ["date_change_requested_by"]
+            isOneToOne: false
+            referencedRelation: "employee_badge_summary"
+            referencedColumns: ["employee_id"]
+          },
+          {
+            foreignKeyName: "tasks_date_change_requested_by_fkey"
+            columns: ["date_change_requested_by"]
             isOneToOne: false
             referencedRelation: "employees"
             referencedColumns: ["id"]
