@@ -2,13 +2,12 @@ import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { Badge } from "@/components/ui/badge";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { format } from "date-fns";
 import { fr } from "date-fns/locale";
 import { toast } from "sonner";
-import { GripVertical, Clock, Calendar } from "lucide-react";
+import { GripVertical, Clock, Calendar, Plus, Minus, X } from "lucide-react";
 import {
   DndContext,
   DragEndEvent,
@@ -18,6 +17,13 @@ import {
   useDroppable,
   closestCenter,
 } from "@dnd-kit/core";
+import {
+  SortableContext,
+  arrayMove,
+  verticalListSortingStrategy,
+  useSortable,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 
 interface DayPlanningDialogProps {
   open: boolean;
@@ -44,10 +50,59 @@ interface TaskPlanning {
 
 const TIME_SLOTS = Array.from({ length: 26 }, (_, i) => 7 + i * 0.5); // 7:00 to 20:00 in 30 min increments
 
+// Sortable task for the left column
+const SortableTask = ({ task }: { task: Task }) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({
+    id: task.id,
+    data: { task, type: "sortable" },
+  });
+
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
+
+  const getPriorityColor = (priorite: string) => {
+    switch (priorite) {
+      case "haute": return "border-l-red-500 bg-red-50 dark:bg-red-950/20";
+      case "moyenne": return "border-l-yellow-500 bg-yellow-50 dark:bg-yellow-950/20";
+      default: return "border-l-green-500 bg-green-50 dark:bg-green-950/20";
+    }
+  };
+
+  return (
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...listeners}
+      {...attributes}
+      className={`
+        p-2 rounded border-l-4 cursor-grab active:cursor-grabbing
+        ${getPriorityColor(task.priorite)}
+        ${isDragging ? "opacity-50 shadow-lg z-50" : ""}
+        transition-shadow hover:shadow-md
+      `}
+    >
+      <div className="flex items-center gap-2">
+        <GripVertical className="h-4 w-4 text-muted-foreground shrink-0" />
+        <span className="truncate font-medium text-sm">{task.titre}</span>
+      </div>
+    </div>
+  );
+};
+
+// Draggable task that can be dropped on time slots
 const DraggableTask = ({ task, isPlaced }: { task: Task; isPlaced?: boolean }) => {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
-    id: task.id,
-    data: { task },
+    id: `drag-${task.id}`,
+    data: { task, type: "draggable" },
   });
 
   const style = transform
@@ -88,16 +143,17 @@ const DraggableTask = ({ task, isPlaced }: { task: Task; isPlaced?: boolean }) =
 
 const DroppableTimeSlot = ({
   hour,
-  placement,
   children,
+  isOccupied,
 }: {
   hour: number;
-  placement?: TaskPlanning & { task?: Task };
   children?: React.ReactNode;
+  isOccupied?: boolean;
 }) => {
   const { setNodeRef, isOver } = useDroppable({
     id: `slot-${hour}`,
     data: { hour },
+    disabled: isOccupied,
   });
 
   const formatHour = (h: number) => {
@@ -111,7 +167,7 @@ const DroppableTimeSlot = ({
       ref={setNodeRef}
       className={`
         flex items-stretch min-h-[40px] border-b border-border/50
-        ${isOver ? "bg-primary/10" : ""}
+        ${isOver && !isOccupied ? "bg-primary/10" : ""}
         ${hour % 1 === 0 ? "border-t border-border" : ""}
       `}
     >
@@ -178,7 +234,7 @@ export const DayPlanningDialog = ({
       .select("*")
       .eq("employee_id", emp.id)
       .eq("planning_date", dateStr)
-      .order("start_hour");
+      .order("order_index");
 
     const tasksMap = new Map((tasksData || []).map(t => [t.id, t]));
     const enrichedPlannings = (planningsData || []).map(p => ({
@@ -206,13 +262,30 @@ export const DayPlanningDialog = ({
     
     if (!over || !employeeId) return;
 
-    const taskId = active.id as string;
+    const activeData = active.data.current;
+    const activeId = active.id as string;
+
+    // Handle sortable reordering in left column
+    if (activeData?.type === "sortable" && !String(over.id).startsWith("slot-")) {
+      const oldIndex = tasks.findIndex(t => t.id === activeId);
+      const newIndex = tasks.findIndex(t => t.id === over.id);
+      
+      if (oldIndex !== -1 && newIndex !== -1 && oldIndex !== newIndex) {
+        const newTasks = arrayMove(tasks, oldIndex, newIndex);
+        setTasks(newTasks);
+        toast.success("Ordre des tâches modifié");
+      }
+      return;
+    }
+
+    // Handle drop on time slot
+    const slotId = over.id as string;
+    if (!slotId.startsWith("slot-")) return;
+
+    const taskId = activeData?.task?.id;
     const task = tasks.find(t => t.id === taskId) || plannings.find(p => p.task_id === taskId)?.task;
     
     if (!task) return;
-
-    const slotId = over.id as string;
-    if (!slotId.startsWith("slot-")) return;
 
     const hour = parseFloat(slotId.replace("slot-", ""));
     const dateStr = format(selectedDate, "yyyy-MM-dd");
@@ -226,7 +299,7 @@ export const DayPlanningDialog = ({
           planning_date: dateStr,
           start_hour: hour,
           duration_slots: 2,
-          order_index: 0,
+          order_index: plannings.length,
           updated_at: new Date().toISOString(),
         }, {
           onConflict: "employee_id,task_id,planning_date"
@@ -259,6 +332,30 @@ export const DayPlanningDialog = ({
     }
   };
 
+  const handleResizePlanning = async (planningId: string, newDuration: number) => {
+    if (newDuration < 1 || newDuration > 8) return; // Min 30min, max 4h
+
+    try {
+      const { error } = await supabase
+        .from("daily_task_planning")
+        .update({
+          duration_slots: newDuration,
+          updated_at: new Date().toISOString(),
+        })
+        .eq("id", planningId);
+
+      if (error) throw error;
+      
+      // Update locally for instant feedback
+      setPlannings(prev => prev.map(p => 
+        p.id === planningId ? { ...p, duration_slots: newDuration } : p
+      ));
+    } catch (error) {
+      console.error("Error resizing planning:", error);
+      toast.error("Erreur lors du redimensionnement");
+    }
+  };
+
   const getPlacementForSlot = (hour: number) => {
     return plannings.find(p => {
       const endHour = p.start_hour + (p.duration_slots * 0.5);
@@ -268,6 +365,14 @@ export const DayPlanningDialog = ({
 
   const isSlotStart = (hour: number, placement?: TaskPlanning) => {
     return placement && placement.start_hour === hour;
+  };
+
+  const formatDuration = (slots: number) => {
+    const minutes = slots * 30;
+    if (minutes < 60) return `${minutes}min`;
+    const hours = Math.floor(minutes / 60);
+    const remainingMinutes = minutes % 60;
+    return remainingMinutes > 0 ? `${hours}h${remainingMinutes}` : `${hours}h`;
   };
 
   return (
@@ -286,26 +391,31 @@ export const DayPlanningDialog = ({
           onDragEnd={handleDragEnd}
         >
           <div className="flex-1 grid grid-cols-3 gap-4 p-6 overflow-hidden">
-            {/* Tasks list */}
+            {/* Sortable Tasks list */}
             <div className="col-span-1 flex flex-col">
               <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
                 <Clock className="h-4 w-4" />
                 Tâches du jour ({tasks.length})
               </h4>
               <ScrollArea className="flex-1">
-                <div className="space-y-2 pr-2">
-                  {loading ? (
-                    <p className="text-sm text-muted-foreground">Chargement...</p>
-                  ) : tasks.length === 0 ? (
-                    <p className="text-sm text-muted-foreground">
-                      Toutes les tâches sont planifiées
-                    </p>
-                  ) : (
-                    tasks.map(task => (
-                      <DraggableTask key={task.id} task={task} />
-                    ))
-                  )}
-                </div>
+                <SortableContext
+                  items={tasks.map(t => t.id)}
+                  strategy={verticalListSortingStrategy}
+                >
+                  <div className="space-y-2 pr-2">
+                    {loading ? (
+                      <p className="text-sm text-muted-foreground">Chargement...</p>
+                    ) : tasks.length === 0 ? (
+                      <p className="text-sm text-muted-foreground">
+                        Toutes les tâches sont planifiées
+                      </p>
+                    ) : (
+                      tasks.map(task => (
+                        <SortableTask key={task.id} task={task} />
+                      ))
+                    )}
+                  </div>
+                </SortableContext>
               </ScrollArea>
             </div>
 
@@ -317,20 +427,59 @@ export const DayPlanningDialog = ({
                   {TIME_SLOTS.map(hour => {
                     const placement = getPlacementForSlot(hour);
                     const showTask = isSlotStart(hour, placement);
+                    const isOccupied = !!placement && !showTask;
                     
                     return (
-                      <DroppableTimeSlot key={hour} hour={hour} placement={placement}>
+                      <DroppableTimeSlot key={hour} hour={hour} isOccupied={!!placement}>
                         {showTask && placement?.task && (
                           <div 
-                            className="relative"
+                            className="relative bg-primary/10 rounded border border-primary/30"
                             style={{ height: `${(placement.duration_slots - 1) * 40 + 32}px` }}
                           >
-                            <div
-                              className="absolute inset-0 p-1 cursor-pointer hover:opacity-80"
-                              onClick={() => handleRemovePlanning(placement.id)}
-                              title="Cliquer pour retirer"
-                            >
-                              <DraggableTask task={placement.task} isPlaced />
+                            <div className="p-2 h-full flex flex-col">
+                              <div className="flex items-center justify-between gap-2">
+                                <span className="text-xs font-medium truncate flex-1">
+                                  {placement.task.titre}
+                                </span>
+                                <Button
+                                  variant="ghost"
+                                  size="icon"
+                                  className="h-5 w-5 shrink-0"
+                                  onClick={() => handleRemovePlanning(placement.id)}
+                                  title="Retirer du planning"
+                                >
+                                  <X className="h-3 w-3" />
+                                </Button>
+                              </div>
+                              
+                              {/* Duration controls */}
+                              <div className="mt-auto flex items-center justify-between pt-1">
+                                <span className="text-[10px] text-muted-foreground">
+                                  {formatDuration(placement.duration_slots)}
+                                </span>
+                                <div className="flex items-center gap-1">
+                                  <Button
+                                    variant="outline"
+                                    size="icon"
+                                    className="h-5 w-5"
+                                    onClick={() => handleResizePlanning(placement.id, placement.duration_slots - 1)}
+                                    disabled={placement.duration_slots <= 1}
+                                    title="Réduire la durée"
+                                  >
+                                    <Minus className="h-3 w-3" />
+                                  </Button>
+                                  <Button
+                                    variant="outline"
+                                    size="icon"
+                                    className="h-5 w-5"
+                                    onClick={() => handleResizePlanning(placement.id, placement.duration_slots + 1)}
+                                    disabled={placement.duration_slots >= 8}
+                                    title="Augmenter la durée"
+                                  >
+                                    <Plus className="h-3 w-3" />
+                                  </Button>
+                                </div>
+                              </div>
                             </div>
                           </div>
                         )}
@@ -356,7 +505,7 @@ export const DayPlanningDialog = ({
 
         <div className="px-6 py-4 border-t bg-muted/30">
           <p className="text-xs text-muted-foreground">
-            💡 Glissez-déposez les tâches sur les créneaux horaires. Cliquez sur une tâche planifiée pour la retirer.
+            💡 Réordonnez les tâches à gauche. Glissez-les sur les créneaux horaires pour les planifier. Utilisez +/- pour ajuster la durée.
           </p>
         </div>
       </DialogContent>

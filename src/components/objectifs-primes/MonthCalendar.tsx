@@ -355,7 +355,10 @@ export const MonthCalendar = () => {
         toast.info("Demande de changement de date envoyée au créateur");
       }
 
-      fetchEvents();
+      // Force refresh with small delay to ensure DB update is visible
+      setTimeout(() => {
+        fetchEvents();
+      }, 150);
     } catch (error) {
       console.error("Error updating task date:", error);
       toast.error("Erreur lors du changement de date");
