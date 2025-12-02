@@ -65,8 +65,8 @@ const Taches = () => {
   const [currentEmployeeId, setCurrentEmployeeId] = useState<string | null>(null);
   const [filters, setFilters] = useState<TaskFiltersType>({
     searchTerm: "",
-    statut: null,
-    priorite: null,
+    statut: [],
+    priorite: [],
     dateDebut: null,
     dateFin: null,
     hideCompleted: true,
@@ -244,9 +244,12 @@ const Taches = () => {
         if (!matchTitle && !matchDesc) return false;
       }
 
-      if (filters.statut && task.statut !== filters.statut) return false;
+      // Multi-select statut filter
+      if (filters.statut.length > 0 && !filters.statut.includes(task.statut)) return false;
       if (filters.hideCompleted && task.statut === "terminee") return false;
-      if (filters.priorite && task.priorite !== filters.priorite) return false;
+      
+      // Multi-select priorite filter
+      if (filters.priorite.length > 0 && !filters.priorite.includes(task.priorite)) return false;
 
       if (filters.dateDebut || filters.dateFin) {
         const taskDate = startOfDay(new Date(task.date_echeance));
@@ -278,8 +281,8 @@ const Taches = () => {
     hasItems && (
       <Button variant="outline" size="sm" onClick={() => setFilters({
         searchTerm: "",
-        statut: null,
-        priorite: null,
+        statut: [],
+        priorite: [],
         dateDebut: null,
         dateFin: null,
         hideCompleted: false,
