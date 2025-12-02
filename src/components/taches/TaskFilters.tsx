@@ -4,19 +4,21 @@ import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
+import { MultiSelect } from "@/components/ui/multi-select";
 import { Search, Calendar as CalendarIcon, X, Flame, Clock, Target, Calendar as CalendarCheck, CheckCircle2, AlertCircle } from "lucide-react";
 import { format, startOfWeek, endOfWeek, subDays, startOfToday } from "date-fns";
 import { fr } from "date-fns/locale";
+import { DateRange } from "react-day-picker";
+import { cn } from "@/lib/utils";
 
 export interface TaskFilters {
   searchTerm: string;
-  statut: string | null;
-  priorite: string | null;
+  statut: string[];
+  priorite: string[];
   dateDebut: Date | null;
   dateFin: Date | null;
   hideCompleted: boolean;
@@ -30,13 +32,26 @@ interface TaskFiltersProps {
   };
 }
 
+const statusOptions = [
+  { value: "en_cours", label: "🟢 En cours" },
+  { value: "terminee", label: "✅ Terminées" },
+  { value: "a_venir", label: "🔵 À venir" },
+  { value: "en_attente_validation", label: "⏳ En attente validation" },
+];
+
+const priorityOptions = [
+  { value: "haute", label: "🔴 Haute" },
+  { value: "normale", label: "🔵 Normale" },
+  { value: "basse", label: "🟢 Basse" },
+];
+
 export const TaskFilters = ({ onFilterChange, taskCount }: TaskFiltersProps) => {
   const { t } = useTranslation('tasks');
   // Filtres en cours de configuration (pas encore appliqués)
   const [pendingFilters, setPendingFilters] = useState<TaskFilters>({
     searchTerm: "",
-    statut: null,
-    priorite: null,
+    statut: [],
+    priorite: [],
     dateDebut: null,
     dateFin: null,
     hideCompleted: true,
@@ -45,8 +60,8 @@ export const TaskFilters = ({ onFilterChange, taskCount }: TaskFiltersProps) => 
   // Filtres actuellement appliqués
   const [appliedFilters, setAppliedFilters] = useState<TaskFilters>({
     searchTerm: "",
-    statut: null,
-    priorite: null,
+    statut: [],
+    priorite: [],
     dateDebut: null,
     dateFin: null,
     hideCompleted: true,
@@ -70,8 +85,8 @@ export const TaskFilters = ({ onFilterChange, taskCount }: TaskFiltersProps) => 
   const resetFilters = () => {
     const emptyFilters: TaskFilters = {
       searchTerm: "",
-      statut: null,
-      priorite: null,
+      statut: [],
+      priorite: [],
       dateDebut: null,
       dateFin: null,
       hideCompleted: false,
@@ -91,8 +106,8 @@ export const TaskFilters = ({ onFilterChange, taskCount }: TaskFiltersProps) => 
       case "urgent":
         newFilters = {
           searchTerm: "",
-          statut: "en_cours",
-          priorite: "haute",
+          statut: ["en_cours"],
+          priorite: ["haute"],
           dateDebut: null,
           dateFin: endOfWeek(today, { locale: fr }),
           hideCompleted: true,
@@ -101,8 +116,8 @@ export const TaskFilters = ({ onFilterChange, taskCount }: TaskFiltersProps) => 
       case "overdue":
         newFilters = {
           searchTerm: "",
-          statut: "en_cours",
-          priorite: null,
+          statut: ["en_cours"],
+          priorite: [],
           dateDebut: null,
           dateFin: subDays(today, 1),
           hideCompleted: true,
@@ -111,8 +126,8 @@ export const TaskFilters = ({ onFilterChange, taskCount }: TaskFiltersProps) => 
       case "today":
         newFilters = {
           searchTerm: "",
-          statut: null,
-          priorite: null,
+          statut: [],
+          priorite: [],
           dateDebut: today,
           dateFin: today,
           hideCompleted: false,
@@ -121,8 +136,8 @@ export const TaskFilters = ({ onFilterChange, taskCount }: TaskFiltersProps) => 
       case "thisWeek":
         newFilters = {
           searchTerm: "",
-          statut: null,
-          priorite: null,
+          statut: [],
+          priorite: [],
           dateDebut: startOfWeek(today, { locale: fr }),
           dateFin: endOfWeek(today, { locale: fr }),
           hideCompleted: false,
@@ -131,8 +146,8 @@ export const TaskFilters = ({ onFilterChange, taskCount }: TaskFiltersProps) => 
       case "completed":
         newFilters = {
           searchTerm: "",
-          statut: "terminee",
-          priorite: null,
+          statut: ["terminee"],
+          priorite: [],
           dateDebut: subDays(today, 7),
           dateFin: today,
           hideCompleted: false,
@@ -150,8 +165,8 @@ export const TaskFilters = ({ onFilterChange, taskCount }: TaskFiltersProps) => 
 
   const activeFilterCount = [
     appliedFilters.searchTerm && appliedFilters.searchTerm.length > 0,
-    appliedFilters.statut !== null,
-    appliedFilters.priorite !== null,
+    appliedFilters.statut.length > 0,
+    appliedFilters.priorite.length > 0,
     appliedFilters.dateDebut !== null,
     appliedFilters.dateFin !== null,
     appliedFilters.hideCompleted === true,
@@ -162,6 +177,19 @@ export const TaskFilters = ({ onFilterChange, taskCount }: TaskFiltersProps) => 
     if (e.key === 'Enter') {
       applyFilters();
     }
+  };
+
+  // Handle date range selection
+  const dateRange: DateRange | undefined = pendingFilters.dateDebut 
+    ? { from: pendingFilters.dateDebut, to: pendingFilters.dateFin || undefined }
+    : undefined;
+
+  const handleDateRangeSelect = (range: DateRange | undefined) => {
+    setPendingFilters((prev) => ({
+      ...prev,
+      dateDebut: range?.from || null,
+      dateFin: range?.to || null,
+    }));
   };
 
   return (
@@ -233,42 +261,28 @@ export const TaskFilters = ({ onFilterChange, taskCount }: TaskFiltersProps) => 
           </div>
         </div>
 
-        {/* Status */}
+        {/* Status - MultiSelect */}
         <div className="space-y-2">
           <Label className="text-xs">Statut</Label>
-          <Select
-            value={pendingFilters.statut || "all"}
-            onValueChange={(value) => updatePendingFilter("statut", value === "all" ? null : value)}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Tous les statuts" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Tous les statuts</SelectItem>
-              <SelectItem value="en_cours">En cours</SelectItem>
-              <SelectItem value="terminee">Terminées</SelectItem>
-              <SelectItem value="a_venir">À venir</SelectItem>
-            </SelectContent>
-          </Select>
+          <MultiSelect
+            selectedValues={pendingFilters.statut}
+            onSelectedValuesChange={(values) => updatePendingFilter("statut", values)}
+            options={statusOptions}
+            placeholder="Tous les statuts"
+            searchPlaceholder="Rechercher un statut..."
+          />
         </div>
 
-        {/* Priority */}
+        {/* Priority - MultiSelect */}
         <div className="space-y-2">
           <Label className="text-xs">Priorité</Label>
-          <Select
-            value={pendingFilters.priorite || "all"}
-            onValueChange={(value) => updatePendingFilter("priorite", value === "all" ? null : value)}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Toutes priorités" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Toutes priorités</SelectItem>
-              <SelectItem value="haute">🔴 Haute</SelectItem>
-              <SelectItem value="normale">🔵 Normale</SelectItem>
-              <SelectItem value="basse">🟢 Basse</SelectItem>
-            </SelectContent>
-          </Select>
+          <MultiSelect
+            selectedValues={pendingFilters.priorite}
+            onSelectedValuesChange={(values) => updatePendingFilter("priorite", values)}
+            options={priorityOptions}
+            placeholder="Toutes priorités"
+            searchPlaceholder="Rechercher une priorité..."
+          />
         </div>
 
         {/* Date Range */}
@@ -287,42 +301,26 @@ export const TaskFilters = ({ onFilterChange, taskCount }: TaskFiltersProps) => 
                     format(pendingFilters.dateDebut, "dd/MM/yyyy")
                   )
                 ) : (
-                  <span>Toutes les dates</span>
+                  <span className="text-muted-foreground">Toutes les dates</span>
                 )}
               </Button>
             </PopoverTrigger>
             <PopoverContent className="w-auto p-0" align="start">
-              <div className="p-3 space-y-2">
-                <div className="space-y-1">
-                  <Label className="text-xs">Date de début</Label>
-                  <Calendar
-                    mode="single"
-                    selected={pendingFilters.dateDebut || undefined}
-                    onSelect={(date) => updatePendingFilter("dateDebut", date || null)}
-                    locale={fr}
-                    className="pointer-events-auto"
-                  />
-                </div>
-                {pendingFilters.dateDebut && (
-                  <div className="space-y-1">
-                    <Label className="text-xs">Date de fin (optionnel)</Label>
-                    <Calendar
-                      mode="single"
-                      selected={pendingFilters.dateFin || undefined}
-                      onSelect={(date) => updatePendingFilter("dateFin", date || null)}
-                      locale={fr}
-                      disabled={(date) => pendingFilters.dateDebut ? date < pendingFilters.dateDebut : false}
-                      className="pointer-events-auto"
-                    />
-                  </div>
-                )}
-                <div className="flex gap-2">
+              <div className="p-3 space-y-3">
+                <Calendar
+                  mode="range"
+                  selected={dateRange}
+                  onSelect={handleDateRangeSelect}
+                  locale={fr}
+                  numberOfMonths={2}
+                  className={cn("pointer-events-auto")}
+                />
+                <div className="flex gap-2 border-t pt-3">
                   <Button
                     size="sm"
                     variant="outline"
                     onClick={() => {
-                      updatePendingFilter("dateDebut", null);
-                      updatePendingFilter("dateFin", null);
+                      handleDateRangeSelect(undefined);
                       setShowDatePicker(false);
                     }}
                   >
