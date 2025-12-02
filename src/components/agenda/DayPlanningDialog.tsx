@@ -124,12 +124,9 @@ const DraggablePlacedTask = ({
   return (
     <div 
       ref={setNodeRef}
-      style={{
-        ...style,
-        height: `${(placement.duration_slots - 1) * 40 + 32}px`,
-      }}
+      style={style}
       className={`
-        relative bg-primary/10 rounded border border-primary/30
+        h-full bg-primary/10 rounded border border-primary/30
         ${isDragging ? "opacity-50 shadow-lg z-50" : ""}
       `}
     >
@@ -516,22 +513,46 @@ export const DayPlanningDialog = ({
             <div className="col-span-2 flex flex-col">
               <h4 className="text-sm font-medium mb-3">Planning horaire (glisser vers la gauche pour retirer)</h4>
               <ScrollArea className="flex-1 border rounded-lg">
-                <div className="min-w-[300px]">
+                <div className="min-w-[300px] relative">
+                  {/* Background time slots (droppable areas) */}
                   {TIME_SLOTS.map(hour => {
                     const placement = getPlacementForSlot(hour);
-                    const showTask = isSlotStart(hour, placement);
+                    const isOccupiedButNotStart = !!placement && !isSlotStart(hour, placement);
                     
                     return (
-                      <DroppableTimeSlot key={hour} hour={hour} isOccupied={!!placement}>
-                        {showTask && placement?.task && (
-                          <DraggablePlacedTask
-                            placement={placement}
-                            onRemove={handleRemovePlanning}
-                            onResize={handleResizePlanning}
-                            formatDuration={formatDuration}
-                          />
-                        )}
+                      <DroppableTimeSlot 
+                        key={hour} 
+                        hour={hour} 
+                        isOccupied={!!placement}
+                      >
+                        {/* Empty - tasks rendered with absolute positioning below */}
                       </DroppableTimeSlot>
+                    );
+                  })}
+                  
+                  {/* Placed tasks with absolute positioning to span multiple slots */}
+                  {plannings.map(placement => {
+                    if (!placement.task) return null;
+                    const topOffset = (placement.start_hour - 7) * 2 * 40; // 40px per slot, 2 slots per hour
+                    const height = placement.duration_slots * 40 - 4; // -4 for some padding
+                    
+                    return (
+                      <div
+                        key={placement.id}
+                        className="absolute left-16 right-2"
+                        style={{
+                          top: `${topOffset}px`,
+                          height: `${height}px`,
+                          zIndex: 10,
+                        }}
+                      >
+                        <DraggablePlacedTask
+                          placement={placement}
+                          onRemove={handleRemovePlanning}
+                          onResize={handleResizePlanning}
+                          formatDuration={formatDuration}
+                        />
+                      </div>
                     );
                   })}
                 </div>
