@@ -21,6 +21,7 @@ interface TaskCardProps {
   isHelpRequest?: boolean;
   isMaintenance?: boolean;
   highlightTerm?: string;
+  isValidationPending?: boolean;
 }
 
 const getPriorityColor = (priorite: string) => {
@@ -40,10 +41,13 @@ const getStatusIcon = (statut: string) => {
   if (statut === "terminee") {
     return <CheckCircle2 className="h-5 w-5 text-green-600" />;
   }
+  if (statut === "en_attente_validation") {
+    return <Clock className="h-5 w-5 text-amber-600" />;
+  }
   return <Circle className="h-5 w-5 text-muted-foreground" />;
 };
 
-export const TaskCard = ({ task, currentEmployeeId, onUpdate, isHelpRequest, isMaintenance, highlightTerm }: TaskCardProps) => {
+export const TaskCard = ({ task, currentEmployeeId, onUpdate, isHelpRequest, isMaintenance, highlightTerm, isValidationPending }: TaskCardProps) => {
   const [showDetails, setShowDetails] = useState(false);
   const [subTasksCount, setSubTasksCount] = useState({ total: 0, completed: 0 });
   const [activeAction, setActiveAction] = useState<string | null>(null);
@@ -88,8 +92,76 @@ export const TaskCard = ({ task, currentEmployeeId, onUpdate, isHelpRequest, isM
   const statusIcon = useMemo(() => getStatusIcon(task.statut), [task.statut]);
 
   const isCreator = task.created_by === currentEmployeeId;
+  const isAssigned = task.assigned_to === currentEmployeeId;
+  const needsValidation = isAssigned && !isCreator;
 
   const toggleStatus = async () => {
+    // Si la tâche est en attente de validation, seul le créateur peut la valider
+    if (task.statut === "en_attente_validation") {
+      if (!isCreator) {
+        toast.error("Seul le créateur peut valider cette tâche");
+        return;
+      }
+      // Valider la tâche
+      const { error } = await supabase
+        .from("tasks")
+        .update({ statut: "terminee" })
+        .eq("id", task.id);
+
+      if (error) {
+        toast.error("Erreur lors de la validation");
+        return;
+      }
+      toast.success("Tâche validée !");
+      onUpdate();
+      return;
+    }
+
+    // Si l'utilisateur est l'assigné mais pas le créateur, marquer comme en attente de validation
+    if (needsValidation) {
+      const newStatut = task.statut === "terminee" ? "en_cours" : "en_attente_validation";
+      
+      const updateData: any = { 
+        statut: newStatut,
+        updated_at: new Date().toISOString()
+      };
+      
+      if (newStatut === "en_attente_validation") {
+        updateData.completed_at = new Date().toISOString();
+        updateData.completed_by = currentEmployeeId;
+      } else {
+        updateData.completed_at = null;
+        updateData.completed_by = null;
+      }
+
+      const { error } = await supabase
+        .from("tasks")
+        .update(updateData)
+        .eq("id", task.id);
+
+      if (error) {
+        toast.error("Erreur lors de la mise à jour");
+        return;
+      }
+
+      if (newStatut === "en_attente_validation") {
+        // Notifier le créateur
+        await supabase.from("notifications").insert({
+          employee_id: task.created_by,
+          titre: "📋 Tâche à valider",
+          message: `Une tâche que vous avez créée a été marquée comme terminée : ${task.titre}`,
+          type: "task_validation_pending",
+          url: "/taches",
+        });
+        toast.success("Tâche terminée - En attente de validation");
+      } else {
+        toast.success("Tâche réouverte");
+      }
+      onUpdate();
+      return;
+    }
+
+    // Comportement standard pour le créateur
     if (!isCreator) {
       toast.error("Seul le créateur de cette tâche peut la clôturer");
       return;
@@ -110,6 +182,8 @@ export const TaskCard = ({ task, currentEmployeeId, onUpdate, isHelpRequest, isM
     toast.success(newStatut === "terminee" ? "Tâche terminée !" : "Tâche réouverte");
     onUpdate();
   };
+
+  const canToggleStatus = isCreator || (isAssigned && task.statut !== "terminee");
 
   const handleAddComment = async () => {
     const comment = actionInput;
@@ -350,17 +424,20 @@ export const TaskCard = ({ task, currentEmployeeId, onUpdate, isHelpRequest, isM
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
-                        if (isCreator) toggleStatus();
+                        if (canToggleStatus) toggleStatus();
                       }}
-                      disabled={!isCreator}
-                      className={`transition-transform shrink-0 ${isCreator ? 'hover:scale-110' : 'opacity-50 cursor-not-allowed'}`}
+                      disabled={!canToggleStatus}
+                      className={`transition-transform shrink-0 ${canToggleStatus ? 'hover:scale-110' : 'opacity-50 cursor-not-allowed'}`}
                     >
                       {statusIcon}
                     </button>
                   </TooltipTrigger>
-                  {!isCreator && task.creator_employee && (
+                  {!canToggleStatus && task.creator_employee && (
                     <TooltipContent>
-                      Seul {task.creator_employee.prenom} {task.creator_employee.nom} peut clôturer cette tâche.
+                      {task.statut === "en_attente_validation" 
+                        ? `En attente de validation par ${task.creator_employee.prenom} ${task.creator_employee.nom}`
+                        : `Seul ${task.creator_employee.prenom} ${task.creator_employee.nom} peut clôturer cette tâche.`
+                      }
                     </TooltipContent>
                   )}
                 </Tooltip>
@@ -431,6 +508,27 @@ export const TaskCard = ({ task, currentEmployeeId, onUpdate, isHelpRequest, isM
                         <strong>Mode Boomerang :</strong> Cette tâche a été déléguée temporairement à un collègue.
                         Elle reviendra automatiquement à son propriétaire après le délai défini.
                       </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
+
+              {task.statut === "en_attente_validation" && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Badge className="bg-amber-500/20 text-amber-700 dark:text-amber-400">
+                        <Clock className="h-3 w-3 mr-1" />
+                        En attente de validation
+                      </Badge>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      {isAssigned && task.creator_employee 
+                        ? `En attente de validation par ${task.creator_employee.prenom} ${task.creator_employee.nom}`
+                        : task.completed_by_employee 
+                          ? `Terminée par ${task.completed_by_employee.prenom} ${task.completed_by_employee.nom}`
+                          : "En attente de validation par le créateur"
+                      }
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>

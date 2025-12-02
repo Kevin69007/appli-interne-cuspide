@@ -36,7 +36,28 @@
   "tabs": {
     "myTasks": "My tasks",
     "boomerangsSent": "Boomerangs sent",
-    "boomerangsReceived": "Boomerangs received"
+    "boomerangsReceived": "Boomerangs received",
+    "assignedTracking": "Assigned tracking"
+  },
+  "validation": {
+    "title": "Validation required",
+    "completedBy": "Completed by {{name}}",
+    "completedOn": "on {{date}}",
+    "validate": "Validate closure",
+    "reassign": "Reassign",
+    "reassignTitle": "Reassign task",
+    "reassignDescription": "Explain why this task needs to be reworked by the employee.",
+    "reassignPlaceholder": "Required comment: describe what remains to be done or why the task is not correctly completed...",
+    "confirmReassign": "Reassign with this comment",
+    "commentRequired": "A comment is required to reassign the task",
+    "validated": "Task validated successfully",
+    "validateError": "Error validating task",
+    "reassigned": "Task reassigned successfully",
+    "reassignError": "Error reassigning task",
+    "pendingValidation": "Pending validation",
+    "awaitingValidation": "Awaiting validation by {{name}}",
+    "markAsComplete": "Mark as complete",
+    "completedAwaitingValidation": "Completed - Awaiting validation"
   },
   "boomerang": {
     "title": "Boomerang",

@@ -36,7 +36,28 @@
   "tabs": {
     "myTasks": "Mes tâches",
     "boomerangsSent": "Boomerangs envoyés",
-    "boomerangsReceived": "Boomerangs reçus"
+    "boomerangsReceived": "Boomerangs reçus",
+    "assignedTracking": "Suivi des affectées"
+  },
+  "validation": {
+    "title": "Validation requise",
+    "completedBy": "Terminée par {{name}}",
+    "completedOn": "le {{date}}",
+    "validate": "Valider la clôture",
+    "reassign": "Réaffecter",
+    "reassignTitle": "Réaffecter la tâche",
+    "reassignDescription": "Expliquez pourquoi cette tâche doit être reprise par l'employé.",
+    "reassignPlaceholder": "Commentaire obligatoire : décrivez ce qui reste à faire ou pourquoi la tâche n'est pas correctement terminée...",
+    "confirmReassign": "Réaffecter avec ce commentaire",
+    "commentRequired": "Un commentaire est obligatoire pour réaffecter la tâche",
+    "validated": "Tâche validée avec succès",
+    "validateError": "Erreur lors de la validation",
+    "reassigned": "Tâche réaffectée avec succès",
+    "reassignError": "Erreur lors de la réaffectation",
+    "pendingValidation": "En attente de validation",
+    "awaitingValidation": "En attente de validation par {{name}}",
+    "markAsComplete": "Marquer comme terminée",
+    "completedAwaitingValidation": "Terminée - En attente de validation"
   },
   "boomerang": {
     "title": "Boomerang",
