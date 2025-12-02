@@ -37,19 +37,19 @@ const Agenda = () => {
       </header>
 
       <main className="container mx-auto px-4 py-8">
-        <Tabs defaultValue="planning" className="space-y-4">
+        <Tabs defaultValue="agenda" className="space-y-4">
           <TabsList>
-            <TabsTrigger value="planning">{t('tabs.team')}</TabsTrigger>
             <TabsTrigger value="agenda">{t('tabs.personal')}</TabsTrigger>
+            <TabsTrigger value="planning">{t('tabs.team')}</TabsTrigger>
             <TabsTrigger value="declaration">{t('tabs.timeDeclaration')}</TabsTrigger>
           </TabsList>
 
-          <TabsContent value="planning" className="space-y-4">
-            <PlanningCalendar />
-          </TabsContent>
-
           <TabsContent value="agenda" className="space-y-4">
             <MonthCalendar />
+          </TabsContent>
+
+          <TabsContent value="planning" className="space-y-4">
+            <PlanningCalendar />
           </TabsContent>
 
           <TabsContent value="declaration" className="space-y-6">

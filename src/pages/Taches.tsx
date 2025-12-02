@@ -138,19 +138,20 @@ const Taches = () => {
           .eq("boomerang_active", true)
           .order("boomerang_deadline"),
         
-        // Tâches affectées en attente de validation (je suis le créateur, quelqu'un d'autre les a marquées terminées)
+        // Tâches affectées en attente de validation ou de changement de date
         supabase
           .from("tasks")
           .select(`
             *,
             assigned_employee:employees!tasks_assigned_to_fkey(nom, prenom, photo_url),
             creator_employee:employees!tasks_created_by_fkey(nom, prenom, photo_url),
-            completed_by_employee:employees!tasks_completed_by_fkey(nom, prenom, photo_url)
+            completed_by_employee:employees!tasks_completed_by_fkey(nom, prenom, photo_url),
+            date_change_requester:employees!tasks_date_change_requested_by_fkey(nom, prenom, photo_url)
           `)
           .eq("created_by", currentEmployeeId)
           .neq("assigned_to", currentEmployeeId)
-          .eq("statut", "en_attente_validation")
-          .order("completed_at", { ascending: false })
+          .or("statut.eq.en_attente_validation,date_change_pending.eq.true")
+          .order("updated_at", { ascending: false })
       ]);
 
       if (myTasksResult.error) throw myTasksResult.error;
