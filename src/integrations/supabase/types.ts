@@ -3800,6 +3800,8 @@ export type Database = {
           boomerang_history: Json | null
           boomerang_original_owner: string | null
           commentaires: Json | null
+          completed_at: string | null
+          completed_by: string | null
           created_at: string
           created_by: string
           date_echeance: string
@@ -3830,6 +3832,8 @@ export type Database = {
           boomerang_history?: Json | null
           boomerang_original_owner?: string | null
           commentaires?: Json | null
+          completed_at?: string | null
+          completed_by?: string | null
           created_at?: string
           created_by: string
           date_echeance: string
@@ -3860,6 +3864,8 @@ export type Database = {
           boomerang_history?: Json | null
           boomerang_original_owner?: string | null
           commentaires?: Json | null
+          completed_at?: string | null
+          completed_by?: string | null
           created_at?: string
           created_by?: string
           date_echeance?: string
@@ -3919,6 +3925,20 @@ export type Database = {
           {
             foreignKeyName: "tasks_boomerang_original_owner_fkey"
             columns: ["boomerang_original_owner"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_completed_by_fkey"
+            columns: ["completed_by"]
+            isOneToOne: false
+            referencedRelation: "employee_badge_summary"
+            referencedColumns: ["employee_id"]
+          },
+          {
+            foreignKeyName: "tasks_completed_by_fkey"
+            columns: ["completed_by"]
             isOneToOne: false
             referencedRelation: "employees"
             referencedColumns: ["id"]

@@ -42,6 +42,7 @@ const Taches = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [boomerangsSent, setBoomerangsSent] = useState<Task[]>([]);
   const [boomerangsReceived, setBoomerangsReceived] = useState<Task[]>([]);
+  const [assignedPendingValidation, setAssignedPendingValidation] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [currentEmployeeId, setCurrentEmployeeId] = useState<string | null>(null);
@@ -96,7 +97,7 @@ const Taches = () => {
     setLoading(true);
     try {
       // ✅ Exécuter les 3 requêtes EN PARALLÈLE avec Promise.all
-      const [myTasksResult, sentBoomerangsResult, receivedBoomerangsResult] = await Promise.all([
+      const [myTasksResult, sentBoomerangsResult, receivedBoomerangsResult, assignedPendingResult] = await Promise.all([
         // Mes tâches (assignées à moi, pas en mode boomerang actif)
         supabase
           .from("tasks")
@@ -108,6 +109,7 @@ const Taches = () => {
           .eq("assigned_to", currentEmployeeId)
           .eq("boomerang_active", false)
           .neq("statut", "annulee")
+          .neq("statut", "en_attente_validation")
           .order("date_echeance"),
         
         // Boomerangs envoyés (je suis le propriétaire original)
@@ -134,16 +136,32 @@ const Taches = () => {
           `)
           .eq("boomerang_current_holder", currentEmployeeId)
           .eq("boomerang_active", true)
-          .order("boomerang_deadline")
+          .order("boomerang_deadline"),
+        
+        // Tâches affectées en attente de validation (je suis le créateur, quelqu'un d'autre les a marquées terminées)
+        supabase
+          .from("tasks")
+          .select(`
+            *,
+            assigned_employee:employees!tasks_assigned_to_fkey(nom, prenom, photo_url),
+            creator_employee:employees!tasks_created_by_fkey(nom, prenom, photo_url),
+            completed_by_employee:employees!tasks_completed_by_fkey(nom, prenom, photo_url)
+          `)
+          .eq("created_by", currentEmployeeId)
+          .neq("assigned_to", currentEmployeeId)
+          .eq("statut", "en_attente_validation")
+          .order("completed_at", { ascending: false })
       ]);
 
       if (myTasksResult.error) throw myTasksResult.error;
       if (sentBoomerangsResult.error) throw sentBoomerangsResult.error;
       if (receivedBoomerangsResult.error) throw receivedBoomerangsResult.error;
+      if (assignedPendingResult.error) throw assignedPendingResult.error;
 
       setTasks(myTasksResult.data || []);
       setBoomerangsSent(sentBoomerangsResult.data || []);
       setBoomerangsReceived(receivedBoomerangsResult.data || []);
+      setAssignedPendingValidation(assignedPendingResult.data || []);
     } catch (error) {
       console.error("Error fetching tasks:", error);
       toast.error("Erreur lors du chargement des tâches");
@@ -194,9 +212,10 @@ const Taches = () => {
   const filteredTasks = filterTasks(tasks);
   const filteredBoomerangsSent = filterTasks(boomerangsSent);
   const filteredBoomerangsReceived = filterTasks(boomerangsReceived);
+  const filteredAssignedPending = filterTasks(assignedPendingValidation);
 
-  const totalTasks = tasks.length + boomerangsSent.length + boomerangsReceived.length;
-  const totalFiltered = filteredTasks.length + filteredBoomerangsSent.length + filteredBoomerangsReceived.length;
+  const totalTasks = tasks.length + boomerangsSent.length + boomerangsReceived.length + assignedPendingValidation.length;
+  const totalFiltered = filteredTasks.length + filteredBoomerangsSent.length + filteredBoomerangsReceived.length + filteredAssignedPending.length;
 
   return (
     <div className="min-h-screen bg-background p-2 sm:p-4">
@@ -223,21 +242,30 @@ const Taches = () => {
         />
 
         <Tabs defaultValue="my-tasks" className="w-full">
-          <TabsList className="grid w-full grid-cols-3 h-auto">
-            <TabsTrigger value="my-tasks" className="text-xs sm:text-sm px-2 py-2">
+          <TabsList className="grid w-full grid-cols-4 h-auto">
+            <TabsTrigger value="my-tasks" className="text-xs sm:text-sm px-1 sm:px-2 py-2">
               <span className="hidden sm:inline">{t('tabs.myTasks')}</span>
-              <span className="sm:hidden">Mes tâches</span>
+              <span className="sm:hidden">Tâches</span>
               <span className="ml-1">({filteredTasks.length})</span>
             </TabsTrigger>
-            <TabsTrigger value="boomerangs-sent" className="text-xs sm:text-sm px-2 py-2">
+            <TabsTrigger value="boomerangs-sent" className="text-xs sm:text-sm px-1 sm:px-2 py-2">
               🪃 <span className="hidden sm:inline">{t('tabs.boomerangsSent')}</span>
               <span className="sm:hidden">Envoyés</span>
               <span className="ml-1">({filteredBoomerangsSent.length})</span>
             </TabsTrigger>
-            <TabsTrigger value="boomerangs-received" className="text-xs sm:text-sm px-2 py-2">
+            <TabsTrigger value="boomerangs-received" className="text-xs sm:text-sm px-1 sm:px-2 py-2">
               🪃 <span className="hidden sm:inline">{t('tabs.boomerangsReceived')}</span>
               <span className="sm:hidden">Reçus</span>
               <span className="ml-1">({filteredBoomerangsReceived.length})</span>
+            </TabsTrigger>
+            <TabsTrigger value="assigned-tracking" className="text-xs sm:text-sm px-1 sm:px-2 py-2">
+              📋 <span className="hidden sm:inline">{t('tabs.assignedTracking')}</span>
+              <span className="sm:hidden">Suivi</span>
+              {filteredAssignedPending.length > 0 && (
+                <span className="ml-1 bg-amber-500 text-white rounded-full px-1.5 text-xs">
+                  {filteredAssignedPending.length}
+                </span>
+              )}
             </TabsTrigger>
           </TabsList>
 
@@ -338,6 +366,43 @@ const Taches = () => {
                   currentEmployeeId={currentEmployeeId}
                   onUpdate={fetchTasks}
                   highlightTerm={filters.searchTerm}
+                />
+              ))
+            )}
+          </TabsContent>
+
+          <TabsContent value="assigned-tracking" className="space-y-4 mt-6">
+            {loading ? (
+              <p className="text-center text-muted-foreground">Chargement...</p>
+            ) : filteredAssignedPending.length === 0 ? (
+              <div className="text-center space-y-2">
+                <p className="text-muted-foreground">
+                  {assignedPendingValidation.length === 0 
+                    ? "Aucune tâche en attente de validation" 
+                    : "Aucune tâche ne correspond à vos critères"}
+                </p>
+                {assignedPendingValidation.length > 0 && (
+                  <Button variant="outline" size="sm" onClick={() => setFilters({
+                    searchTerm: "",
+                    statut: null,
+                    priorite: null,
+                    dateDebut: null,
+                    dateFin: null,
+                    hideCompleted: false,
+                  })}>
+                    Réinitialiser les filtres
+                  </Button>
+                )}
+              </div>
+            ) : (
+              filteredAssignedPending.map((task) => (
+                <TaskCard
+                  key={task.id}
+                  task={task}
+                  currentEmployeeId={currentEmployeeId}
+                  onUpdate={fetchTasks}
+                  highlightTerm={filters.searchTerm}
+                  isValidationPending
                 />
               ))
             )}

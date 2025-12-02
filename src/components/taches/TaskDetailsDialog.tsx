@@ -11,7 +11,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Combobox } from "@/components/ui/combobox";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Calendar, User, CheckCircle2, XCircle, RotateCcw, Send, Info, Lock, CalendarPlus, History, MessageSquare, Edit2, Star } from "lucide-react";
+import { Calendar, User, CheckCircle2, XCircle, RotateCcw, Send, Info, Lock, CalendarPlus, History, MessageSquare, Edit2, Star, Clock } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { TaskCommentsHierarchical } from "./TaskCommentsHierarchical";
 import { SubTasksList } from "./SubTasksList";
@@ -19,6 +19,7 @@ import { RappelsList } from "./RappelsList";
 import { BoomerangSendDialog } from "./BoomerangSendDialog";
 import { BoomerangHistoryTimeline } from "./BoomerangHistoryTimeline";
 import { BoomerangTimer } from "./BoomerangTimer";
+import { TaskValidationActions } from "./TaskValidationActions";
 
 interface TaskDetailsDialogProps {
   open: boolean;
@@ -410,6 +411,11 @@ export const TaskDetailsDialog = ({
                   <CheckCircle2 className="h-3 w-3 mr-1" />
                   Terminée
                 </Badge>
+              ) : task.statut === "en_attente_validation" ? (
+                <Badge className="bg-amber-500/20 text-amber-700">
+                  <Clock className="h-3 w-3 mr-1" />
+                  En attente de validation
+                </Badge>
               ) : task.statut === "annulee" ? (
                 <Badge className="bg-red-500/20 text-red-700">
                   <XCircle className="h-3 w-3 mr-1" />
@@ -442,6 +448,15 @@ export const TaskDetailsDialog = ({
                 </TooltipProvider>
               )}
             </div>
+
+            {/* Task Validation Actions - for creator when task is pending validation */}
+            <TaskValidationActions
+              task={task}
+              currentEmployeeId={currentEmployeeId}
+              currentEmployeeName={currentEmployeeName}
+              onUpdate={onUpdate}
+              onClose={() => onOpenChange(false)}
+            />
 
             <div className="grid gap-4 sm:grid-cols-2">
               <div className="flex items-center gap-2 text-sm">
