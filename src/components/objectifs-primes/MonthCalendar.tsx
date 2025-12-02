@@ -314,6 +314,11 @@ export const MonthCalendar = () => {
 
     const isCreator = draggedEvent.taskData?.created_by === currentEmployeeId;
 
+    // Optimistic update: move task visually immediately
+    setEvents(prev => prev.map(e => 
+      e.id === taskId ? { ...e, date: newDay } : e
+    ));
+
     try {
       if (isCreator) {
         // Creator can change date directly
@@ -355,13 +360,15 @@ export const MonthCalendar = () => {
         toast.info("Demande de changement de date envoyée au créateur");
       }
 
-      // Force refresh with small delay to ensure DB update is visible
+      // Sync with DB after optimistic update
       setTimeout(() => {
         fetchEvents();
-      }, 150);
+      }, 300);
     } catch (error) {
       console.error("Error updating task date:", error);
       toast.error("Erreur lors du changement de date");
+      // Revert optimistic update on error
+      fetchEvents();
     }
   };
 

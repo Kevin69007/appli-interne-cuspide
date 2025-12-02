@@ -50,7 +50,15 @@ interface TaskPlanning {
 
 const TIME_SLOTS = Array.from({ length: 26 }, (_, i) => 7 + i * 0.5); // 7:00 to 20:00 in 30 min increments
 
-// Sortable task for the left column
+const getPriorityColor = (priorite: string) => {
+  switch (priorite) {
+    case "haute": return "border-l-red-500 bg-red-50 dark:bg-red-950/20";
+    case "moyenne": return "border-l-yellow-500 bg-yellow-50 dark:bg-yellow-950/20";
+    default: return "border-l-green-500 bg-green-50 dark:bg-green-950/20";
+  }
+};
+
+// Sortable task for the left column - can be reordered AND dropped on time slots
 const SortableTask = ({ task }: { task: Task }) => {
   const {
     attributes,
@@ -67,14 +75,6 @@ const SortableTask = ({ task }: { task: Task }) => {
   const style = {
     transform: CSS.Transform.toString(transform),
     transition,
-  };
-
-  const getPriorityColor = (priorite: string) => {
-    switch (priorite) {
-      case "haute": return "border-l-red-500 bg-red-50 dark:bg-red-950/20";
-      case "moyenne": return "border-l-yellow-500 bg-yellow-50 dark:bg-yellow-950/20";
-      default: return "border-l-green-500 bg-green-50 dark:bg-green-950/20";
-    }
   };
 
   return (
@@ -98,46 +98,139 @@ const SortableTask = ({ task }: { task: Task }) => {
   );
 };
 
-// Draggable task that can be dropped on time slots
-const DraggableTask = ({ task, isPlaced }: { task: Task; isPlaced?: boolean }) => {
+// Draggable placed task - can be dragged back to task list
+const DraggablePlacedTask = ({ 
+  placement, 
+  onRemove, 
+  onResize,
+  formatDuration,
+}: { 
+  placement: TaskPlanning & { task?: Task };
+  onRemove: (id: string) => void;
+  onResize: (id: string, newDuration: number) => void;
+  formatDuration: (slots: number) => string;
+}) => {
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
-    id: `drag-${task.id}`,
-    data: { task, type: "draggable" },
+    id: `placed-${placement.id}`,
+    data: { placement, task: placement.task, type: "placed" },
   });
 
   const style = transform
-    ? {
-        transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`,
-      }
+    ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)` }
     : undefined;
 
-  const getPriorityColor = (priorite: string) => {
-    switch (priorite) {
-      case "haute": return "border-l-red-500 bg-red-50 dark:bg-red-950/20";
-      case "moyenne": return "border-l-yellow-500 bg-yellow-50 dark:bg-yellow-950/20";
-      default: return "border-l-green-500 bg-green-50 dark:bg-green-950/20";
-    }
-  };
+  if (!placement.task) return null;
 
   return (
-    <div
+    <div 
       ref={setNodeRef}
-      style={style}
-      {...listeners}
-      {...attributes}
+      style={{
+        ...style,
+        height: `${(placement.duration_slots - 1) * 40 + 32}px`,
+      }}
       className={`
-        p-2 rounded border-l-4 cursor-grab active:cursor-grabbing
-        ${getPriorityColor(task.priorite)}
-        ${isDragging ? "opacity-50 shadow-lg" : ""}
-        ${isPlaced ? "text-xs" : "text-sm"}
-        transition-shadow hover:shadow-md
+        relative bg-primary/10 rounded border border-primary/30
+        ${isDragging ? "opacity-50 shadow-lg z-50" : ""}
       `}
     >
-      <div className="flex items-center gap-2">
-        <GripVertical className="h-4 w-4 text-muted-foreground shrink-0" />
-        <span className="truncate font-medium">{task.titre}</span>
+      <div className="p-2 h-full flex flex-col">
+        <div className="flex items-center justify-between gap-2">
+          <div 
+            {...listeners} 
+            {...attributes}
+            className="flex items-center gap-1 flex-1 cursor-grab active:cursor-grabbing"
+          >
+            <GripVertical className="h-3 w-3 text-muted-foreground shrink-0" />
+            <span className="text-xs font-medium truncate">
+              {placement.task.titre}
+            </span>
+          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-5 w-5 shrink-0"
+            onClick={() => onRemove(placement.id)}
+            title="Retirer du planning"
+          >
+            <X className="h-3 w-3" />
+          </Button>
+        </div>
+        
+        {/* Duration controls */}
+        <div className="mt-auto flex items-center justify-between pt-1">
+          <span className="text-[10px] text-muted-foreground">
+            {formatDuration(placement.duration_slots)}
+          </span>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-5 w-5"
+              onClick={() => onResize(placement.id, placement.duration_slots - 1)}
+              disabled={placement.duration_slots <= 1}
+              title="Réduire la durée"
+            >
+              <Minus className="h-3 w-3" />
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              className="h-5 w-5"
+              onClick={() => onResize(placement.id, placement.duration_slots + 1)}
+              disabled={placement.duration_slots >= 8}
+              title="Augmenter la durée"
+            >
+              <Plus className="h-3 w-3" />
+            </Button>
+          </div>
+        </div>
       </div>
     </div>
+  );
+};
+
+// Combined droppable + sortable zone for the task list
+const TaskListDropZone = ({ 
+  tasks,
+  loading,
+}: { 
+  tasks: Task[];
+  loading: boolean;
+}) => {
+  const { setNodeRef, isOver } = useDroppable({
+    id: "task-list",
+    data: { type: "task-list" },
+  });
+
+  return (
+    <ScrollArea className="flex-1">
+      <div 
+        ref={setNodeRef} 
+        className={`
+          min-h-full rounded-lg transition-colors p-1
+          ${isOver ? "bg-primary/10 ring-2 ring-primary/30" : ""}
+        `}
+      >
+        <SortableContext
+          items={tasks.map(t => t.id)}
+          strategy={verticalListSortingStrategy}
+        >
+          <div className="space-y-2 pr-2">
+            {loading ? (
+              <p className="text-sm text-muted-foreground p-2">Chargement...</p>
+            ) : tasks.length === 0 ? (
+              <p className="text-sm text-muted-foreground p-2">
+                {isOver ? "Déposer ici pour retirer du planning" : "Toutes les tâches sont planifiées"}
+              </p>
+            ) : (
+              tasks.map(task => (
+                <SortableTask key={task.id} task={task} />
+              ))
+            )}
+          </div>
+        </SortableContext>
+      </div>
+    </ScrollArea>
   );
 };
 
@@ -264,11 +357,31 @@ export const DayPlanningDialog = ({
 
     const activeData = active.data.current;
     const activeId = active.id as string;
+    const overId = over.id as string;
+
+    // Handle placed task dropped back to task list
+    if (activeData?.type === "placed" && overId === "task-list") {
+      const placementId = activeData.placement.id;
+      try {
+        const { error } = await supabase
+          .from("daily_task_planning")
+          .delete()
+          .eq("id", placementId);
+
+        if (error) throw error;
+        toast.success("Tâche retirée du planning");
+        fetchData();
+      } catch (error) {
+        console.error("Error removing planning:", error);
+        toast.error("Erreur lors de la suppression");
+      }
+      return;
+    }
 
     // Handle sortable reordering in left column
-    if (activeData?.type === "sortable" && !String(over.id).startsWith("slot-")) {
+    if (activeData?.type === "sortable" && !overId.startsWith("slot-") && overId !== "task-list") {
       const oldIndex = tasks.findIndex(t => t.id === activeId);
-      const newIndex = tasks.findIndex(t => t.id === over.id);
+      const newIndex = tasks.findIndex(t => t.id === overId);
       
       if (oldIndex !== -1 && newIndex !== -1 && oldIndex !== newIndex) {
         const newTasks = arrayMove(tasks, oldIndex, newIndex);
@@ -278,16 +391,15 @@ export const DayPlanningDialog = ({
       return;
     }
 
-    // Handle drop on time slot
-    const slotId = over.id as string;
-    if (!slotId.startsWith("slot-")) return;
+    // Handle drop on time slot (from task list OR from sortable)
+    if (!overId.startsWith("slot-")) return;
 
     const taskId = activeData?.task?.id;
     const task = tasks.find(t => t.id === taskId) || plannings.find(p => p.task_id === taskId)?.task;
     
     if (!task) return;
 
-    const hour = parseFloat(slotId.replace("slot-", ""));
+    const hour = parseFloat(overId.replace("slot-", ""));
     const dateStr = format(selectedDate, "yyyy-MM-dd");
 
     try {
@@ -391,97 +503,33 @@ export const DayPlanningDialog = ({
           onDragEnd={handleDragEnd}
         >
           <div className="flex-1 grid grid-cols-3 gap-4 p-6 overflow-hidden">
-            {/* Sortable Tasks list */}
+            {/* Sortable Tasks list with droppable zone */}
             <div className="col-span-1 flex flex-col">
               <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
                 <Clock className="h-4 w-4" />
                 Tâches du jour ({tasks.length})
               </h4>
-              <ScrollArea className="flex-1">
-                <SortableContext
-                  items={tasks.map(t => t.id)}
-                  strategy={verticalListSortingStrategy}
-                >
-                  <div className="space-y-2 pr-2">
-                    {loading ? (
-                      <p className="text-sm text-muted-foreground">Chargement...</p>
-                    ) : tasks.length === 0 ? (
-                      <p className="text-sm text-muted-foreground">
-                        Toutes les tâches sont planifiées
-                      </p>
-                    ) : (
-                      tasks.map(task => (
-                        <SortableTask key={task.id} task={task} />
-                      ))
-                    )}
-                  </div>
-                </SortableContext>
-              </ScrollArea>
+              <TaskListDropZone tasks={tasks} loading={loading} />
             </div>
 
             {/* Time slots */}
             <div className="col-span-2 flex flex-col">
-              <h4 className="text-sm font-medium mb-3">Planning horaire</h4>
+              <h4 className="text-sm font-medium mb-3">Planning horaire (glisser vers la gauche pour retirer)</h4>
               <ScrollArea className="flex-1 border rounded-lg">
                 <div className="min-w-[300px]">
                   {TIME_SLOTS.map(hour => {
                     const placement = getPlacementForSlot(hour);
                     const showTask = isSlotStart(hour, placement);
-                    const isOccupied = !!placement && !showTask;
                     
                     return (
                       <DroppableTimeSlot key={hour} hour={hour} isOccupied={!!placement}>
                         {showTask && placement?.task && (
-                          <div 
-                            className="relative bg-primary/10 rounded border border-primary/30"
-                            style={{ height: `${(placement.duration_slots - 1) * 40 + 32}px` }}
-                          >
-                            <div className="p-2 h-full flex flex-col">
-                              <div className="flex items-center justify-between gap-2">
-                                <span className="text-xs font-medium truncate flex-1">
-                                  {placement.task.titre}
-                                </span>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="h-5 w-5 shrink-0"
-                                  onClick={() => handleRemovePlanning(placement.id)}
-                                  title="Retirer du planning"
-                                >
-                                  <X className="h-3 w-3" />
-                                </Button>
-                              </div>
-                              
-                              {/* Duration controls */}
-                              <div className="mt-auto flex items-center justify-between pt-1">
-                                <span className="text-[10px] text-muted-foreground">
-                                  {formatDuration(placement.duration_slots)}
-                                </span>
-                                <div className="flex items-center gap-1">
-                                  <Button
-                                    variant="outline"
-                                    size="icon"
-                                    className="h-5 w-5"
-                                    onClick={() => handleResizePlanning(placement.id, placement.duration_slots - 1)}
-                                    disabled={placement.duration_slots <= 1}
-                                    title="Réduire la durée"
-                                  >
-                                    <Minus className="h-3 w-3" />
-                                  </Button>
-                                  <Button
-                                    variant="outline"
-                                    size="icon"
-                                    className="h-5 w-5"
-                                    onClick={() => handleResizePlanning(placement.id, placement.duration_slots + 1)}
-                                    disabled={placement.duration_slots >= 8}
-                                    title="Augmenter la durée"
-                                  >
-                                    <Plus className="h-3 w-3" />
-                                  </Button>
-                                </div>
-                              </div>
-                            </div>
-                          </div>
+                          <DraggablePlacedTask
+                            placement={placement}
+                            onRemove={handleRemovePlanning}
+                            onResize={handleResizePlanning}
+                            formatDuration={formatDuration}
+                          />
                         )}
                       </DroppableTimeSlot>
                     );
