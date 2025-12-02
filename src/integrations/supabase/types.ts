@@ -3881,6 +3881,7 @@ export type Database = {
           priorite: string | null
           rappels: Json | null
           recurrence: Json | null
+          sort_order: number | null
           statut: string | null
           titre: string
           updated_at: string
@@ -3918,6 +3919,7 @@ export type Database = {
           priorite?: string | null
           rappels?: Json | null
           recurrence?: Json | null
+          sort_order?: number | null
           statut?: string | null
           titre: string
           updated_at?: string
@@ -3955,6 +3957,7 @@ export type Database = {
           priorite?: string | null
           rappels?: Json | null
           recurrence?: Json | null
+          sort_order?: number | null
           statut?: string | null
           titre?: string
           updated_at?: string

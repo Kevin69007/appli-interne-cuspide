@@ -8,10 +8,26 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, ArrowLeft } from "lucide-react";
 import { CreateTaskDialog } from "@/components/taches/CreateTaskDialog";
 import { TaskCard } from "@/components/taches/TaskCard";
+import { SortableTaskCard } from "@/components/taches/SortableTaskCard";
 import { TaskFilters, TaskFilters as TaskFiltersType } from "@/components/taches/TaskFilters";
 import { toast } from "sonner";
-import { isAfter, isBefore, isEqual, startOfDay } from "date-fns";
+import { isAfter, isBefore, startOfDay } from "date-fns";
 import { useTranslation } from "react-i18next";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  verticalListSortingStrategy,
+} from "@dnd-kit/sortable";
 
 interface Task {
   id: string;
@@ -29,6 +45,7 @@ interface Task {
   rappels: any;
   created_at: string;
   updated_at: string;
+  sort_order?: number;
   assigned_employee?: { nom: string; prenom: string; photo_url?: string };
   creator_employee?: { nom: string; prenom: string; photo_url?: string };
   dependency_employee?: { nom: string; prenom: string; photo_url?: string };
@@ -54,6 +71,17 @@ const Taches = () => {
     dateFin: null,
     hideCompleted: true,
   });
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
 
   useEffect(() => {
     if (!user) {
@@ -96,9 +124,7 @@ const Taches = () => {
     console.log("Fetching tasks for employee ID:", currentEmployeeId);
     setLoading(true);
     try {
-      // ✅ Exécuter les 3 requêtes EN PARALLÈLE avec Promise.all
       const [myTasksResult, sentBoomerangsResult, receivedBoomerangsResult, assignedPendingResult] = await Promise.all([
-        // Mes tâches (assignées à moi, pas en mode boomerang actif)
         supabase
           .from("tasks")
           .select(`
@@ -110,9 +136,9 @@ const Taches = () => {
           .eq("boomerang_active", false)
           .neq("statut", "annulee")
           .neq("statut", "en_attente_validation")
-          .order("date_echeance"),
+          .order("sort_order", { ascending: true })
+          .order("date_echeance", { ascending: true }),
         
-        // Boomerangs envoyés (je suis le propriétaire original)
         supabase
           .from("tasks")
           .select(`
@@ -123,9 +149,9 @@ const Taches = () => {
           `)
           .eq("boomerang_original_owner", currentEmployeeId)
           .eq("boomerang_active", true)
-          .order("boomerang_deadline"),
+          .order("sort_order", { ascending: true })
+          .order("boomerang_deadline", { ascending: true }),
         
-        // Boomerangs reçus (je suis le détenteur actuel)
         supabase
           .from("tasks")
           .select(`
@@ -136,9 +162,9 @@ const Taches = () => {
           `)
           .eq("boomerang_current_holder", currentEmployeeId)
           .eq("boomerang_active", true)
-          .order("boomerang_deadline"),
+          .order("sort_order", { ascending: true })
+          .order("boomerang_deadline", { ascending: true }),
         
-        // Tâches affectées en attente de validation ou de changement de date
         supabase
           .from("tasks")
           .select(`
@@ -171,10 +197,46 @@ const Taches = () => {
     }
   }, [currentEmployeeId]);
 
+  const handleDragEnd = async (
+    event: DragEndEvent,
+    taskList: Task[],
+    setTaskList: React.Dispatch<React.SetStateAction<Task[]>>
+  ) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = taskList.findIndex((t) => t.id === active.id);
+    const newIndex = taskList.findIndex((t) => t.id === over.id);
+
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    // Optimistic update
+    const reorderedTasks = arrayMove(taskList, oldIndex, newIndex);
+    setTaskList(reorderedTasks);
+
+    // Persist to database
+    try {
+      const updates = reorderedTasks.map((task, index) => ({
+        id: task.id,
+        sort_order: index,
+      }));
+
+      for (const update of updates) {
+        await supabase
+          .from("tasks")
+          .update({ sort_order: update.sort_order })
+          .eq("id", update.id);
+      }
+    } catch (error) {
+      console.error("Error updating task order:", error);
+      toast.error("Erreur lors de la mise à jour de l'ordre");
+      fetchTasks(); // Revert on error
+    }
+  };
+
   // Filter tasks based on active filters
-  const filterTasks = (tasks: Task[]) => {
-    return tasks.filter((task) => {
-      // Search term filter
+  const filterTasks = (taskList: Task[]) => {
+    return taskList.filter((task) => {
       if (filters.searchTerm) {
         const term = filters.searchTerm.toLowerCase();
         const matchTitle = task.titre.toLowerCase().includes(term);
@@ -182,16 +244,10 @@ const Taches = () => {
         if (!matchTitle && !matchDesc) return false;
       }
 
-      // Status filter
       if (filters.statut && task.statut !== filters.statut) return false;
-
-      // Hide completed filter
       if (filters.hideCompleted && task.statut === "terminee") return false;
-
-      // Priority filter
       if (filters.priorite && task.priorite !== filters.priorite) return false;
 
-      // Date range filter
       if (filters.dateDebut || filters.dateFin) {
         const taskDate = startOfDay(new Date(task.date_echeance));
         
@@ -217,6 +273,21 @@ const Taches = () => {
 
   const totalTasks = tasks.length + boomerangsSent.length + boomerangsReceived.length + assignedPendingValidation.length;
   const totalFiltered = filteredTasks.length + filteredBoomerangsSent.length + filteredBoomerangsReceived.length + filteredAssignedPending.length;
+
+  const renderResetButton = (hasItems: boolean) => (
+    hasItems && (
+      <Button variant="outline" size="sm" onClick={() => setFilters({
+        searchTerm: "",
+        statut: null,
+        priorite: null,
+        dateDebut: null,
+        dateFin: null,
+        hideCompleted: false,
+      })}>
+        Réinitialiser les filtres
+      </Button>
+    )
+  );
 
   return (
     <div className="min-h-screen bg-background p-2 sm:p-4">
@@ -278,29 +349,26 @@ const Taches = () => {
                 <p className="text-muted-foreground">
                   {tasks.length === 0 ? t('noTasks') : t('filters.unappliedChanges')}
                 </p>
-                {tasks.length > 0 && (
-                  <Button variant="outline" size="sm" onClick={() => setFilters({
-                    searchTerm: "",
-                    statut: null,
-                    priorite: null,
-                    dateDebut: null,
-                    dateFin: null,
-                    hideCompleted: false,
-                  })}>
-                    Réinitialiser les filtres
-                  </Button>
-                )}
+                {renderResetButton(tasks.length > 0)}
               </div>
             ) : (
-              filteredTasks.map((task) => (
-                <TaskCard
-                  key={task.id}
-                  task={task}
-                  currentEmployeeId={currentEmployeeId}
-                  onUpdate={fetchTasks}
-                  highlightTerm={filters.searchTerm}
-                />
-              ))
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={(e) => handleDragEnd(e, tasks, setTasks)}
+              >
+                <SortableContext items={filteredTasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
+                  {filteredTasks.map((task) => (
+                    <SortableTaskCard
+                      key={task.id}
+                      task={task}
+                      currentEmployeeId={currentEmployeeId}
+                      onUpdate={fetchTasks}
+                      highlightTerm={filters.searchTerm}
+                    />
+                  ))}
+                </SortableContext>
+              </DndContext>
             )}
           </TabsContent>
 
@@ -312,29 +380,26 @@ const Taches = () => {
                 <p className="text-muted-foreground">
                   {boomerangsSent.length === 0 ? "Aucun boomerang envoyé" : "Aucun boomerang ne correspond à vos critères"}
                 </p>
-                {boomerangsSent.length > 0 && (
-                  <Button variant="outline" size="sm" onClick={() => setFilters({
-                    searchTerm: "",
-                    statut: null,
-                    priorite: null,
-                    dateDebut: null,
-                    dateFin: null,
-                    hideCompleted: false,
-                  })}>
-                    Réinitialiser les filtres
-                  </Button>
-                )}
+                {renderResetButton(boomerangsSent.length > 0)}
               </div>
             ) : (
-              filteredBoomerangsSent.map((task) => (
-                <TaskCard
-                  key={task.id}
-                  task={task}
-                  currentEmployeeId={currentEmployeeId}
-                  onUpdate={fetchTasks}
-                  highlightTerm={filters.searchTerm}
-                />
-              ))
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={(e) => handleDragEnd(e, boomerangsSent, setBoomerangsSent)}
+              >
+                <SortableContext items={filteredBoomerangsSent.map(t => t.id)} strategy={verticalListSortingStrategy}>
+                  {filteredBoomerangsSent.map((task) => (
+                    <SortableTaskCard
+                      key={task.id}
+                      task={task}
+                      currentEmployeeId={currentEmployeeId}
+                      onUpdate={fetchTasks}
+                      highlightTerm={filters.searchTerm}
+                    />
+                  ))}
+                </SortableContext>
+              </DndContext>
             )}
           </TabsContent>
 
@@ -346,29 +411,26 @@ const Taches = () => {
                 <p className="text-muted-foreground">
                   {boomerangsReceived.length === 0 ? "Aucun boomerang reçu" : "Aucun boomerang ne correspond à vos critères"}
                 </p>
-                {boomerangsReceived.length > 0 && (
-                  <Button variant="outline" size="sm" onClick={() => setFilters({
-                    searchTerm: "",
-                    statut: null,
-                    priorite: null,
-                    dateDebut: null,
-                    dateFin: null,
-                    hideCompleted: false,
-                  })}>
-                    Réinitialiser les filtres
-                  </Button>
-                )}
+                {renderResetButton(boomerangsReceived.length > 0)}
               </div>
             ) : (
-              filteredBoomerangsReceived.map((task) => (
-                <TaskCard
-                  key={task.id}
-                  task={task}
-                  currentEmployeeId={currentEmployeeId}
-                  onUpdate={fetchTasks}
-                  highlightTerm={filters.searchTerm}
-                />
-              ))
+              <DndContext
+                sensors={sensors}
+                collisionDetection={closestCenter}
+                onDragEnd={(e) => handleDragEnd(e, boomerangsReceived, setBoomerangsReceived)}
+              >
+                <SortableContext items={filteredBoomerangsReceived.map(t => t.id)} strategy={verticalListSortingStrategy}>
+                  {filteredBoomerangsReceived.map((task) => (
+                    <SortableTaskCard
+                      key={task.id}
+                      task={task}
+                      currentEmployeeId={currentEmployeeId}
+                      onUpdate={fetchTasks}
+                      highlightTerm={filters.searchTerm}
+                    />
+                  ))}
+                </SortableContext>
+              </DndContext>
             )}
           </TabsContent>
 
@@ -382,18 +444,7 @@ const Taches = () => {
                     ? "Aucune tâche en attente de validation" 
                     : "Aucune tâche ne correspond à vos critères"}
                 </p>
-                {assignedPendingValidation.length > 0 && (
-                  <Button variant="outline" size="sm" onClick={() => setFilters({
-                    searchTerm: "",
-                    statut: null,
-                    priorite: null,
-                    dateDebut: null,
-                    dateFin: null,
-                    hideCompleted: false,
-                  })}>
-                    Réinitialiser les filtres
-                  </Button>
-                )}
+                {renderResetButton(assignedPendingValidation.length > 0)}
               </div>
             ) : (
               filteredAssignedPending.map((task) => (
