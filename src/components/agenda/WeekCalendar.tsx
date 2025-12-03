@@ -1,7 +1,7 @@
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { ChevronLeft, ChevronRight, GripVertical, Flag, CheckCircle2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, GripVertical, Flag } from "lucide-react";
 import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
@@ -11,10 +11,16 @@ import {
   DragEndEvent,
   DragOverlay,
   DragStartEvent,
-  useDraggable,
-  useDroppable,
   closestCenter,
+  pointerWithin,
 } from "@dnd-kit/core";
+import {
+  SortableContext,
+  useSortable,
+  verticalListSortingStrategy,
+  arrayMove,
+} from "@dnd-kit/sortable";
+import { CSS } from "@dnd-kit/utilities";
 import { format, startOfWeek, addDays, isSameDay, addWeeks, subWeeks } from "date-fns";
 import { fr } from "date-fns/locale";
 
@@ -26,21 +32,27 @@ interface TaskEvent {
   statut: string;
   is_priority: boolean;
   created_by: string;
+  sort_order: number | null;
 }
 
-interface DraggableTaskCardProps {
+interface SortableTaskCardProps {
   task: TaskEvent;
 }
 
-const DraggableTaskCard = ({ task }: DraggableTaskCardProps) => {
-  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
-    id: task.id,
-    data: { task },
-  });
+const SortableTaskCard = ({ task }: SortableTaskCardProps) => {
+  const {
+    attributes,
+    listeners,
+    setNodeRef,
+    transform,
+    transition,
+    isDragging,
+  } = useSortable({ id: task.id, data: { task } });
 
-  const style = transform
-    ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)` }
-    : undefined;
+  const style = {
+    transform: CSS.Transform.toString(transform),
+    transition,
+  };
 
   const getPriorityColor = (priorite: string) => {
     switch (priorite) {
@@ -67,7 +79,7 @@ const DraggableTaskCard = ({ task }: DraggableTaskCardProps) => {
       {...attributes}
       className={`
         p-3 rounded-lg border bg-card shadow-sm cursor-grab active:cursor-grabbing
-        ${isDragging ? "opacity-50 shadow-lg ring-2 ring-primary" : "hover:shadow-md hover:border-primary/50"}
+        ${isDragging ? "opacity-50 shadow-lg ring-2 ring-primary z-50" : "hover:shadow-md hover:border-primary/50"}
         transition-all
       `}
     >
@@ -100,18 +112,13 @@ interface DroppableWeekDayProps {
 
 const DroppableWeekDay = ({ date, isToday, tasks }: DroppableWeekDayProps) => {
   const dateStr = format(date, "yyyy-MM-dd");
-  const { setNodeRef, isOver } = useDroppable({
-    id: `weekday-${dateStr}`,
-    data: { date: dateStr },
-  });
 
   return (
     <div
-      ref={setNodeRef}
+      data-droppable-date={dateStr}
       className={`
         flex flex-col min-h-[300px] border rounded-lg overflow-hidden
         ${isToday ? "border-primary bg-primary/5" : "border-border"}
-        ${isOver ? "bg-primary/10 border-primary" : ""}
         transition-colors
       `}
     >
@@ -124,15 +131,17 @@ const DroppableWeekDay = ({ date, isToday, tasks }: DroppableWeekDayProps) => {
         </div>
       </div>
       <div className="flex-1 p-2 flex flex-col gap-2 overflow-y-auto">
-        {tasks.length === 0 ? (
-          <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm">
-            Aucune tâche
-          </div>
-        ) : (
-          tasks.map(task => (
-            <DraggableTaskCard key={task.id} task={task} />
-          ))
-        )}
+        <SortableContext items={tasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
+          {tasks.length === 0 ? (
+            <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm min-h-[100px]">
+              Aucune tâche
+            </div>
+          ) : (
+            tasks.map(task => (
+              <SortableTaskCard key={task.id} task={task} />
+            ))
+          )}
+        </SortableContext>
       </div>
     </div>
   );
@@ -188,12 +197,14 @@ export const WeekCalendar = ({ onDateClick }: WeekCalendarProps) => {
 
     const { data, error } = await supabase
       .from("tasks")
-      .select("id, titre, date_echeance, priorite, statut, is_priority, created_by")
+      .select("id, titre, date_echeance, priorite, statut, is_priority, created_by, sort_order")
       .eq("assigned_to", currentEmployeeId)
       .gte("date_echeance", startStr)
       .lte("date_echeance", endStr)
       .neq("statut", "annulee")
-      .neq("statut", "terminee");
+      .neq("statut", "terminee")
+      .order("sort_order", { ascending: true, nullsFirst: false })
+      .order("date_echeance", { ascending: true });
 
     if (!error && data) {
       setTasks(data);
@@ -203,6 +214,13 @@ export const WeekCalendar = ({ onDateClick }: WeekCalendarProps) => {
   const handleDragStart = (event: DragStartEvent) => {
     const task = event.active.data.current?.task as TaskEvent;
     setActiveTask(task);
+  };
+
+  const getTasksForDate = (date: Date) => {
+    const dateStr = format(date, "yyyy-MM-dd");
+    return tasks
+      .filter(t => t.date_echeance === dateStr)
+      .sort((a, b) => (a.sort_order ?? 999) - (b.sort_order ?? 999));
   };
 
   const handleDragEnd = async (event: DragEndEvent) => {
@@ -215,18 +233,112 @@ export const WeekCalendar = ({ onDateClick }: WeekCalendarProps) => {
     if (!draggedTask) return;
 
     const overId = over.id as string;
-    if (!overId.startsWith("weekday-")) return;
+    
+    // Check if dropped on another task (reordering within same day)
+    const overTask = over.data.current?.task as TaskEvent | undefined;
+    
+    if (overTask) {
+      // Reordering within the same day
+      if (draggedTask.date_echeance === overTask.date_echeance && draggedTask.id !== overTask.id) {
+        const dayTasks = getTasksForDate(new Date(draggedTask.date_echeance));
+        const oldIndex = dayTasks.findIndex(t => t.id === draggedTask.id);
+        const newIndex = dayTasks.findIndex(t => t.id === overTask.id);
+        
+        if (oldIndex !== -1 && newIndex !== -1) {
+          const reordered = arrayMove(dayTasks, oldIndex, newIndex);
+          
+          // Optimistic update
+          setTasks(prev => {
+            const otherTasks = prev.filter(t => t.date_echeance !== draggedTask.date_echeance);
+            return [...otherTasks, ...reordered.map((t, i) => ({ ...t, sort_order: i }))];
+          });
 
-    const newDateStr = overId.replace("weekday-", "");
+          // Persist to database
+          try {
+            for (let i = 0; i < reordered.length; i++) {
+              await supabase
+                .from("tasks")
+                .update({ sort_order: i })
+                .eq("id", reordered[i].id);
+            }
+          } catch (error) {
+            console.error("Error reordering:", error);
+            toast.error("Erreur lors du réordonnancement");
+            fetchTasks();
+          }
+        }
+        return;
+      }
+    }
+
+    // Moving to a different day - find the droppable day container
+    const droppableElement = document.querySelector(`[data-droppable-date]`);
+    let newDateStr: string | null = null;
+    
+    // Check if we're dropping on a day container by looking at the over element's ancestors
+    if (over.id.toString().includes("-")) {
+      // Could be a task ID (uuid format), try to find the parent day
+      const overElement = document.querySelector(`[data-droppable-date]`);
+      if (overElement) {
+        // Get all droppable days and find which one contains the mouse position
+        const droppableDays = document.querySelectorAll('[data-droppable-date]');
+        const rect = event.activatorEvent instanceof MouseEvent 
+          ? { x: event.activatorEvent.clientX, y: event.activatorEvent.clientY }
+          : null;
+        
+        if (rect) {
+          for (const day of droppableDays) {
+            const dayRect = day.getBoundingClientRect();
+            if (rect.x >= dayRect.left && rect.x <= dayRect.right && 
+                rect.y >= dayRect.top && rect.y <= dayRect.bottom) {
+              newDateStr = day.getAttribute('data-droppable-date');
+              break;
+            }
+          }
+        }
+      }
+    }
+
+    // Also check if the over element itself has the date attribute
+    if (!newDateStr && over.id) {
+      const overEl = document.getElementById(over.id.toString()) || 
+                     document.querySelector(`[data-droppable-date="${over.id}"]`);
+      if (overEl) {
+        newDateStr = overEl.getAttribute('data-droppable-date');
+      }
+    }
+
+    // If still no date, check the active event's final position
+    if (!newDateStr && event.over) {
+      const droppableDays = document.querySelectorAll('[data-droppable-date]');
+      const delta = event.delta;
+      const activeRect = event.active.rect.current.translated;
+      
+      if (activeRect) {
+        for (const day of droppableDays) {
+          const dayRect = day.getBoundingClientRect();
+          const centerX = activeRect.left + activeRect.width / 2;
+          const centerY = activeRect.top + activeRect.height / 2;
+          
+          if (centerX >= dayRect.left && centerX <= dayRect.right && 
+              centerY >= dayRect.top && centerY <= dayRect.bottom) {
+            newDateStr = day.getAttribute('data-droppable-date');
+            break;
+          }
+        }
+      }
+    }
+
+    if (!newDateStr) return;
+    
     const currentDateStr = draggedTask.date_echeance;
-
     if (newDateStr === currentDateStr) return;
 
     const isCreator = draggedTask.created_by === currentEmployeeId;
 
     // Optimistic update
     setTasks(prev => prev.map(t =>
-      t.id === draggedTask.id ? { ...t, date_echeance: newDateStr } : t
+      t.id === draggedTask.id ? { ...t, date_echeance: newDateStr! } : t
     ));
 
     try {
@@ -270,11 +382,6 @@ export const WeekCalendar = ({ onDateClick }: WeekCalendarProps) => {
     }
   };
 
-  const getTasksForDate = (date: Date) => {
-    const dateStr = format(date, "yyyy-MM-dd");
-    return tasks.filter(t => t.date_echeance === dateStr);
-  };
-
   const weekLabel = `${format(currentWeekStart, "d MMM", { locale: fr })} - ${format(addDays(currentWeekStart, 6), "d MMM yyyy", { locale: fr })}`;
 
   return (
@@ -295,7 +402,7 @@ export const WeekCalendar = ({ onDateClick }: WeekCalendarProps) => {
       </div>
 
       <DndContext
-        collisionDetection={closestCenter}
+        collisionDetection={pointerWithin}
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >

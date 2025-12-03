@@ -131,24 +131,24 @@
   /* Glassmorphism utility classes */
   .glass {
     background: hsl(var(--glass-background));
-    backdrop-filter: blur(12px) saturate(180%);
-    -webkit-backdrop-filter: blur(12px) saturate(180%);
+    backdrop-filter: blur(6px) saturate(150%);
+    -webkit-backdrop-filter: blur(6px) saturate(150%);
     border: 1px solid hsl(var(--glass-border));
     box-shadow: 0 8px 32px 0 hsl(var(--glass-shadow));
+    -webkit-font-smoothing: subpixel-antialiased;
+    text-rendering: optimizeLegibility;
   }
   
   .glass-hover {
     @apply glass transition-all duration-300;
     will-change: transform, box-shadow;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
     transform: translateZ(0);
     backface-visibility: hidden;
   }
   
   .glass-hover:hover {
     box-shadow: 0 12px 48px 0 hsl(var(--glass-shadow));
-    transform: translateY(-2px) translateZ(0);
+    transform: translateY(-3px) translateZ(0);
   }
   
   /* Animated gradient border */
@@ -187,17 +187,17 @@
   .hover-3d {
     transition: transform 0.3s ease, box-shadow 0.3s ease;
     will-change: transform, box-shadow;
-    -webkit-font-smoothing: antialiased;
-    -moz-osx-font-smoothing: grayscale;
     transform: translateZ(0);
     backface-visibility: hidden;
+    -webkit-font-smoothing: subpixel-antialiased;
+    text-rendering: optimizeLegibility;
   }
   
   .hover-3d:hover {
-    transform: translateY(-4px) scale(1.02) translateZ(0);
+    transform: translateY(-3px) translateZ(0);
     box-shadow: 
-      0 20px 40px -10px hsl(var(--primary) / 0.3),
-      0 0 60px -20px hsl(var(--accent) / 0.2);
+      0 16px 32px -8px hsl(var(--primary) / 0.25),
+      0 0 48px -16px hsl(var(--accent) / 0.15);
   }
   
   /* Shimmer effect */
