@@ -14,6 +14,7 @@ import { Trombinoscope } from "@/components/rh/Trombinoscope";
 import { CreateLeaveRequestDialog } from "@/components/rh/CreateLeaveRequestDialog";
 import { LeaveBalanceCard } from "@/components/rh/LeaveBalanceCard";
 import { LeaveRequestBalanceInfo } from "@/components/rh/LeaveRequestBalanceInfo";
+import { LeaveConfigPanel } from "@/components/rh/LeaveConfigPanel";
 
 interface LeaveRequest {
   id: string;
@@ -288,16 +289,17 @@ const CongesMoodBar = () => {
         </div>
 
         <Tabs defaultValue={isAdminOrManager ? "leave-requests" : "my-requests"} className="w-full">
-          <TabsList className={`grid w-full ${isAdminOrManager ? 'grid-cols-5' : 'grid-cols-4'}`}>
+          <TabsList className={`grid w-full ${isAdminOrManager ? 'grid-cols-6' : 'grid-cols-4'}`}>
             {isAdminOrManager ? (
               <>
                 <TabsTrigger value="leave-requests">
-                  Demandes de congés ({leaveRequests.length})
+                  Demandes ({leaveRequests.length})
                 </TabsTrigger>
-                <TabsTrigger value="absences">Récapitulatif absences</TabsTrigger>
+                <TabsTrigger value="absences">Absences</TabsTrigger>
                 <TabsTrigger value="mood">
-                  Mood Bar {lowMoodAlerts.length > 0 && `(${lowMoodAlerts.length} alertes)`}
+                  Mood {lowMoodAlerts.length > 0 && `(${lowMoodAlerts.length})`}
                 </TabsTrigger>
+                <TabsTrigger value="leave-config">Config. congés</TabsTrigger>
               </>
             ) : (
               <>
@@ -598,6 +600,13 @@ const CongesMoodBar = () => {
                   )}
                 </CardContent>
               </Card>
+            </TabsContent>
+          )}
+
+          {/* Admin/Manager: Configuration des congés */}
+          {isAdminOrManager && (
+            <TabsContent value="leave-config" className="mt-6">
+              <LeaveConfigPanel />
             </TabsContent>
           )}
 
