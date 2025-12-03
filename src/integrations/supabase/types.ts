@@ -1048,6 +1048,54 @@ export type Database = {
           },
         ]
       }
+      employee_leave_config: {
+        Row: {
+          created_at: string | null
+          day_type: string
+          employee_id: string
+          id: string
+          period_start_month: number
+          reference_year: number
+          total_days_allowed: number
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          day_type?: string
+          employee_id: string
+          id?: string
+          period_start_month?: number
+          reference_year?: number
+          total_days_allowed?: number
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          day_type?: string
+          employee_id?: string
+          id?: string
+          period_start_month?: number
+          reference_year?: number
+          total_days_allowed?: number
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "employee_leave_config_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employee_badge_summary"
+            referencedColumns: ["employee_id"]
+          },
+          {
+            foreignKeyName: "employee_leave_config_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       employees: {
         Row: {
           created_at: string
