@@ -527,10 +527,13 @@ export const DayPlanningDialog = ({
             </div>
 
             {/* Time slots */}
-            <div className="col-span-2 flex flex-col">
-              <h4 className="text-sm font-medium mb-3">Planning horaire (glisser vers la gauche pour retirer)</h4>
-              <ScrollArea className="flex-1 border rounded-lg">
-                <div className="min-w-[300px] relative">
+            <div className="col-span-2 flex flex-col min-h-0">
+              <h4 className="text-sm font-medium mb-3 shrink-0">Planning horaire (glisser vers la gauche pour retirer)</h4>
+              <ScrollArea className="h-[500px] border rounded-lg">
+                <div 
+                  className="min-w-[300px] relative" 
+                  style={{ height: `${TIME_SLOTS.length * 40}px` }}
+                >
                   {/* Background time slots (droppable areas) */}
                   {TIME_SLOTS.map(hour => {
                     const placement = getPlacementForSlot(hour);
