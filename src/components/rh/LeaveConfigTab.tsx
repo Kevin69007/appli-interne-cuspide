@@ -46,7 +46,8 @@ export const LeaveConfigTab = ({ employeeId, onClose }: LeaveConfigTabProps) => 
     period_start_month: 1,
     total_days_allowed: 25,
     reference_year: new Date().getFullYear(),
-    day_type: 'ouvre'
+    day_type: 'ouvre',
+    weekly_hours: 35
   });
   const [balance, setBalance] = useState<LeaveBalance | null>(null);
 
@@ -65,7 +66,8 @@ export const LeaveConfigTab = ({ employeeId, onClose }: LeaveConfigTabProps) => 
         period_start_month: 1,
         total_days_allowed: 25,
         reference_year: new Date().getFullYear(),
-        day_type: 'ouvre'
+        day_type: 'ouvre',
+        weekly_hours: 35
       });
     }
     
@@ -133,6 +135,22 @@ export const LeaveConfigTab = ({ employeeId, onClose }: LeaveConfigTabProps) => 
           value={config.total_days_allowed}
           onChange={(e) => setConfig({ ...config, total_days_allowed: parseInt(e.target.value) || 0 })}
         />
+      </div>
+
+      <div>
+        <Label htmlFor="weekly_hours">Heures hebdomadaires contractuelles</Label>
+        <Input
+          id="weekly_hours"
+          type="number"
+          step="0.5"
+          min={10}
+          max={60}
+          value={config.weekly_hours}
+          onChange={(e) => setConfig({ ...config, weekly_hours: parseFloat(e.target.value) || 35 })}
+        />
+        <p className="text-sm text-muted-foreground mt-1">
+          Base journalière : {(config.weekly_hours / 5).toFixed(1)}h/jour
+        </p>
       </div>
 
       <div className="flex items-center justify-between">

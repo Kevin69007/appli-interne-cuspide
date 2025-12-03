@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { format } from "date-fns";
-import { Calendar, AlertTriangle } from "lucide-react";
+import { Calendar, AlertTriangle, Info } from "lucide-react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -12,6 +12,7 @@ import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
 import { JustificationSection } from "./JustificationSection";
 import { cn } from "@/lib/utils";
+import { fetchEmployeeWorkConfig } from "@/lib/leaveBalanceUtils";
 
 interface TimeDeclarationFormProps {
   onSuccess?: () => void;
@@ -29,6 +30,7 @@ export const TimeDeclarationForm = ({ onSuccess }: TimeDeclarationFormProps) => 
   const [justificationData, setJustificationData] = useState<any>(null);
   const [loading, setLoading] = useState(false);
   const [employeeId, setEmployeeId] = useState<string | null>(null);
+  const [dailyHoursBase, setDailyHoursBase] = useState(7); // Default 35h/5
 
   useEffect(() => {
     const fetchEmployeeId = async () => {
@@ -43,14 +45,29 @@ export const TimeDeclarationForm = ({ onSuccess }: TimeDeclarationFormProps) => 
     fetchEmployeeId();
   }, [user]);
 
+  // Fetch work config when employeeId is available
+  useEffect(() => {
+    const loadWorkConfig = async () => {
+      if (!employeeId) return;
+      const workConfig = await fetchEmployeeWorkConfig(employeeId);
+      setDailyHoursBase(workConfig.dailyHours);
+    };
+    loadWorkConfig();
+  }, [employeeId]);
+
   useEffect(() => {
     const hours = parseFloat(heures);
-    setNeedsJustification(!isNaN(hours) && hours < 7);
-  }, [heures]);
+    setNeedsJustification(!isNaN(hours) && hours < dailyHoursBase);
+  }, [heures, dailyHoursBase]);
+
+  // Dynamic thresholds based on daily hours base
+  // ~93% of daily base = green, ~86% = orange
+  const greenThreshold = dailyHoursBase * 0.93;
+  const orangeThreshold = dailyHoursBase * 0.86;
 
   const getHoursColor = (hours: number) => {
-    if (hours >= 6.5) return 'border-green-500 bg-green-50 dark:bg-green-950';
-    if (hours >= 6) return 'border-orange-500 bg-orange-50 dark:bg-orange-950';
+    if (hours >= greenThreshold) return 'border-green-500 bg-green-50 dark:bg-green-950';
+    if (hours >= orangeThreshold) return 'border-orange-500 bg-orange-50 dark:bg-orange-950';
     return 'border-red-500 bg-red-50 dark:bg-red-950';
   };
 
@@ -61,8 +78,8 @@ export const TimeDeclarationForm = ({ onSuccess }: TimeDeclarationFormProps) => 
   };
 
   const getHoursMessage = (hours: number) => {
-    if (hours >= 6.5) return t('timeDeclaration.validation.greenZone');
-    if (hours >= 6) return t('timeDeclaration.validation.orangeZone');
+    if (hours >= greenThreshold) return t('timeDeclaration.validation.greenZone');
+    if (hours >= orangeThreshold) return t('timeDeclaration.validation.orangeZone');
     return t('timeDeclaration.validation.redZone');
   };
 
@@ -152,6 +169,11 @@ export const TimeDeclarationForm = ({ onSuccess }: TimeDeclarationFormProps) => 
         <CardDescription>{t('timeDeclaration.subtitle')}</CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
+        {/* Display contracted hours info */}
+        <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 rounded-md px-3 py-2">
+          <Info className="h-4 w-4" />
+          <span>Base contractuelle : {dailyHoursBase.toFixed(1)}h/jour ({(dailyHoursBase * 5).toFixed(0)}h/semaine)</span>
+        </div>
         <div className="space-y-2">
           <Label htmlFor="date">{t('timeDeclaration.date')}</Label>
           <Input
@@ -216,7 +238,7 @@ export const TimeDeclarationForm = ({ onSuccess }: TimeDeclarationFormProps) => 
             </Alert>
             <JustificationSection
               onDataChange={setJustificationData}
-              missingHours={7 - hours}
+              missingHours={dailyHoursBase - hours}
             />
           </>
         )}

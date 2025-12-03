@@ -1058,6 +1058,7 @@ export type Database = {
           reference_year: number
           total_days_allowed: number
           updated_at: string | null
+          weekly_hours: number | null
         }
         Insert: {
           created_at?: string | null
@@ -1068,6 +1069,7 @@ export type Database = {
           reference_year?: number
           total_days_allowed?: number
           updated_at?: string | null
+          weekly_hours?: number | null
         }
         Update: {
           created_at?: string | null
@@ -1078,6 +1080,7 @@ export type Database = {
           reference_year?: number
           total_days_allowed?: number
           updated_at?: string | null
+          weekly_hours?: number | null
         }
         Relationships: [
           {
