@@ -16,7 +16,7 @@ import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Plus, CalendarIcon } from "lucide-react";
-import { format, differenceInBusinessDays, addDays } from "date-fns";
+import { format, differenceInBusinessDays, addDays, eachDayOfInterval, isWeekend, isSaturday, isSunday } from "date-fns";
 import { fr } from "date-fns/locale";
 import { DateRange } from "react-day-picker";
 import { cn } from "@/lib/utils";
@@ -132,15 +132,26 @@ export const CreateLeaveRequestDialog = ({ employeeId, onSuccess }: CreateLeaveR
               </PopoverContent>
             </Popover>
             {dateRange?.from && (
-              <p className="text-sm text-muted-foreground">
-                {dateRange.to ? (
-                  <>
-                    {differenceInBusinessDays(addDays(dateRange.to, 1), dateRange.from) || 1} jour(s) ouvré(s)
-                  </>
-                ) : (
-                  "1 jour ouvré"
-                )}
-              </p>
+              <div className="text-sm text-muted-foreground space-y-0.5">
+                {(() => {
+                  const startDate = dateRange.from;
+                  const endDate = dateRange.to || dateRange.from;
+                  
+                  // Jours ouvrés (lundi-vendredi)
+                  const joursOuvres = differenceInBusinessDays(addDays(endDate, 1), startDate) || 1;
+                  
+                  // Jours ouvrables (lundi-samedi)
+                  const allDays = eachDayOfInterval({ start: startDate, end: endDate });
+                  const joursOuvrables = allDays.filter(day => !isSunday(day)).length;
+                  
+                  return (
+                    <>
+                      <p>{joursOuvres} jour(s) ouvré(s) <span className="text-xs opacity-70">(lun-ven)</span></p>
+                      <p>{joursOuvrables} jour(s) ouvrable(s) <span className="text-xs opacity-70">(lun-sam)</span></p>
+                    </>
+                  );
+                })()}
+              </div>
             )}
           </div>
 
