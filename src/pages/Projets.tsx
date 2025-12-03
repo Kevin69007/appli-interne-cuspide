@@ -40,25 +40,34 @@ const Projets = () => {
     sortOrder: "desc",
   });
 
-  // Parallelize employee and projects queries
+  const isAdminOrManager = isAdmin || isManager;
+
+  // Fetch projects - filter by responsable_id for employees
   const { data: projects = [], isLoading: loading, refetch: refetchProjects } = useQuery({
-    queryKey: ['projects'],
+    queryKey: ['projects', isAdminOrManager, employee?.id],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from("projects")
         .select(`
           *,
           responsable:employees!projects_responsable_id_fkey(nom, prenom, photo_url)
-        `)
-        .order("created_at", { ascending: false });
+        `);
+
+      // Employees only see projects assigned to them
+      if (!isAdminOrManager && employee?.id) {
+        query = query.eq("responsable_id", employee.id);
+      }
+
+      const { data, error } = await query.order("created_at", { ascending: false });
 
       if (error) throw error;
       return data || [];
     },
-    staleTime: 1000 * 60 * 2, // Cache 2 minutes
+    enabled: isAdminOrManager || !!employee?.id,
+    staleTime: 1000 * 60 * 2,
   });
 
-  const canEdit = isAdmin || isManager;
+  const canEdit = isAdminOrManager;
 
   // Extraire les responsables uniques
   const uniqueResponsables = useMemo(() => {
@@ -172,7 +181,7 @@ const Projets = () => {
               <h1 className="text-3xl font-bold">Projets</h1>
             </div>
           </div>
-          {(isAdmin || isManager) && (
+          {isAdminOrManager && (
             <Button onClick={() => setShowCreateDialog(true)}>
               <Plus className="h-4 w-4 mr-2" />
               Nouveau projet
