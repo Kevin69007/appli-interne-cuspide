@@ -174,17 +174,17 @@ export const TachesPrioritairesWidget = ({ onDataLoaded }: { onDataLoaded?: (has
             return (
               <div
                 key={task.id}
-                className={`p-2 sm:p-3 border rounded-lg glass border-border/50 hover:border-primary/50 transition-all animate-fade-in ${
+                className={`p-2 border rounded-lg glass border-border/50 hover:border-primary/50 transition-all animate-fade-in ${
                   showWarning ? "border-orange-300 bg-orange-50 dark:bg-orange-950/20" : ""
                 }`}
                 style={{ animationDelay: `${tasks.indexOf(task) * 100}ms` }}
               >
-                <div className="flex flex-col gap-1">
-                  <div className="flex items-start justify-between gap-2">
+                <div className="flex flex-col gap-0.5">
+                  <div className="flex items-start justify-between gap-1">
                     <TooltipProvider>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <p className="font-medium text-sm leading-tight line-clamp-2 cursor-default flex-1">
+                          <p className="font-medium text-xs leading-snug line-clamp-3 cursor-default flex-1">
                             {task.titre}
                           </p>
                         </TooltipTrigger>
@@ -194,13 +194,13 @@ export const TachesPrioritairesWidget = ({ onDataLoaded }: { onDataLoaded?: (has
                       </Tooltip>
                     </TooltipProvider>
                     {showWarning && (
-                      <span className="text-orange-500 shrink-0" title={t('employee.priorityTasks.needsUpdate')}>⚠️</span>
+                      <span className="text-orange-500 shrink-0 text-xs" title={t('employee.priorityTasks.needsUpdate')}>⚠️</span>
                     )}
                   </div>
-                  <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
-                    <span>📅 {new Date(task.date_echeance).toLocaleDateString("fr-FR")}</span>
+                  <div className="flex items-center gap-1.5 text-[9px] text-muted-foreground">
+                    <span>{new Date(task.date_echeance).toLocaleDateString("fr-FR", { day: '2-digit', month: '2-digit' })}</span>
                     {projectInfo && !Array.isArray(projectInfo) && (
-                      <span className="truncate">• {projectInfo.titre}</span>
+                      <span className="truncate max-w-[60px]">• {projectInfo.titre}</span>
                     )}
                   </div>
                 </div>
@@ -209,23 +209,22 @@ export const TachesPrioritairesWidget = ({ onDataLoaded }: { onDataLoaded?: (has
                   <Button
                     size="sm"
                     variant="outline"
-                    className="w-full mt-2 h-8 text-xs"
+                    className="w-full mt-1.5 h-6 text-[10px]"
                     onClick={(e) => {
                       e.stopPropagation();
                       setCommentingTaskId(task.id);
                     }}
                   >
-                    <MessageSquare className="h-3 w-3 mr-1 sm:mr-2" />
-                    <span className="hidden sm:inline">{t('employee.priorityTasks.addProgress')}</span>
-                    <span className="sm:hidden">Progression</span>
+                    <MessageSquare className="h-3 w-3 mr-1" />
+                    Progression
                   </Button>
                 ) : (
-                  <div className="mt-2 flex flex-col sm:flex-row gap-2" onClick={(e) => e.stopPropagation()}>
+                  <div className="mt-1.5 flex gap-1" onClick={(e) => e.stopPropagation()}>
                     <Input
-                      placeholder={t('employee.priorityTasks.progressPlaceholder')}
+                      placeholder="Avancement..."
                       value={comment}
                       onChange={(e) => setComment(e.target.value)}
-                      className="h-8 text-xs sm:text-sm flex-1"
+                      className="h-6 text-[10px] flex-1"
                       onKeyDown={(e) => {
                         if (e.key === "Enter") {
                           handleAddComment(task.id);
@@ -236,7 +235,7 @@ export const TachesPrioritairesWidget = ({ onDataLoaded }: { onDataLoaded?: (has
                       size="sm"
                       onClick={() => handleAddComment(task.id)}
                       disabled={!comment.trim()}
-                      className="h-8 w-full sm:w-auto"
+                      className="h-6 px-2"
                     >
                       <Send className="h-3 w-3" />
                     </Button>
