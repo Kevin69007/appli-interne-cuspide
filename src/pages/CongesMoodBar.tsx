@@ -11,6 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Check, X, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Trombinoscope } from "@/components/rh/Trombinoscope";
+import { CreateLeaveRequestDialog } from "@/components/rh/CreateLeaveRequestDialog";
 
 interface LeaveRequest {
   id: string;
@@ -362,12 +363,15 @@ const CongesMoodBar = () => {
             </TabsContent>
           )}
 
-          {/* Employé: Mes demandes (lecture seule) */}
-          {!isAdminOrManager && (
+          {/* Employé: Mes demandes avec bouton de création */}
+          {!isAdminOrManager && employee?.id && (
             <TabsContent value="my-requests" className="space-y-4 mt-6">
+              <div className="flex justify-end mb-4">
+                <CreateLeaveRequestDialog employeeId={employee.id} onSuccess={fetchData} />
+              </div>
               {leaveRequests.length === 0 ? (
                 <p className="text-center text-muted-foreground py-8">
-                  Aucune demande de congés
+                  Aucune demande de congés. Créez votre première demande !
                 </p>
               ) : (
                 leaveRequests.map((request) => (
