@@ -15,7 +15,9 @@ import {
   DragStartEvent,
   useDraggable,
   useDroppable,
+  pointerWithin,
   closestCenter,
+  CollisionDetection,
 } from "@dnd-kit/core";
 import {
   SortableContext,
@@ -48,7 +50,22 @@ interface TaskPlanning {
   order_index: number;
 }
 
-const TIME_SLOTS = Array.from({ length: 26 }, (_, i) => 7 + i * 0.5); // 7:00 to 20:00 in 30 min increments
+// 7:00 to 19:00 in 30 min increments (25 slots)
+const TIME_SLOTS = Array.from({ length: 25 }, (_, i) => 7 + i * 0.5);
+
+// Custom collision detection: prioritize task-list droppable when pointer is over it
+const customCollisionDetection: CollisionDetection = (args) => {
+  // First check pointerWithin for task-list zone
+  const pointerCollisions = pointerWithin(args);
+  const taskListCollision = pointerCollisions.find(c => c.id === "task-list");
+  
+  if (taskListCollision) {
+    return [taskListCollision];
+  }
+  
+  // Otherwise use closestCenter for time slots
+  return closestCenter(args);
+};
 
 const getPriorityColor = (priorite: string) => {
   switch (priorite) {
@@ -495,7 +512,7 @@ export const DayPlanningDialog = ({
         </DialogHeader>
 
         <DndContext
-          collisionDetection={closestCenter}
+          collisionDetection={customCollisionDetection}
           onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
         >
