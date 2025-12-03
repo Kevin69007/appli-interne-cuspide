@@ -8,6 +8,12 @@ export interface LeaveConfig {
   total_days_allowed: number;
   reference_year: number;
   day_type: 'ouvre' | 'ouvrable';
+  weekly_hours: number;
+}
+
+export interface WorkConfig {
+  weeklyHours: number;
+  dailyHours: number;
 }
 
 export interface LeaveBalance {
@@ -82,6 +88,7 @@ export const saveLeaveConfig = async (config: LeaveConfig): Promise<boolean> => 
       total_days_allowed: config.total_days_allowed,
       reference_year: config.reference_year,
       day_type: config.day_type,
+      weekly_hours: config.weekly_hours || 35,
     }, {
       onConflict: 'employee_id,reference_year'
     });
@@ -94,6 +101,16 @@ export const saveLeaveConfig = async (config: LeaveConfig): Promise<boolean> => 
   return true;
 };
 
+// Fetch work config (weekly/daily hours) for an employee
+export const fetchEmployeeWorkConfig = async (employeeId: string): Promise<WorkConfig> => {
+  const config = await fetchLeaveConfig(employeeId);
+  const weeklyHours = config?.weekly_hours || 35;
+  return {
+    weeklyHours,
+    dailyHours: weeklyHours / 5
+  };
+};
+
 // Calculate leave balance for an employee
 export const calculateLeaveBalance = async (employeeId: string, year?: number): Promise<LeaveBalance> => {
   const referenceYear = year || new Date().getFullYear();
@@ -104,7 +121,8 @@ export const calculateLeaveBalance = async (employeeId: string, year?: number): 
     period_start_month: 1,
     total_days_allowed: 25,
     reference_year: referenceYear,
-    day_type: 'ouvre'
+    day_type: 'ouvre',
+    weekly_hours: 35
   };
 
   const savedConfig = await fetchLeaveConfig(employeeId, referenceYear);
