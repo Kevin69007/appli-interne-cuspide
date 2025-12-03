@@ -13,6 +13,7 @@ import { TaskDetailsDialog } from "./TaskDetailsDialog";
 import { BoomerangTimer } from "./BoomerangTimer";
 import { QuickSubTasksPanel } from "./QuickSubTasksPanel";
 import { EmployeeAvatar } from "@/components/ui/employee-avatar";
+import { TaskProjectLink } from "./TaskProjectLink";
 
 interface TaskCardProps {
   task: any;
@@ -453,6 +454,8 @@ export const TaskCard = ({ task, currentEmployeeId, onUpdate, isHelpRequest, isM
 
             <div className="flex flex-wrap items-center gap-1 sm:gap-2 ml-6 sm:ml-8">
               <Badge className={priorityColor}>{task.priorite}</Badge>
+              
+              <TaskProjectLink taskId={task.id} />
 
               {isMaintenance && task.machine_piece && (
                 <Badge variant="outline" className="bg-purple-500/20 text-purple-700 dark:text-purple-400">
