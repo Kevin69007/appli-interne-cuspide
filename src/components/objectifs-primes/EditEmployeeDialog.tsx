@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useTranslation } from "react-i18next";
+import { LeaveConfigTab } from "@/components/rh/LeaveConfigTab";
 
 interface EditEmployeeDialogProps {
   open: boolean;
@@ -174,8 +175,9 @@ export const EditEmployeeDialog = ({ open, onOpenChange, employeeId, onEmployeeU
         </DialogHeader>
 
         <Tabs defaultValue="info">
-          <TabsList className="grid w-full grid-cols-2">
+          <TabsList className="grid w-full grid-cols-3">
             <TabsTrigger value="info">Informations</TabsTrigger>
+            <TabsTrigger value="conges">Congés</TabsTrigger>
             <TabsTrigger value="password">Mot de passe</TabsTrigger>
           </TabsList>
 
@@ -295,6 +297,10 @@ export const EditEmployeeDialog = ({ open, onOpenChange, employeeId, onEmployeeU
                 </Button>
               </div>
             </form>
+          </TabsContent>
+
+          <TabsContent value="conges">
+            <LeaveConfigTab employeeId={employeeId} />
           </TabsContent>
 
           <TabsContent value="password">

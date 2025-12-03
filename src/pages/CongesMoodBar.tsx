@@ -12,6 +12,8 @@ import { ArrowLeft, Check, X, AlertCircle } from "lucide-react";
 import { toast } from "sonner";
 import { Trombinoscope } from "@/components/rh/Trombinoscope";
 import { CreateLeaveRequestDialog } from "@/components/rh/CreateLeaveRequestDialog";
+import { LeaveBalanceCard } from "@/components/rh/LeaveBalanceCard";
+import { LeaveRequestBalanceInfo } from "@/components/rh/LeaveRequestBalanceInfo";
 
 interface LeaveRequest {
   id: string;
@@ -339,6 +341,15 @@ const CongesMoodBar = () => {
                           </div>
                         )}
                       </div>
+                      
+                      {/* Soldes avant/après pour admin/manager */}
+                      {request.detail && (
+                        <LeaveRequestBalanceInfo 
+                          employeeId={request.employee_id} 
+                          requestDetail={request.detail} 
+                        />
+                      )}
+                      
                       <div className="flex gap-2">
                         <Button
                           onClick={() => handleLeaveValidation(request.id, true)}
@@ -366,6 +377,13 @@ const CongesMoodBar = () => {
           {/* Employé: Mes demandes avec bouton de création */}
           {!isAdminOrManager && employee?.id && (
             <TabsContent value="my-requests" className="space-y-4 mt-6">
+              {/* Widget solde de congés pour l'employé */}
+              <LeaveBalanceCard 
+                employeeId={employee.id} 
+                compact 
+                showPendingLink 
+              />
+              
               <div className="flex justify-end mb-4">
                 <CreateLeaveRequestDialog employeeId={employee.id} onSuccess={fetchData} />
               </div>

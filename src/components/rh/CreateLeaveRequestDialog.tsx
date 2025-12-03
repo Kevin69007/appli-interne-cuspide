@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
@@ -9,17 +9,17 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
-import { Plus, CalendarIcon } from "lucide-react";
-import { format, differenceInBusinessDays, addDays, eachDayOfInterval, isWeekend, isSaturday, isSunday } from "date-fns";
+import { Plus, CalendarIcon, Info } from "lucide-react";
+import { format, differenceInBusinessDays, addDays, eachDayOfInterval, isSunday } from "date-fns";
 import { fr } from "date-fns/locale";
 import { DateRange } from "react-day-picker";
 import { cn } from "@/lib/utils";
+import { fetchLeaveConfig, LeaveConfig } from "@/lib/leaveBalanceUtils";
 
 interface CreateLeaveRequestDialogProps {
   employeeId: string;
@@ -32,6 +32,30 @@ export const CreateLeaveRequestDialog = ({ employeeId, onSuccess }: CreateLeaveR
   const [loading, setLoading] = useState(false);
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [motif, setMotif] = useState("");
+  const [leaveConfig, setLeaveConfig] = useState<LeaveConfig | null>(null);
+
+  useEffect(() => {
+    const loadConfig = async () => {
+      const config = await fetchLeaveConfig(employeeId);
+      setLeaveConfig(config);
+    };
+    if (employeeId) {
+      loadConfig();
+    }
+  }, [employeeId]);
+
+  const dayType = leaveConfig?.day_type || 'ouvre';
+
+  const calculateDays = (startDate: Date, endDate: Date) => {
+    if (dayType === 'ouvre') {
+      // Jours ouvrés (lundi-vendredi)
+      return differenceInBusinessDays(addDays(endDate, 1), startDate) || 1;
+    } else {
+      // Jours ouvrables (lundi-samedi)
+      const allDays = eachDayOfInterval({ start: startDate, end: endDate });
+      return allDays.filter(day => !isSunday(day)).length;
+    }
+  };
 
   const handleSubmit = async () => {
     if (!dateRange?.from) {
@@ -44,8 +68,8 @@ export const CreateLeaveRequestDialog = ({ employeeId, onSuccess }: CreateLeaveR
       const startDate = dateRange.from;
       const endDate = dateRange.to || dateRange.from;
       
-      // Calculate business days
-      const workDays = differenceInBusinessDays(addDays(endDate, 1), startDate) || 1;
+      // Calculate days based on config
+      const workDays = calculateDays(startDate, endDate);
       const durationMinutes = workDays * 8 * 60;
 
       const detail = dateRange.to 
@@ -80,6 +104,9 @@ export const CreateLeaveRequestDialog = ({ employeeId, onSuccess }: CreateLeaveR
     }
   };
 
+  const dayTypeLabel = dayType === 'ouvre' ? 'ouvrés' : 'ouvrables';
+  const dayTypeDesc = dayType === 'ouvre' ? '(lun-ven)' : '(lun-sam)';
+
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
@@ -94,6 +121,13 @@ export const CreateLeaveRequestDialog = ({ employeeId, onSuccess }: CreateLeaveR
         </DialogHeader>
         
         <div className="space-y-4 py-4">
+          <div className="flex items-center gap-2 p-2 bg-muted/50 rounded text-sm text-muted-foreground">
+            <Info className="h-4 w-4 flex-shrink-0" />
+            <span>
+              Calcul en jours {dayTypeLabel} {dayTypeDesc}
+            </span>
+          </div>
+
           <div className="space-y-2">
             <Label>Dates *</Label>
             <Popover>
@@ -132,23 +166,16 @@ export const CreateLeaveRequestDialog = ({ employeeId, onSuccess }: CreateLeaveR
               </PopoverContent>
             </Popover>
             {dateRange?.from && (
-              <div className="text-sm text-muted-foreground space-y-0.5">
+              <div className="text-sm text-muted-foreground">
                 {(() => {
                   const startDate = dateRange.from;
                   const endDate = dateRange.to || dateRange.from;
-                  
-                  // Jours ouvrés (lundi-vendredi)
-                  const joursOuvres = differenceInBusinessDays(addDays(endDate, 1), startDate) || 1;
-                  
-                  // Jours ouvrables (lundi-samedi)
-                  const allDays = eachDayOfInterval({ start: startDate, end: endDate });
-                  const joursOuvrables = allDays.filter(day => !isSunday(day)).length;
+                  const days = calculateDays(startDate, endDate);
                   
                   return (
-                    <>
-                      <p>{joursOuvres} jour(s) ouvré(s) <span className="text-xs opacity-70">(lun-ven)</span></p>
-                      <p>{joursOuvrables} jour(s) ouvrable(s) <span className="text-xs opacity-70">(lun-sam)</span></p>
-                    </>
+                    <p className="font-medium text-foreground">
+                      {days} jour(s) {dayTypeLabel}
+                    </p>
                   );
                 })()}
               </div>
