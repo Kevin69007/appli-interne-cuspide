@@ -2974,6 +2974,7 @@ export type Database = {
           is_priority: boolean | null
           progression: number | null
           responsable_id: string | null
+          sort_order: number | null
           statut: Database["public"]["Enums"]["project_status"] | null
           titre: string
           updated_at: string | null
@@ -2988,6 +2989,7 @@ export type Database = {
           is_priority?: boolean | null
           progression?: number | null
           responsable_id?: string | null
+          sort_order?: number | null
           statut?: Database["public"]["Enums"]["project_status"] | null
           titre: string
           updated_at?: string | null
@@ -3002,6 +3004,7 @@ export type Database = {
           is_priority?: boolean | null
           progression?: number | null
           responsable_id?: string | null
+          sort_order?: number | null
           statut?: Database["public"]["Enums"]["project_status"] | null
           titre?: string
           updated_at?: string | null

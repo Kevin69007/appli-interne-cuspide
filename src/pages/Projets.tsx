@@ -7,12 +7,26 @@ import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-
 import { Plus, ArrowLeft, Briefcase } from "lucide-react";
 import { CreateProjectDialog } from "@/components/projects/CreateProjectDialog";
-import { ProjectCard } from "@/components/projects/ProjectCard";
+import { SortableProjectCard } from "@/components/projects/SortableProjectCard";
 import { ProjectFilters, type ProjectFilters as ProjectFiltersType } from "@/components/projects/ProjectFilters";
 import { toast } from "sonner";
+import {
+  DndContext,
+  closestCenter,
+  KeyboardSensor,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  DragEndEvent,
+} from "@dnd-kit/core";
+import {
+  arrayMove,
+  SortableContext,
+  sortableKeyboardCoordinates,
+  rectSortingStrategy,
+} from "@dnd-kit/sortable";
 
 interface Project {
   id: string;
@@ -24,8 +38,17 @@ interface Project {
   is_priority: boolean;
   responsable_id: string;
   created_at: string;
+  sort_order: number;
   responsable?: { nom: string; prenom: string; photo_url?: string };
 }
+
+// Priorité des statuts (plus bas = plus prioritaire)
+const STATUS_PRIORITY: Record<string, number> = {
+  'en_cours': 1,
+  'a_venir': 2,
+  'en_pause': 3,
+  'termine': 4,
+};
 
 const Projets = () => {
   const navigate = useNavigate();
@@ -33,6 +56,7 @@ const Projets = () => {
   const { isAdmin, isManager } = useUserRole();
   const { employee } = useEmployee();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
+  const [localOrder, setLocalOrder] = useState<string[]>([]);
   const [filters, setFilters] = useState<ProjectFiltersType>({
     responsableId: null,
     statut: [],
@@ -42,7 +66,18 @@ const Projets = () => {
 
   const isAdminOrManager = isAdmin || isManager;
 
-  // Fetch projects - filter by responsable_id for employees
+  const sensors = useSensors(
+    useSensor(PointerSensor, {
+      activationConstraint: {
+        distance: 8,
+      },
+    }),
+    useSensor(KeyboardSensor, {
+      coordinateGetter: sortableKeyboardCoordinates,
+    })
+  );
+
+  // Fetch projects
   const { data: projects = [], isLoading: loading, refetch: refetchProjects } = useQuery({
     queryKey: ['projects', isAdminOrManager, employee?.id],
     queryFn: async () => {
@@ -58,7 +93,7 @@ const Projets = () => {
         query = query.eq("responsable_id", employee.id);
       }
 
-      const { data, error } = await query.order("created_at", { ascending: false });
+      const { data, error } = await query.order("sort_order", { ascending: true });
 
       if (error) throw error;
       return data || [];
@@ -88,11 +123,9 @@ const Projets = () => {
   const filteredAndSortedProjects = useMemo(() => {
     // 1. Filtrer
     let result = projects.filter((p) => {
-      // Filtre par responsable
       if (filters.responsableId && p.responsable_id !== filters.responsableId) {
         return false;
       }
-      // Filtre par statut (multi-select)
       if (filters.statut.length > 0 && !filters.statut.includes(p.statut)) {
         return false;
       }
@@ -107,17 +140,80 @@ const Projets = () => {
             ? (b.is_priority ? 1 : 0) - (a.is_priority ? 1 : 0)
             : (a.is_priority ? 1 : 0) - (b.is_priority ? 1 : 0);
         }
-        if (filters.sortBy === "date_echeance" || filters.sortBy === "created_at") {
-          const dateA = new Date(a[filters.sortBy] || 0).getTime();
-          const dateB = new Date(b[filters.sortBy] || 0).getTime();
+        
+        if (filters.sortBy === "date_echeance") {
+          const dateA = a.date_echeance ? new Date(a.date_echeance).getTime() : null;
+          const dateB = b.date_echeance ? new Date(b.date_echeance).getTime() : null;
+          
+          // Les deux ont une date -> trier par date
+          if (dateA && dateB) {
+            return filters.sortOrder === "asc" ? dateA - dateB : dateB - dateA;
+          }
+          
+          // Un seul a une date -> celui avec date passe devant (asc) ou derrière (desc)
+          if (dateA && !dateB) {
+            return filters.sortOrder === "asc" ? -1 : 1;
+          }
+          if (!dateA && dateB) {
+            return filters.sortOrder === "asc" ? 1 : -1;
+          }
+          
+          // Aucun n'a de date -> trier par statut (en_cours < à_venir < en_pause < terminé)
+          const priorityA = STATUS_PRIORITY[a.statut] || 99;
+          const priorityB = STATUS_PRIORITY[b.statut] || 99;
+          return priorityA - priorityB;
+        }
+        
+        if (filters.sortBy === "created_at") {
+          const dateA = new Date(a.created_at || 0).getTime();
+          const dateB = new Date(b.created_at || 0).getTime();
           return filters.sortOrder === "asc" ? dateA - dateB : dateB - dateA;
         }
+        
         return 0;
       });
+    } else {
+      // Pas de tri actif -> utiliser l'ordre personnalisé (localOrder) ou sort_order de la DB
+      if (localOrder.length > 0) {
+        result = [...result].sort((a, b) => {
+          const indexA = localOrder.indexOf(a.id);
+          const indexB = localOrder.indexOf(b.id);
+          if (indexA === -1 && indexB === -1) return 0;
+          if (indexA === -1) return 1;
+          if (indexB === -1) return -1;
+          return indexA - indexB;
+        });
+      }
     }
 
     return result;
-  }, [projects, filters]);
+  }, [projects, filters, localOrder]);
+
+  const handleDragEnd = async (event: DragEndEvent) => {
+    const { active, over } = event;
+    if (!over || active.id === over.id) return;
+
+    const oldIndex = filteredAndSortedProjects.findIndex(p => p.id === active.id);
+    const newIndex = filteredAndSortedProjects.findIndex(p => p.id === over.id);
+    
+    if (oldIndex === -1 || newIndex === -1) return;
+
+    const newOrder = arrayMove(filteredAndSortedProjects, oldIndex, newIndex);
+    
+    // Optimistic update
+    setLocalOrder(newOrder.map(p => p.id));
+    
+    // Persister dans Supabase
+    try {
+      await Promise.all(newOrder.map((project, index) => 
+        supabase.from("projects").update({ sort_order: index }).eq("id", project.id)
+      ));
+    } catch (error) {
+      console.error("Erreur lors de la sauvegarde de l'ordre:", error);
+      toast.error("Erreur lors de la sauvegarde de l'ordre");
+      refetchProjects();
+    }
+  };
 
   const SkeletonCard = () => (
     <Card className="p-6 animate-pulse">
@@ -154,17 +250,28 @@ const Projets = () => {
     }
 
     return (
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {projectList.map((project) => (
-          <ProjectCard
-            key={project.id}
-            project={project}
-            onUpdate={refetchProjects}
-            currentEmployeeId={employee?.id || null}
-            canEdit={canEdit}
-          />
-        ))}
-      </div>
+      <DndContext
+        sensors={sensors}
+        collisionDetection={closestCenter}
+        onDragEnd={handleDragEnd}
+      >
+        <SortableContext
+          items={projectList.map(p => p.id)}
+          strategy={rectSortingStrategy}
+        >
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pl-4">
+            {projectList.map((project) => (
+              <SortableProjectCard
+                key={project.id}
+                project={project}
+                onUpdate={refetchProjects}
+                currentEmployeeId={employee?.id || null}
+                canEdit={canEdit}
+              />
+            ))}
+          </div>
+        </SortableContext>
+      </DndContext>
     );
   };
 
