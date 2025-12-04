@@ -19,6 +19,7 @@ import { TeamManagersConfig } from "@/components/objectifs-primes/TeamManagersCo
 import { ColleagueVoteResults } from "@/components/objectifs-primes/ColleagueVoteResults";
 import { MoodRatingsAdmin } from "@/components/objectifs-primes/MoodRatingsAdmin";
 import { ObjectivesManagementTab } from "@/components/objectifs-primes/ObjectivesManagementTab";
+import { ModuleHelpButton } from "@/components/communication/ModuleHelpButton";
 
 const Admin = () => {
   const [refreshKey, setRefreshKey] = useState(0);
@@ -69,7 +70,10 @@ const Admin = () => {
                 <ChevronLeft className="h-5 w-5" />
               </Button>
               <div>
-                <h1 className="text-2xl font-bold">Administration</h1>
+                <div className="flex items-center gap-2">
+                  <h1 className="text-2xl font-bold">Administration</h1>
+                  <ModuleHelpButton moduleId="indicators" />
+                </div>
                 <p className="text-sm text-muted-foreground">
                   Indicateurs & Primes - {isAdmin ? "Administrateur" : "Manager"}
                 </p>

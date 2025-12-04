@@ -7,6 +7,7 @@ import { MonthCalendar } from "@/components/objectifs-primes/MonthCalendar";
 import { PlanningCalendar } from "@/components/planning/PlanningCalendar";
 import { TimeDeclarationForm } from "@/components/planning/TimeDeclarationForm";
 import { TimeDeclarationHistory } from "@/components/planning/TimeDeclarationHistory";
+import { ModuleHelpButton } from "@/components/communication/ModuleHelpButton";
 import { useState } from "react";
 import { useUserRole } from "@/hooks/useUserRole";
 
@@ -28,10 +29,11 @@ const Agenda = () => {
             >
               <ChevronLeft className="h-5 w-5" />
             </Button>
-            <div>
+            <div className="flex items-center gap-2">
               <h1 className="text-2xl font-bold">Mon Agenda</h1>
-              <p className="text-sm text-muted-foreground">Planning et événements</p>
+              <ModuleHelpButton moduleId="planning" />
             </div>
+            <p className="text-sm text-muted-foreground">Planning et événements</p>
           </div>
         </div>
       </header>

@@ -10,6 +10,8 @@ import { CommunicationsList } from "@/components/communication/CommunicationsLis
 import { CreateCommunicationDialog } from "@/components/communication/CreateCommunicationDialog";
 import { VideosList } from "@/components/communication/VideosList";
 import { CreateVideoDialog } from "@/components/communication/CreateVideoDialog";
+import { CreateTutorialDialog } from "@/components/communication/CreateTutorialDialog";
+import { TutorialsList } from "@/components/communication/TutorialsList";
 import type { VideoCommunication } from "@/components/communication/VideosList";
 import { CreateIdeaDialog } from "@/components/ideas/CreateIdeaDialog";
 import { IdeasList } from "@/components/ideas/IdeasList";
@@ -42,6 +44,8 @@ const CommunicationGenerale = () => {
   const [loading, setLoading] = useState(true);
   const [dialogOpen, setDialogOpen] = useState(false);
   const [videoDialogOpen, setVideoDialogOpen] = useState(false);
+  const [tutorialDialogOpen, setTutorialDialogOpen] = useState(false);
+  const [tutorialRefreshKey, setTutorialRefreshKey] = useState(0);
   const [employeeId, setEmployeeId] = useState<string | null>(null);
 
   useEffect(() => {
@@ -123,11 +127,12 @@ const CommunicationGenerale = () => {
 
       <main className="container mx-auto px-4 py-8">
         <Tabs defaultValue="communications" className="w-full">
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className={`grid w-full ${isAdmin ? "grid-cols-5" : "grid-cols-4"}`}>
             <TabsTrigger value="communications">Communications</TabsTrigger>
             <TabsTrigger value="videos">Vidéos</TabsTrigger>
             <TabsTrigger value="surveys">Enquêtes</TabsTrigger>
             <TabsTrigger value="ideas">Idées</TabsTrigger>
+            {isAdmin && <TabsTrigger value="tutorials">Tutoriels</TabsTrigger>}
           </TabsList>
 
           <TabsContent value="communications" className="space-y-4 mt-6">
@@ -203,6 +208,22 @@ const CommunicationGenerale = () => {
             </div>
             <IdeasList isManager={isAdmin || isManager} employeeId={employeeId} />
           </TabsContent>
+
+          {isAdmin && (
+            <TabsContent value="tutorials" className="space-y-4 mt-6">
+              <div className="flex justify-end">
+                <Button onClick={() => setTutorialDialogOpen(true)}>
+                  Nouveau tutoriel
+                </Button>
+              </div>
+              <TutorialsList key={tutorialRefreshKey} />
+              <CreateTutorialDialog
+                open={tutorialDialogOpen}
+                onOpenChange={setTutorialDialogOpen}
+                onSuccess={() => setTutorialRefreshKey(k => k + 1)}
+              />
+            </TabsContent>
+          )}
         </Tabs>
       </main>
     </div>

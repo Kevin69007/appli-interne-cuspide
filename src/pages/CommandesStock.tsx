@@ -6,6 +6,7 @@ import { OrdersList } from "@/components/stock/OrdersList";
 import { StockView } from "@/components/stock/StockView";
 import { SuppliersList } from "@/components/stock/SuppliersList";
 import { StockConfig } from "@/components/stock/StockConfig";
+import { ModuleHelpButton } from "@/components/communication/ModuleHelpButton";
 
 const CommandesStock = () => {
   const navigate = useNavigate();
@@ -27,7 +28,10 @@ const CommandesStock = () => {
                 <ShoppingCart className="h-6 w-6 text-primary" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold">Gestion Stocks & Commandes</h1>
+                <div className="flex items-center gap-2">
+                  <h1 className="text-2xl font-bold">Gestion Stocks & Commandes</h1>
+                  <ModuleHelpButton moduleId="stock" />
+                </div>
                 <p className="text-sm text-muted-foreground">
                   Commandes, stock et fournisseurs centralisés
                 </p>

@@ -10,6 +10,7 @@ import { MeetingsList } from "@/components/reunions/MeetingsList";
 import { CreateMeetingDialog } from "@/components/reunions/CreateMeetingDialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
+import { ModuleHelpButton } from "@/components/communication/ModuleHelpButton";
 
 interface Meeting {
   id: string;
@@ -112,7 +113,10 @@ const Reunions = () => {
               <ArrowLeft className="w-4 h-4" />
             </Button>
             <div>
-              <h1 className="text-3xl font-bold">Réunions</h1>
+              <div className="flex items-center gap-2">
+                <h1 className="text-3xl font-bold">Réunions</h1>
+                <ModuleHelpButton moduleId="meetings" />
+              </div>
               <p className="text-muted-foreground">
                 Gérez vos réunions avec transcription automatique
               </p>
