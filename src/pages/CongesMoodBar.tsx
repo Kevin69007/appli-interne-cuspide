@@ -162,7 +162,7 @@ const CongesMoodBar = () => {
 
   const handleLeaveValidation = async (leaveId: string, approved: boolean) => {
     try {
-      // Get the original leave request to extract dates
+      // Get the original leave request to extract dates and detail
       const { data: originalRequest, error: fetchError } = await supabase
         .from("agenda_entries")
         .select("*")
@@ -174,7 +174,8 @@ const CongesMoodBar = () => {
         return;
       }
 
-      // Update the original request status with validation info
+      // Update ALL entries with the same detail and employee_id (bulk update)
+      // This handles the new system where entries are created for each day at request time
       const { error: updateError } = await supabase
         .from("agenda_entries")
         .update({ 
@@ -182,63 +183,16 @@ const CongesMoodBar = () => {
           valide_par: user?.id,
           date_validation: new Date().toISOString()
         })
-        .eq("id", leaveId);
+        .eq("employee_id", originalRequest.employee_id)
+        .eq("detail", originalRequest.detail)
+        .eq("statut_validation", "en_attente");
 
       if (updateError) {
         toast.error("Erreur lors de la validation");
         return;
       }
 
-      // If approved and there's a duration, create entries for all days in the period
-      if (approved && originalRequest.duree_minutes) {
-        const workDays = Math.round(originalRequest.duree_minutes / (8 * 60));
-        
-        // Extract dates from detail if formatted as "Du XX/XX/XXXX au XX/XX/XXXX"
-        const detailMatch = originalRequest.detail?.match(/Du (\d{2}\/\d{2}\/\d{4}) au (\d{2}\/\d{2}\/\d{4})/);
-        
-        if (detailMatch && workDays > 1) {
-          const [_, startStr, endStr] = detailMatch;
-          const [startDay, startMonth, startYear] = startStr.split('/');
-          const [endDay, endMonth, endYear] = endStr.split('/');
-          
-          const startDate = new Date(parseInt(startYear), parseInt(startMonth) - 1, parseInt(startDay));
-          const endDate = new Date(parseInt(endYear), parseInt(endMonth) - 1, parseInt(endDay));
-
-          // Create entries for ALL days in the range (except the first day which already exists)
-          // Including weekends to show full vacation period
-          const entriesToCreate = [];
-          const currentDate = new Date(startDate);
-          currentDate.setDate(currentDate.getDate() + 1); // Start from day 2
-
-          while (currentDate <= endDate) {
-            entriesToCreate.push({
-              employee_id: originalRequest.employee_id,
-              date: currentDate.toISOString().split('T')[0],
-              categorie: 'absence' as const,
-              type_absence: originalRequest.type_absence,
-              detail: originalRequest.detail,
-              statut_validation: 'valide' as const,
-              valide_par: user?.id,
-              date_validation: new Date().toISOString(),
-              points: 0
-            });
-            currentDate.setDate(currentDate.getDate() + 1);
-          }
-
-          if (entriesToCreate.length > 0) {
-            const { error: insertError } = await supabase
-              .from("agenda_entries")
-              .insert(entriesToCreate);
-
-            if (insertError) {
-              console.error("Error creating additional entries:", insertError);
-              toast.warning("Demande approuvée mais erreur lors de la création des jours supplémentaires");
-            }
-          }
-        }
-      }
-
-      toast.success(approved ? "Demande approuvée et jours ajoutés au calendrier" : "Demande refusée");
+      toast.success(approved ? "Demande approuvée" : "Demande refusée");
       fetchData();
     } catch (error) {
       console.error("Error validating leave:", error);

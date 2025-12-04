@@ -76,18 +76,22 @@ export const CreateLeaveRequestDialog = ({ employeeId, onSuccess }: CreateLeaveR
         ? `Du ${format(startDate, "dd/MM/yyyy")} au ${format(endDate, "dd/MM/yyyy")}${motif ? ` - ${motif}` : ""}`
         : `${format(startDate, "dd/MM/yyyy")}${motif ? ` - ${motif}` : ""}`;
 
+      // Create an entry for EACH day of the period (all displayed as pending)
+      const allDays = eachDayOfInterval({ start: startDate, end: endDate });
+      const entriesToCreate = allDays.map((day, index) => ({
+        employee_id: employeeId,
+        date: format(day, "yyyy-MM-dd"),
+        categorie: "absence" as const,
+        type_absence: "demande_conges" as const,
+        detail,
+        duree_minutes: index === 0 ? durationMinutes : 0, // Duration only on first entry
+        statut_validation: "en_attente" as const,
+        points: 0,
+      }));
+
       const { error } = await supabase
         .from("agenda_entries")
-        .insert({
-          employee_id: employeeId,
-          date: format(startDate, "yyyy-MM-dd"),
-          categorie: "absence",
-          type_absence: "demande_conges",
-          detail,
-          duree_minutes: durationMinutes,
-          statut_validation: "en_attente",
-          points: 0,
-        });
+        .insert(entriesToCreate);
 
       if (error) throw error;
 
@@ -175,6 +179,11 @@ export const CreateLeaveRequestDialog = ({ employeeId, onSuccess }: CreateLeaveR
                   return (
                     <p className="font-medium text-foreground">
                       {days} jour(s) {dayTypeLabel}
+                      {dateRange.to && (
+                        <span className="text-muted-foreground font-normal ml-1">
+                          (du {format(startDate, "dd/MM")} au {format(endDate, "dd/MM")} inclus)
+                        </span>
+                      )}
                     </p>
                   );
                 })()}
