@@ -37,16 +37,33 @@ export const ModuleHelpButton = ({ moduleId, variant = "icon" }: ModuleHelpButto
   useEffect(() => {
     if (!employee?.id || !tutorial) return;
 
-    const storageKey = `module_visit_${employee.id}_${moduleId}`;
-    const visitCount = parseInt(localStorage.getItem(storageKey) || "0", 10);
+    const watchedKey = `tutorial_watched_${employee.id}_${moduleId}`;
+    const hasWatched = localStorage.getItem(watchedKey) === "true";
+
+    if (hasWatched) {
+      setShouldBlink(false);
+      return;
+    }
+
+    const visitKey = `module_visit_${employee.id}_${moduleId}`;
+    const visitCount = parseInt(localStorage.getItem(visitKey) || "0", 10);
 
     if (visitCount < MAX_BLINK_COUNT) {
       setShouldBlink(true);
-      localStorage.setItem(storageKey, String(visitCount + 1));
+      localStorage.setItem(visitKey, String(visitCount + 1));
     } else {
       setShouldBlink(false);
     }
   }, [employee?.id, moduleId, tutorial]);
+
+  const handleOpenVideo = () => {
+    if (employee?.id) {
+      const watchedKey = `tutorial_watched_${employee.id}_${moduleId}`;
+      localStorage.setItem(watchedKey, "true");
+      setShouldBlink(false);
+    }
+    setShowVideo(true);
+  };
 
   const fetchTutorial = async () => {
     try {
@@ -75,7 +92,7 @@ export const ModuleHelpButton = ({ moduleId, variant = "icon" }: ModuleHelpButto
         <Button
           variant="ghost"
           size="icon"
-          onClick={() => setShowVideo(true)}
+          onClick={handleOpenVideo}
           title="Aide - Tutoriel vidéo"
           className={blinkClass}
         >
@@ -84,7 +101,7 @@ export const ModuleHelpButton = ({ moduleId, variant = "icon" }: ModuleHelpButto
       ) : (
         <Button
           variant="outline"
-          onClick={() => setShowVideo(true)}
+          onClick={handleOpenVideo}
           className={blinkClass}
         >
           <HelpCircle className={`h-4 w-4 mr-2 ${shouldBlink ? "text-destructive" : ""}`} />
