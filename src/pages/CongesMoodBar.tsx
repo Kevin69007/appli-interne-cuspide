@@ -15,6 +15,7 @@ import { CreateLeaveRequestDialog } from "@/components/rh/CreateLeaveRequestDial
 import { LeaveBalanceCard } from "@/components/rh/LeaveBalanceCard";
 import { LeaveRequestBalanceInfo } from "@/components/rh/LeaveRequestBalanceInfo";
 import { LeaveConfigPanel } from "@/components/rh/LeaveConfigPanel";
+import { ModuleHelpButton } from "@/components/communication/ModuleHelpButton";
 
 interface LeaveRequest {
   id: string;
@@ -240,6 +241,7 @@ const CongesMoodBar = () => {
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <h1 className="text-3xl font-bold">Ressources Humaines</h1>
+          <ModuleHelpButton moduleId="rh" />
         </div>
 
         <Tabs defaultValue={isAdminOrManager ? "leave-requests" : "my-requests"} className="w-full">

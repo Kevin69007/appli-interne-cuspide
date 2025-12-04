@@ -11,6 +11,7 @@ import { PointageList } from "@/components/suivi-direction/PointageList";
 import { DashboardObjectifs } from "@/components/suivi-direction/DashboardObjectifs";
 import { ManagerTeamDashboard } from "@/components/suivi-direction/ManagerTeamDashboard";
 import { ModuleVisibilityConfig } from "@/components/admin/ModuleVisibilityConfig";
+import { ModuleHelpButton } from "@/components/communication/ModuleHelpButton";
 
 const SuiviDirection = () => {
   const navigate = useNavigate();
@@ -41,6 +42,7 @@ const SuiviDirection = () => {
             <ChevronLeft className="h-5 w-5" />
           </Button>
           <h1 className="text-3xl font-bold">Suivi Direction</h1>
+          <ModuleHelpButton moduleId="direction" />
         </div>
 
         <Tabs defaultValue={isManager && !isAdmin ? "mes-equipes" : "dashboard"} className="w-full">

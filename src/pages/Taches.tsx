@@ -10,6 +10,7 @@ import { CreateTaskDialog } from "@/components/taches/CreateTaskDialog";
 import { TaskCard } from "@/components/taches/TaskCard";
 import { SortableTaskCard } from "@/components/taches/SortableTaskCard";
 import { TaskFilters, TaskFilters as TaskFiltersType } from "@/components/taches/TaskFilters";
+import { ModuleHelpButton } from "@/components/communication/ModuleHelpButton";
 import { toast } from "sonner";
 import { isAfter, isBefore, startOfDay } from "date-fns";
 import { useTranslation } from "react-i18next";
@@ -301,6 +302,7 @@ const Taches = () => {
               <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
             </Button>
             <h1 className="text-xl sm:text-3xl font-bold font-display truncate">{t('title')}</h1>
+            <ModuleHelpButton moduleId="tasks" />
           </div>
           <Button onClick={() => setShowCreateDialog(true)} size="sm" className="shrink-0">
             <Plus className="h-4 w-4 sm:mr-2" />

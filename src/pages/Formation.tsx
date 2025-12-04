@@ -2,6 +2,7 @@ import { useNavigate } from "react-router-dom";
 import { ChevronLeft, FileText, BookOpen, Brain } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useTranslation } from "react-i18next";
+import { ModuleHelpButton } from "@/components/communication/ModuleHelpButton";
 
 const Formation = () => {
   const navigate = useNavigate();
@@ -43,7 +44,10 @@ const Formation = () => {
             <ChevronLeft className="h-5 w-5" />
           </Button>
           <div>
-            <h1 className="text-2xl font-bold">{t('title')}</h1>
+            <div className="flex items-center gap-2">
+              <h1 className="text-2xl font-bold">{t('title')}</h1>
+              <ModuleHelpButton moduleId="formation" />
+            </div>
             <p className="text-sm text-muted-foreground">
               {t('subtitle')}
             </p>
