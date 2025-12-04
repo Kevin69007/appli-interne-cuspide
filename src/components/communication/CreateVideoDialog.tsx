@@ -93,11 +93,25 @@ export const CreateVideoDialog = ({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Check file type
-    if (!file.type.startsWith("video/")) {
+    // Check file type - accept common video MIME types
+    const validVideoTypes = [
+      "video/mp4",
+      "video/mpeg",
+      "video/webm",
+      "video/x-msvideo", // .avi
+      "video/quicktime", // .mov
+      "video/x-m4v",
+      "video/ogg",
+      "video/3gpp",
+      "video/x-matroska" // .mkv
+    ];
+    
+    const isValidVideo = file.type.startsWith("video/") || validVideoTypes.includes(file.type);
+    
+    if (!isValidVideo) {
       toast({
         title: "Erreur",
-        description: "Veuillez sélectionner un fichier vidéo",
+        description: `Format non supporté: ${file.type || "inconnu"}. Formats acceptés: MP4, MPEG, WebM, AVI, MOV`,
         variant: "destructive"
       });
       return;
@@ -270,7 +284,7 @@ export const CreateVideoDialog = ({
                 <Input
                   id="video"
                   type="file"
-                  accept="video/*"
+                  accept="video/mp4,video/mpeg,video/webm,video/x-msvideo,video/quicktime,video/x-m4v,video/ogg,.mp4,.mpeg,.mpg,.webm,.avi,.mov,.m4v,.mkv"
                   onChange={handleFileUpload}
                   disabled={uploading}
                   className="flex-1"
@@ -288,7 +302,7 @@ export const CreateVideoDialog = ({
                 <p className="text-sm text-green-600">✓ Vidéo téléchargée</p>
               )}
               <p className="text-xs text-muted-foreground">
-                Formats acceptés: MP4, WebM, AVI (max 100MB)
+                Formats acceptés: MP4, MPEG, WebM, AVI, MOV, MKV (max 100MB)
               </p>
             </div>
           </div>
