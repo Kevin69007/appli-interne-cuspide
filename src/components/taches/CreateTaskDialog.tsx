@@ -11,6 +11,7 @@ import { RecurrenceSelector } from "./RecurrenceSelector";
 import { RecurrenceSelectorNew } from "./RecurrenceSelectorNew";
 import { Textarea } from "@/components/ui/textarea";
 import { Combobox } from "@/components/ui/combobox";
+import { MultiSelectCombobox } from "@/components/ui/multi-select-combobox";
 import { Checkbox } from "@/components/ui/checkbox";
 
 interface Employee {
@@ -52,6 +53,8 @@ export const CreateTaskDialog = ({
     maintenance_type: "" as "machine" | "piece" | "",
     is_priority: false,
   });
+  // Pour la sélection multiple en maintenance
+  const [multipleAssignees, setMultipleAssignees] = useState<string[]>([]);
 
   useEffect(() => {
     if (canAssignOthers) {
@@ -97,46 +100,75 @@ export const CreateTaskDialog = ({
       return;
     }
 
-    console.log("Creating task with data:", {
-      currentEmployeeId,
-      formData,
-    });
+    // Pour maintenance avec sélection multiple
+    const assignees = isMaintenance && multipleAssignees.length > 0 
+      ? multipleAssignees 
+      : [formData.assigned_to];
+
+    if (assignees.length === 0 || (assignees.length === 1 && !assignees[0])) {
+      toast.error("Veuillez sélectionner au moins un employé");
+      return;
+    }
 
     setLoading(true);
     try {
-      const taskData: any = {
-        titre: formData.titre,
-        description: formData.description,
-        created_by: currentEmployeeId,
-        assigned_to: formData.assigned_to,
-        date_echeance: formData.date_echeance,
-        priorite: formData.priorite,
-        recurrence: formData.recurrence,
-        statut: "en_cours",
-        is_priority: formData.is_priority,
-      };
+      // Créer une tâche pour chaque assigné
+      const tasksToCreate = assignees.map(assigneeId => {
+        const taskData: any = {
+          titre: formData.titre,
+          description: formData.description,
+          created_by: currentEmployeeId,
+          assigned_to: assigneeId,
+          date_echeance: formData.date_echeance,
+          priorite: formData.priorite,
+          recurrence: formData.recurrence,
+          statut: "en_cours",
+          is_priority: formData.is_priority,
+        };
 
-      if (isMaintenance && formData.machine_piece && formData.maintenance_type) {
-        taskData.machine_piece = formData.machine_piece;
-        taskData.maintenance_type = formData.maintenance_type;
-      }
+        if (isMaintenance && formData.machine_piece && formData.maintenance_type) {
+          taskData.machine_piece = formData.machine_piece;
+          taskData.maintenance_type = formData.maintenance_type;
+        }
 
-      const { data, error } = await supabase.from("tasks").insert([taskData]).select();
+        return taskData;
+      });
 
-      console.log("Task creation result:", { data, error });
+      const { data, error } = await supabase.from("tasks").insert(tasksToCreate).select();
 
       if (error) throw error;
 
-      // Si un projectId est fourni, lier la tâche au projet
+      // Si un projectId est fourni, lier les tâches au projet
       if (projectId && data) {
-        const { error: linkError } = await supabase.from("project_tasks").insert({
+        const projectTaskLinks = data.map(task => ({
           project_id: projectId,
-          task_id: data[0].id,
-        });
-        if (linkError) console.error("Error linking task to project:", linkError);
+          task_id: task.id,
+        }));
+        const { error: linkError } = await supabase.from("project_tasks").insert(projectTaskLinks);
+        if (linkError) console.error("Error linking tasks to project:", linkError);
       }
 
-      toast.success("Tâche créée avec succès");
+      // Créer des notifications pour chaque assigné différent du créateur
+      const notificationsToCreate = assignees
+        .filter(assigneeId => assigneeId !== currentEmployeeId)
+        .map(assigneeId => ({
+          employee_id: assigneeId,
+          titre: "Nouvelle tâche assignée",
+          message: `Vous avez été assigné à la tâche : ${formData.titre}`,
+          type: "task_assigned",
+          url: isMaintenance ? "/entretiens-machines" : "/taches",
+        }));
+
+      if (notificationsToCreate.length > 0) {
+        await supabase.from("notifications").insert(notificationsToCreate);
+      }
+
+      const successMessage = assignees.length > 1 
+        ? `${assignees.length} tâches créées avec succès`
+        : "Tâche créée avec succès";
+      toast.success(successMessage);
+
+      // Reset form
       setFormData({
         titre: "",
         description: "",
@@ -148,21 +180,9 @@ export const CreateTaskDialog = ({
         maintenance_type: "",
         is_priority: false,
       });
+      setMultipleAssignees([]);
       onOpenChange(false);
       onTaskCreated();
-
-      // Créer une notification
-      if (formData.assigned_to !== currentEmployeeId) {
-        await supabase.from("notifications").insert([
-          {
-            employee_id: formData.assigned_to,
-            titre: "Nouvelle tâche assignée",
-            message: `Vous avez été assigné à la tâche : ${formData.titre}`,
-            type: "task_assigned",
-            url: "/taches",
-          },
-        ]);
-      }
     } catch (error) {
       console.error("Error creating task:", error);
       toast.error("Erreur lors de la création de la tâche");
@@ -238,17 +258,37 @@ export const CreateTaskDialog = ({
 
           {canAssignOthers && (
             <div>
-              <Label htmlFor="assigned_to">Assigner à *</Label>
-              <Combobox
-                value={formData.assigned_to}
-                onValueChange={(v) => setFormData({ ...formData, assigned_to: v })}
-                options={employees.map((emp) => ({
-                  value: emp.id,
-                  label: `${emp.prenom} ${emp.nom}`,
-                }))}
-                placeholder="Sélectionner un employé"
-                searchPlaceholder="Rechercher un employé..."
-              />
+              <Label htmlFor="assigned_to">
+                Assigner à *
+                {isMaintenance && (
+                  <span className="text-xs text-muted-foreground ml-2">
+                    (sélection multiple possible)
+                  </span>
+                )}
+              </Label>
+              {isMaintenance ? (
+                <MultiSelectCombobox
+                  selectedValues={multipleAssignees}
+                  onSelectedValuesChange={setMultipleAssignees}
+                  options={employees.map((emp) => ({
+                    value: emp.id,
+                    label: `${emp.prenom} ${emp.nom}`,
+                  }))}
+                  placeholder="Sélectionner les employés"
+                  searchPlaceholder="Rechercher un employé..."
+                />
+              ) : (
+                <Combobox
+                  value={formData.assigned_to}
+                  onValueChange={(v) => setFormData({ ...formData, assigned_to: v })}
+                  options={employees.map((emp) => ({
+                    value: emp.id,
+                    label: `${emp.prenom} ${emp.nom}`,
+                  }))}
+                  placeholder="Sélectionner un employé"
+                  searchPlaceholder="Rechercher un employé..."
+                />
+              )}
             </div>
           )}
 
