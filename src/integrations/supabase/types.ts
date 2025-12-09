@@ -4599,6 +4599,7 @@ export type Database = {
           heure_debut: string
           heure_fin: string
           id: string
+          is_indefinite: boolean | null
           pause_minutes: number | null
           schedule_group_id: string | null
           updated_at: string
@@ -4612,6 +4613,7 @@ export type Database = {
           heure_debut: string
           heure_fin: string
           id?: string
+          is_indefinite?: boolean | null
           pause_minutes?: number | null
           schedule_group_id?: string | null
           updated_at?: string
@@ -4625,6 +4627,7 @@ export type Database = {
           heure_debut?: string
           heure_fin?: string
           id?: string
+          is_indefinite?: boolean | null
           pause_minutes?: number | null
           schedule_group_id?: string | null
           updated_at?: string
