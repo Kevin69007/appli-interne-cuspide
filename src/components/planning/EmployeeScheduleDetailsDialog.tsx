@@ -88,7 +88,10 @@ export const EmployeeScheduleDetailsDialog = ({
 
     setTasks(tasksData || []);
     setAbsences(absencesData || []);
-    setSchedules(schedulesData || []);
+    // Sort schedules chronologically by start time
+    setSchedules((schedulesData || []).sort((a, b) => 
+      a.heure_debut.localeCompare(b.heure_debut)
+    ));
     setLoading(false);
   };
 

@@ -10,6 +10,7 @@ import { toast } from "sonner";
 import { useAuth } from "@/contexts/AuthContext";
 import { addDays, startOfDay, isBefore, isAfter, format } from "date-fns";
 import { useTranslation } from "react-i18next";
+import { Search } from "lucide-react";
 
 interface Employee {
   id: string;
@@ -34,6 +35,9 @@ const JOURS_SEMAINE = [
   { value: 0, label: "Dimanche" },
 ];
 
+const normalizeString = (str: string) => 
+  str.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+
 export const CreateScheduleDialog = ({
   open,
   onOpenChange,
@@ -52,6 +56,7 @@ export const CreateScheduleDialog = ({
   const [pauseMinutes, setPauseMinutes] = useState(60);
   const [commentaire, setCommentaire] = useState("");
   const [loading, setLoading] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
 
   useEffect(() => {
     if (open) {
@@ -189,7 +194,15 @@ export const CreateScheduleDialog = ({
     );
   };
 
-  const groupedEmployees = employees.reduce((acc, emp) => {
+  // Filter employees by search query
+  const filteredEmployees = employees.filter((emp) => {
+    if (!searchQuery.trim()) return true;
+    const search = normalizeString(searchQuery);
+    const fullName = normalizeString(`${emp.prenom} ${emp.nom}`);
+    return fullName.includes(search);
+  });
+
+  const groupedEmployees = filteredEmployees.reduce((acc, emp) => {
     const team = emp.equipe || "Sans équipe";
     if (!acc[team]) acc[team] = [];
     acc[team].push(emp);
@@ -206,27 +219,45 @@ export const CreateScheduleDialog = ({
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="space-y-4">
             <Label>Sélectionner les employés ({selectedEmployees.length})</Label>
+            
+            {/* Search input */}
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Rechercher un employé..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-9"
+              />
+            </div>
+            
             <div className="border rounded-lg p-4 max-h-60 overflow-y-auto space-y-4">
-              {Object.entries(groupedEmployees).map(([team, teamEmployees]) => (
-                <div key={team} className="space-y-2">
-                  <h4 className="font-semibold text-sm">{team}</h4>
-                  {teamEmployees.map((employee) => (
-                    <div key={employee.id} className="flex items-center space-x-2 ml-4">
-                      <Checkbox
-                        id={`employee-${employee.id}`}
-                        checked={selectedEmployees.includes(employee.id)}
-                        onCheckedChange={() => handleEmployeeToggle(employee.id)}
-                      />
-                      <label
-                        htmlFor={`employee-${employee.id}`}
-                        className="text-sm cursor-pointer"
-                      >
-                        {employee.prenom} {employee.nom}
-                      </label>
-                    </div>
-                  ))}
-                </div>
-              ))}
+              {Object.keys(groupedEmployees).length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-2">
+                  Aucun employé trouvé
+                </p>
+              ) : (
+                Object.entries(groupedEmployees).map(([team, teamEmployees]) => (
+                  <div key={team} className="space-y-2">
+                    <h4 className="font-semibold text-sm">{team}</h4>
+                    {teamEmployees.map((employee) => (
+                      <div key={employee.id} className="flex items-center space-x-2 ml-4">
+                        <Checkbox
+                          id={`employee-${employee.id}`}
+                          checked={selectedEmployees.includes(employee.id)}
+                          onCheckedChange={() => handleEmployeeToggle(employee.id)}
+                        />
+                        <label
+                          htmlFor={`employee-${employee.id}`}
+                          className="text-sm cursor-pointer"
+                        >
+                          {employee.prenom} {employee.nom}
+                        </label>
+                      </div>
+                    ))}
+                  </div>
+                ))
+              )}
             </div>
           </div>
 
