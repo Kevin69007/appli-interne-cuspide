@@ -153,6 +153,7 @@ export const PlanningCalendar = () => {
         employees!inner(nom, prenom, equipe)
       `)
       .eq("categorie", "absence")
+      .neq("statut_validation", "refuse")
       .gte("date", startOfMonth.toISOString().split("T")[0])
       .lte("date", endOfMonth.toISOString().split("T")[0]);
 

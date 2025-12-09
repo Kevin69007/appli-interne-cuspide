@@ -28,6 +28,11 @@ interface LeaveRequest {
   employees: { nom: string; prenom: string; equipe: string };
 }
 
+interface GroupedLeaveRequest extends LeaveRequest {
+  dateRange: { start: string; end: string };
+  daysCount: number;
+}
+
 interface Absence {
   id: string;
   employee_id: string;
@@ -42,6 +47,11 @@ interface Absence {
   validator?: { email: string } | null;
 }
 
+interface GroupedAbsence extends Absence {
+  dateRange: { start: string; end: string };
+  daysCount: number;
+}
+
 interface MoodEntry {
   id: string;
   employee_id: string;
@@ -51,6 +61,36 @@ interface MoodEntry {
   need_type: string | null;
   employees: { nom: string; prenom: string };
 }
+
+// Function to group leave requests/absences by period
+const groupByPeriod = <T extends { id: string; employee_id: string; date: string; detail: string; request_group_id: string | null }>(
+  items: T[]
+): (T & { dateRange: { start: string; end: string }; daysCount: number })[] => {
+  const grouped = new Map<string, T[]>();
+  
+  items.forEach(item => {
+    // Group key: use request_group_id if available, otherwise fall back to employee_id + detail
+    const key = item.request_group_id || `${item.employee_id}_${item.detail}`;
+    
+    if (!grouped.has(key)) {
+      grouped.set(key, []);
+    }
+    grouped.get(key)!.push(item);
+  });
+  
+  // Return one item per group with aggregated date range
+  return Array.from(grouped.values()).map(group => {
+    const sorted = group.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    return {
+      ...sorted[0],
+      dateRange: {
+        start: sorted[0].date,
+        end: sorted[sorted.length - 1].date
+      },
+      daysCount: group.length
+    };
+  });
+};
 
 const CongesMoodBar = () => {
   const navigate = useNavigate();
@@ -273,7 +313,7 @@ const CongesMoodBar = () => {
             {isAdminOrManager ? (
               <>
                 <TabsTrigger value="leave-requests">
-                  Demandes ({leaveRequests.length})
+                  Demandes ({groupByPeriod(leaveRequests).length})
                 </TabsTrigger>
                 <TabsTrigger value="absences">Absences</TabsTrigger>
                 <TabsTrigger value="mood">
@@ -284,7 +324,7 @@ const CongesMoodBar = () => {
             ) : (
               <>
                 <TabsTrigger value="my-requests">
-                  Mes demandes ({leaveRequests.length})
+                  Mes demandes ({groupByPeriod(leaveRequests).length})
                 </TabsTrigger>
                 <TabsTrigger value="my-absences">Mes absences</TabsTrigger>
                 <TabsTrigger value="my-mood">Mon humeur</TabsTrigger>
@@ -297,12 +337,12 @@ const CongesMoodBar = () => {
           {/* Admin/Manager: Demandes de congés avec actions */}
           {isAdminOrManager && (
             <TabsContent value="leave-requests" className="space-y-4 mt-6">
-              {leaveRequests.length === 0 ? (
+              {groupByPeriod(leaveRequests).length === 0 ? (
                 <p className="text-center text-muted-foreground py-8">
                   Aucune demande en attente
                 </p>
               ) : (
-                leaveRequests.map((request) => (
+                groupByPeriod(leaveRequests).map((request) => (
                   <Card key={request.id}>
                     <CardHeader>
                       <CardTitle className="flex items-center justify-between">
@@ -315,7 +355,11 @@ const CongesMoodBar = () => {
                     <CardContent className="space-y-4">
                       <div className="grid gap-2 text-sm">
                         <div>
-                          <strong>Date :</strong> {new Date(request.date).toLocaleDateString("fr-FR")}
+                          <strong>Période :</strong>{" "}
+                          {request.dateRange.start === request.dateRange.end
+                            ? new Date(request.dateRange.start).toLocaleDateString("fr-FR")
+                            : `${new Date(request.dateRange.start).toLocaleDateString("fr-FR")} - ${new Date(request.dateRange.end).toLocaleDateString("fr-FR")}`}
+                          {request.daysCount > 1 && ` (${request.daysCount} jours)`}
                         </div>
                         {request.detail && (
                           <div>
@@ -369,18 +413,21 @@ const CongesMoodBar = () => {
               <div className="flex justify-end mb-4">
                 <CreateLeaveRequestDialog employeeId={employee.id} onSuccess={fetchData} />
               </div>
-              {leaveRequests.length === 0 ? (
+              {groupByPeriod(leaveRequests).length === 0 ? (
                 <p className="text-center text-muted-foreground py-8">
                   Aucune demande de congés. Créez votre première demande !
                 </p>
               ) : (
-                leaveRequests.map((request) => (
+                groupByPeriod(leaveRequests).map((request) => (
                   <Card key={request.id}>
                     <CardContent className="p-4">
                       <div className="flex items-center justify-between">
                         <div>
                           <div className="font-medium">
-                            {new Date(request.date).toLocaleDateString("fr-FR")}
+                            {request.dateRange.start === request.dateRange.end
+                              ? new Date(request.dateRange.start).toLocaleDateString("fr-FR")
+                              : `${new Date(request.dateRange.start).toLocaleDateString("fr-FR")} - ${new Date(request.dateRange.end).toLocaleDateString("fr-FR")}`}
+                            {request.daysCount > 1 && ` (${request.daysCount} jours)`}
                           </div>
                           {request.detail && (
                             <div className="text-sm text-muted-foreground mt-1">{request.detail}</div>
@@ -410,7 +457,7 @@ const CongesMoodBar = () => {
           {isAdminOrManager && (
             <TabsContent value="absences" className="space-y-4 mt-6">
               <div className="grid gap-2">
-                {allAbsences.map((absence) => (
+                {groupByPeriod(allAbsences).map((absence) => (
                   <Card key={absence.id}>
                     <CardContent className="p-4 flex items-center justify-between">
                       <div className="flex-1">
@@ -418,7 +465,11 @@ const CongesMoodBar = () => {
                           {absence.employees?.prenom} {absence.employees?.nom}
                         </div>
                         <div className="text-sm text-muted-foreground">
-                          {new Date(absence.date).toLocaleDateString("fr-FR")} -{" "}
+                          {absence.dateRange.start === absence.dateRange.end
+                            ? new Date(absence.dateRange.start).toLocaleDateString("fr-FR")
+                            : `${new Date(absence.dateRange.start).toLocaleDateString("fr-FR")} - ${new Date(absence.dateRange.end).toLocaleDateString("fr-FR")}`}
+                          {absence.daysCount > 1 && ` (${absence.daysCount} jours)`}
+                          {" - "}
                           {getAbsenceTypeLabel(absence.type_absence)}
                         </div>
                         {absence.detail && (
@@ -486,12 +537,16 @@ const CongesMoodBar = () => {
                 </p>
               ) : (
                 <div className="grid gap-2">
-                  {allAbsences.map((absence) => (
+                  {groupByPeriod(allAbsences).map((absence) => (
                     <Card key={absence.id}>
                       <CardContent className="p-4 flex items-center justify-between">
                         <div className="flex-1">
                           <div className="font-medium">
-                            {new Date(absence.date).toLocaleDateString("fr-FR")} -{" "}
+                            {absence.dateRange.start === absence.dateRange.end
+                              ? new Date(absence.dateRange.start).toLocaleDateString("fr-FR")
+                              : `${new Date(absence.dateRange.start).toLocaleDateString("fr-FR")} - ${new Date(absence.dateRange.end).toLocaleDateString("fr-FR")}`}
+                            {absence.daysCount > 1 && ` (${absence.daysCount} jours)`}
+                            {" - "}
                             {getAbsenceTypeLabel(absence.type_absence)}
                           </div>
                           {absence.detail && (
