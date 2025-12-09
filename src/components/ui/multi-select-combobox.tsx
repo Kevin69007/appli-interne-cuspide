@@ -27,9 +27,9 @@ interface MultiSelectComboboxProps {
 }
 
 export function MultiSelectCombobox({
-  selectedValues,
+  selectedValues = [],
   onSelectedValuesChange,
-  options,
+  options = [],
   placeholder = "Sélectionner...",
   searchPlaceholder = "Rechercher...",
   emptyMessage = "Aucun résultat.",
@@ -37,39 +37,29 @@ export function MultiSelectCombobox({
 }: MultiSelectComboboxProps) {
   const [open, setOpen] = React.useState(false);
 
-  // Sécuriser les valeurs pour éviter undefined
-  const safeOptions = options || [];
-  const safeSelectedValues = selectedValues || [];
-
-  // Log des options et valeurs sélectionnées
-  React.useEffect(() => {
-    console.log("=== MULTI SELECT COMBOBOX ===");
-    console.log("Options:", safeOptions);
-    console.log("Selected values:", safeSelectedValues);
-  }, [safeOptions, safeSelectedValues]);
+  // Sécuriser les valeurs pour éviter undefined - utiliser des valeurs par défaut stables
+  const safeOptions = React.useMemo(() => options ?? [], [options]);
+  const safeSelectedValues = React.useMemo(() => selectedValues ?? [], [selectedValues]);
 
   const handleSelect = (labelValue: string) => {
-    console.log("=== MULTI SELECT DEBUG ===");
-    console.log("Selected label (from CommandItem):", labelValue);
-    console.log("Current selectedValues:", safeSelectedValues);
-    console.log("All options:", safeOptions);
+    if (!labelValue) return;
     
-    // Trouver l'option correspondante par son label
-    const selectedOption = safeOptions.find((opt) => opt.label === labelValue);
+    // Trouver l'option correspondante par son label (case-insensitive pour cmdk)
+    const normalizedLabel = labelValue.toLowerCase();
+    const selectedOption = safeOptions.find(
+      (opt) => opt.label.toLowerCase() === normalizedLabel
+    );
     
     if (!selectedOption) {
-      console.error("Option non trouvée pour le label:", labelValue);
       return;
     }
     
     const actualValue = selectedOption.value;
-    console.log("Actual value (ID):", actualValue);
     
     const newValues = safeSelectedValues.includes(actualValue)
       ? safeSelectedValues.filter((v) => v !== actualValue)
       : [...safeSelectedValues, actualValue];
     
-    console.log("New values:", newValues);
     onSelectedValuesChange(newValues);
   };
 
