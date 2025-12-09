@@ -7,7 +7,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Combobox } from "@/components/ui/combobox";
 import { Checkbox } from "@/components/ui/checkbox";
 
 interface CreateSupplierDialogProps {
@@ -124,18 +124,16 @@ export const CreateSupplierDialog = ({ open, onOpenChange, supplier }: CreateSup
 
           <div className="space-y-2">
             <Label>Responsable *</Label>
-            <Select value={responsibleEmployeeId} onValueChange={setResponsibleEmployeeId}>
-              <SelectTrigger>
-                <SelectValue placeholder="Sélectionner un responsable" />
-              </SelectTrigger>
-              <SelectContent>
-                {employees?.map((employee) => (
-                  <SelectItem key={employee.id} value={employee.id}>
-                    {employee.prenom} {employee.nom}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+            <Combobox
+              value={responsibleEmployeeId}
+              onValueChange={setResponsibleEmployeeId}
+              options={employees?.map((employee) => ({
+                value: employee.id,
+                label: `${employee.prenom} ${employee.nom}`
+              })) || []}
+              placeholder="Sélectionner un responsable"
+              searchPlaceholder="Rechercher un employé..."
+            />
             <p className="text-xs text-muted-foreground">
               Le responsable recevra les tâches liées aux commandes de ce fournisseur
             </p>

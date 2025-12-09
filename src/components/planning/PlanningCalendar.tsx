@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import { ChevronLeft, ChevronRight, Plus, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -57,6 +58,7 @@ export const PlanningCalendar = () => {
   const { isAdmin, isManager } = useUserRole();
   const canManage = isAdmin || isManager;
   const { t } = useTranslation('planning');
+  const navigate = useNavigate();
   
   const [currentDate, setCurrentDate] = useState(new Date());
   const [schedules, setSchedules] = useState<WorkSchedule[]>([]);
@@ -391,25 +393,39 @@ export const PlanningCalendar = () => {
                     ))}
                     
                     {/* Absences */}
-                    {dayAbsences.map((absence) => (
-                      <div
-                        key={absence.id}
-                        className={`text-xs rounded px-1 py-0.5 ${
-                          absence.statut_validation === 'valide'
-                            ? 'bg-purple-500/10 border-l-2 border-purple-500'
-                            : 'bg-yellow-500/10 border-l-2 border-yellow-500'
-                        }`}
-                        title={`${absence.employees.prenom} ${absence.employees.nom}: ${absence.type_absence || absence.detail || 'Absence'} (${absence.statut_validation === 'valide' ? 'Validée' : 'En attente'})`}
-                      >
-                        <div className="font-medium truncate">
-                          {absence.employees.prenom} {absence.employees.nom}
+                    {dayAbsences.map((absence) => {
+                      const isPending = absence.statut_validation !== 'valide';
+                      const canClickToValidate = canManage && isPending;
+                      
+                      return (
+                        <div
+                          key={absence.id}
+                          className={`text-xs rounded px-1 py-0.5 ${
+                            absence.statut_validation === 'valide'
+                              ? 'bg-purple-500/10 border-l-2 border-purple-500'
+                              : 'bg-yellow-500/10 border-l-2 border-yellow-500'
+                          } ${canClickToValidate ? 'cursor-pointer hover:bg-yellow-500/20 transition-colors' : ''}`}
+                          title={canClickToValidate 
+                            ? `${absence.employees.prenom} ${absence.employees.nom}: ${absence.type_absence || absence.detail || 'Absence'} - Cliquez pour valider cette demande`
+                            : `${absence.employees.prenom} ${absence.employees.nom}: ${absence.type_absence || absence.detail || 'Absence'} (${absence.statut_validation === 'valide' ? 'Validée' : 'En attente'})`
+                          }
+                          onClick={(e) => {
+                            if (canClickToValidate) {
+                              e.stopPropagation();
+                              navigate('/conges-moodbar');
+                            }
+                          }}
+                        >
+                          <div className="font-medium truncate">
+                            {absence.employees.prenom} {absence.employees.nom}
+                          </div>
+                          <div className="text-muted-foreground truncate">
+                            {absence.type_absence || absence.detail || 'Absence'}
+                            {isPending && ' ⏳'}
+                          </div>
                         </div>
-                        <div className="text-muted-foreground truncate">
-                          {absence.type_absence || absence.detail || 'Absence'}
-                          {absence.statut_validation !== 'valide' && ' ⏳'}
-                        </div>
-                      </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 </>
               )}
