@@ -1,9 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { ChevronLeft, ChevronRight, Plus, Trash2 } from "lucide-react";
+import { ChevronLeft, ChevronRight, Plus, Trash2, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
 import { CreateScheduleDialog } from "./CreateScheduleDialog";
+import { EditScheduleDialog } from "./EditScheduleDialog";
 import { AddEventDialog } from "@/components/objectifs-primes/AddEventDialog";
 import { CreateTaskDialog } from "@/components/taches/CreateTaskDialog";
 import { EmployeeScheduleDetailsDialog } from "./EmployeeScheduleDetailsDialog";
@@ -37,6 +38,10 @@ interface WorkSchedule {
     prenom: string;
     equipe: string | null;
   };
+}
+
+interface ConsolidatedSchedule extends WorkSchedule {
+  originalSchedules: WorkSchedule[];
 }
 
 interface Absence {
@@ -78,6 +83,9 @@ export const PlanningCalendar = () => {
   const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(null);
   const [selectedEmployeeName, setSelectedEmployeeName] = useState("");
   const [selectedEmployeeDate, setSelectedEmployeeDate] = useState<Date | null>(null);
+  // Edit schedule dialog state
+  const [showEditDialog, setShowEditDialog] = useState(false);
+  const [scheduleToEdit, setScheduleToEdit] = useState<WorkSchedule | null>(null);
 
   useEffect(() => {
     fetchSchedules();
@@ -193,14 +201,41 @@ export const PlanningCalendar = () => {
     return days;
   };
 
-  const getSchedulesForDate = (date: Date | null) => {
+  // Consolidate schedules by employee: one line per employee with earliest start and latest end
+  const consolidateSchedulesByEmployee = (daySchedules: WorkSchedule[]): ConsolidatedSchedule[] => {
+    const byEmployee = new Map<string, WorkSchedule[]>();
+    
+    daySchedules.forEach((s) => {
+      const existing = byEmployee.get(s.employee_id) || [];
+      byEmployee.set(s.employee_id, [...existing, s]);
+    });
+    
+    return Array.from(byEmployee.entries()).map(([employeeId, empSchedules]) => {
+      // Sort by start time
+      const sorted = empSchedules.sort((a, b) => a.heure_debut.localeCompare(b.heure_debut));
+      const earliest = sorted[0];
+      const latest = sorted.reduce((acc, s) => 
+        s.heure_fin > acc.heure_fin ? s : acc, sorted[0]
+      );
+      
+      return {
+        ...earliest,
+        heure_debut: earliest.heure_debut,
+        heure_fin: latest.heure_fin,
+        originalSchedules: sorted,
+      };
+    });
+  };
+
+  const getSchedulesForDate = (date: Date | null): ConsolidatedSchedule[] => {
     if (!date) return [];
     // Utiliser le format YYYY-MM-DD sans conversion UTC pour éviter les décalages
     const year = date.getFullYear();
     const month = String(date.getMonth() + 1).padStart(2, '0');
     const day = String(date.getDate()).padStart(2, '0');
     const dateStr = `${year}-${month}-${day}`;
-    return schedules.filter((s) => s.date === dateStr);
+    const daySchedules = schedules.filter((s) => s.date === dateStr);
+    return consolidateSchedulesByEmployee(daySchedules);
   };
 
   const getAbsencesForDate = (date: Date | null) => {
@@ -360,12 +395,12 @@ export const PlanningCalendar = () => {
                 <>
                   <div className="text-sm font-medium mb-1">{date.getDate()}</div>
                   <div className="space-y-1">
-                    {/* Horaires de travail */}
+                    {/* Horaires de travail - consolidated by employee */}
                     {daySchedules.map((schedule) => (
                       <div
                         key={schedule.id}
                         className="text-xs bg-cyan-500/10 border-l-2 border-cyan-500 rounded px-1 py-0.5 group relative cursor-pointer hover:bg-cyan-500/20"
-                        title={`${schedule.employees.prenom} ${schedule.employees.nom}: ${schedule.heure_debut} - ${schedule.heure_fin}${canManage ? ' - Cliquer pour voir détails' : ''}`}
+                        title={`${schedule.employees.prenom}: ${schedule.heure_debut.slice(0, 5)} - ${schedule.heure_fin.slice(0, 5)}${schedule.originalSchedules.length > 1 ? ` (${schedule.originalSchedules.length} créneaux)` : ''}${canManage ? ' - Cliquer pour voir détails' : ''}`}
                         onClick={(e) => date && handleEmployeeClick(
                           schedule.employee_id,
                           `${schedule.employees.prenom} ${schedule.employees.nom}`,
@@ -376,24 +411,39 @@ export const PlanningCalendar = () => {
                         <div className="flex items-center justify-between gap-1">
                           <div className="flex-1 min-w-0">
                             <div className="font-medium truncate">
-                              {schedule.employees.prenom} {schedule.employees.nom}
+                              {schedule.employees.prenom}
                             </div>
                             <div className="text-muted-foreground">
                               {schedule.heure_debut.slice(0, 5)} - {schedule.heure_fin.slice(0, 5)}
                             </div>
                           </div>
                           {canManage && (
-                            <Button
-                              variant="ghost"
-                              size="icon"
-                              className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                setScheduleToDelete(schedule);
-                              }}
-                            >
-                              <Trash2 className="h-3 w-3 text-destructive" />
-                            </Button>
+                            <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-5 w-5"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  // Edit the first schedule of the group
+                                  setScheduleToEdit(schedule.originalSchedules[0]);
+                                  setShowEditDialog(true);
+                                }}
+                              >
+                                <Pencil className="h-3 w-3 text-primary" />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-5 w-5"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setScheduleToDelete(schedule.originalSchedules[0]);
+                                }}
+                              >
+                                <Trash2 className="h-3 w-3 text-destructive" />
+                              </Button>
+                            </div>
                           )}
                         </div>
                       </div>
@@ -596,6 +646,14 @@ export const PlanningCalendar = () => {
           date={selectedEmployeeDate}
         />
       )}
+
+      {/* Edit Schedule Dialog */}
+      <EditScheduleDialog
+        open={showEditDialog}
+        onOpenChange={setShowEditDialog}
+        schedule={scheduleToEdit}
+        onScheduleUpdated={() => { fetchSchedules(); fetchAbsences(); }}
+      />
     </div>
   );
 };
