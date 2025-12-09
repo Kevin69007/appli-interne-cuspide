@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "@/contexts/AuthContext";
 import { useEmployee } from "@/contexts/EmployeeContext";
@@ -58,6 +58,19 @@ const Index = () => {
   const [hasInfos, setHasInfos] = useState<boolean | null>(null);
   const [hasVotedMood, setHasVotedMood] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
+  const [showSearchDropdown, setShowSearchDropdown] = useState(false);
+  const searchRef = useRef<HTMLDivElement>(null);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (searchRef.current && !searchRef.current.contains(event.target as Node)) {
+        setShowSearchDropdown(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, []);
 
   const filteredModules = modules.filter(module => {
     if (!searchQuery.trim()) return true;
@@ -107,15 +120,48 @@ const Index = () => {
               </h1>
             </div>
             <div className="flex items-center gap-2 sm:gap-4">
-              {/* Barre de recherche dans le header */}
-              <div className="relative hidden sm:block">
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              {/* Barre de recherche avec dropdown autocomplete */}
+              <div className="relative hidden sm:block" ref={searchRef}>
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
                 <Input
                   placeholder="Rechercher..."
                   value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
+                  onChange={(e) => {
+                    setSearchQuery(e.target.value);
+                    setShowSearchDropdown(e.target.value.trim().length > 0);
+                  }}
+                  onFocus={() => searchQuery.trim() && setShowSearchDropdown(true)}
                   className="pl-8 w-40 lg:w-56 h-9 glass border-border/50 text-sm"
                 />
+                {/* Dropdown des résultats */}
+                {showSearchDropdown && searchQuery.trim() && (
+                  <div className="absolute top-full left-0 w-64 lg:w-80 mt-1 bg-background border border-border rounded-lg shadow-lg z-50 max-h-80 overflow-y-auto">
+                    {filteredModules.length === 0 ? (
+                      <div className="p-3 text-sm text-muted-foreground text-center">
+                        Aucun module trouvé
+                      </div>
+                    ) : (
+                      filteredModules.map((module) => (
+                        <div
+                          key={module.id}
+                          onClick={() => {
+                            if (module.is_external) {
+                              window.open(module.path, '_blank', 'noopener,noreferrer');
+                            } else {
+                              navigate(module.path);
+                            }
+                            setSearchQuery("");
+                            setShowSearchDropdown(false);
+                          }}
+                          className="flex items-center gap-3 p-3 hover:bg-accent/50 cursor-pointer transition-colors border-b border-border/30 last:border-b-0"
+                        >
+                          <span className="text-xl">{module.icon}</span>
+                          <span className="text-sm font-medium">{module.module_name}</span>
+                        </div>
+                      ))
+                    )}
+                  </div>
+                )}
               </div>
               <span className="hidden lg:inline-block text-sm text-muted-foreground truncate max-w-[150px]">{user.email}</span>
               <NotificationBell />
@@ -180,18 +226,51 @@ const Index = () => {
             );
           })()}
 
-          {/* Barre de recherche mobile uniquement */}
+          {/* Barre de recherche mobile avec dropdown */}
           <div className="relative max-w-md mx-auto mb-6 sm:hidden">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
             <Input
               placeholder="Rechercher un module..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
+              onChange={(e) => {
+                setSearchQuery(e.target.value);
+                setShowSearchDropdown(e.target.value.trim().length > 0);
+              }}
+              onFocus={() => searchQuery.trim() && setShowSearchDropdown(true)}
               className="pl-10 glass border-border/50"
             />
+            {/* Dropdown mobile */}
+            {showSearchDropdown && searchQuery.trim() && (
+              <div className="absolute top-full left-0 w-full mt-1 bg-background border border-border rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto">
+                {filteredModules.length === 0 ? (
+                  <div className="p-3 text-sm text-muted-foreground text-center">
+                    Aucun module trouvé
+                  </div>
+                ) : (
+                  filteredModules.map((module) => (
+                    <div
+                      key={module.id}
+                      onClick={() => {
+                        if (module.is_external) {
+                          window.open(module.path, '_blank', 'noopener,noreferrer');
+                        } else {
+                          navigate(module.path);
+                        }
+                        setSearchQuery("");
+                        setShowSearchDropdown(false);
+                      }}
+                      className="flex items-center gap-3 p-3 hover:bg-accent/50 cursor-pointer transition-colors border-b border-border/30 last:border-b-0"
+                    >
+                      <span className="text-xl">{module.icon}</span>
+                      <span className="text-sm font-medium">{module.module_name}</span>
+                    </div>
+                  ))
+                )}
+              </div>
+            )}
           </div>
 
-          {/* Modules de navigation */}
+          {/* Modules de navigation - toujours visibles */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {modulesLoading ? (
               <>
@@ -202,12 +281,12 @@ const Index = () => {
                   </div>
                 ))}
               </>
-            ) : filteredModules.length === 0 ? (
+            ) : modules.length === 0 ? (
               <div className="col-span-full text-center py-8 text-muted-foreground">
-                Aucun module trouvé pour "{searchQuery}"
+                Aucun module disponible
               </div>
             ) : (
-              filteredModules.map((module) => (
+              modules.map((module) => (
                 <div
                   key={module.id}
                   onClick={() => {

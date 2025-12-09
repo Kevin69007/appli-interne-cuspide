@@ -38,6 +38,7 @@ export type Database = {
           points: number | null
           points_indicateur: number | null
           raison_ecart: string | null
+          request_group_id: string | null
           statut_objectif: Database["public"]["Enums"]["statut_objectif"] | null
           statut_validation:
             | Database["public"]["Enums"]["statut_validation"]
@@ -75,6 +76,7 @@ export type Database = {
           points?: number | null
           points_indicateur?: number | null
           raison_ecart?: string | null
+          request_group_id?: string | null
           statut_objectif?:
             | Database["public"]["Enums"]["statut_objectif"]
             | null
@@ -114,6 +116,7 @@ export type Database = {
           points?: number | null
           points_indicateur?: number | null
           raison_ecart?: string | null
+          request_group_id?: string | null
           statut_objectif?:
             | Database["public"]["Enums"]["statut_objectif"]
             | null

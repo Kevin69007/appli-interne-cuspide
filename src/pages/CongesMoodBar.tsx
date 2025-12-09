@@ -24,6 +24,7 @@ interface LeaveRequest {
   type_absence: string;
   detail: string;
   statut_validation: string;
+  request_group_id: string | null;
   employees: { nom: string; prenom: string; equipe: string };
 }
 
@@ -36,6 +37,7 @@ interface Absence {
   statut_validation: string;
   valide_par: string | null;
   date_validation: string | null;
+  request_group_id: string | null;
   employees: { nom: string; prenom: string; equipe: string };
   validator?: { email: string } | null;
 }
@@ -82,7 +84,7 @@ const CongesMoodBar = () => {
       // Demandes de congés
       let leaveQuery = supabase
         .from("agenda_entries")
-        .select("id, employee_id, date, type_absence, detail, statut_validation, employees(nom, prenom, equipe)")
+        .select("id, employee_id, date, type_absence, detail, statut_validation, request_group_id, employees(nom, prenom, equipe)")
         .eq("categorie", "absence")
         .eq("type_absence", "demande_conges");
 
@@ -102,7 +104,7 @@ const CongesMoodBar = () => {
         .from("agenda_entries")
         .select(`
           id, employee_id, date, type_absence, detail, statut_validation,
-          valide_par, date_validation,
+          valide_par, date_validation, request_group_id,
           employees(nom, prenom, equipe)
         `)
         .eq("categorie", "absence");
@@ -161,12 +163,12 @@ const CongesMoodBar = () => {
     }
   };
 
-  const handleLeaveValidation = async (leaveId: string, approved: boolean) => {
+  const handleLeaveValidation = async (leaveId: string, approved: boolean, fromAbsencesTab = false) => {
     try {
       // Get the original leave request to extract dates and detail
       const { data: originalRequest, error: fetchError } = await supabase
         .from("agenda_entries")
-        .select("*")
+        .select("*, employees(user_id)")
         .eq("id", leaveId)
         .single();
 
@@ -175,22 +177,44 @@ const CongesMoodBar = () => {
         return;
       }
 
-      // Update ALL entries with the same detail and employee_id (bulk update)
-      // This handles the new system where entries are created for each day at request time
-      const { error: updateError } = await supabase
+      // Build query based on whether we have a request_group_id or need to fall back to detail
+      let updateQuery = supabase
         .from("agenda_entries")
         .update({ 
           statut_validation: approved ? "valide" : "refuse",
           valide_par: user?.id,
           date_validation: new Date().toISOString()
         })
-        .eq("employee_id", originalRequest.employee_id)
-        .eq("detail", originalRequest.detail)
-        .eq("statut_validation", "en_attente");
+        .eq("employee_id", originalRequest.employee_id);
+
+      // Use request_group_id if available, otherwise fall back to detail
+      if (originalRequest.request_group_id) {
+        updateQuery = updateQuery.eq("request_group_id", originalRequest.request_group_id);
+      } else {
+        updateQuery = updateQuery.eq("detail", originalRequest.detail);
+      }
+
+      // Only filter by en_attente if not from absences tab (allows revoking/reapproving)
+      if (!fromAbsencesTab) {
+        updateQuery = updateQuery.eq("statut_validation", "en_attente");
+      }
+
+      const { error: updateError } = await updateQuery;
 
       if (updateError) {
         toast.error("Erreur lors de la validation");
         return;
+      }
+
+      // Send notification if refused
+      if (!approved && originalRequest.employee_id) {
+        await supabase.from("notifications").insert({
+          employee_id: originalRequest.employee_id,
+          titre: "Demande de congés refusée",
+          message: `Votre demande de congés "${originalRequest.detail}" a été refusée.`,
+          type: "leave_rejected",
+          statut: "actif"
+        });
       }
 
       toast.success(approved ? "Demande approuvée" : "Demande refusée");
@@ -429,7 +453,7 @@ const CongesMoodBar = () => {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handleLeaveValidation(absence.id, false)}
+                            onClick={() => handleLeaveValidation(absence.id, false, true)}
                           >
                             <X className="h-3 w-3 mr-1" />
                             Révoquer
@@ -439,7 +463,7 @@ const CongesMoodBar = () => {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => handleLeaveValidation(absence.id, true)}
+                            onClick={() => handleLeaveValidation(absence.id, true, true)}
                           >
                             <Check className="h-3 w-3 mr-1" />
                             Approuver
