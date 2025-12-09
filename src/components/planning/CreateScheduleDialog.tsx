@@ -44,6 +44,7 @@ export const CreateScheduleDialog = ({
   const [selectedEmployees, setSelectedEmployees] = useState<string[]>([]);
   const [selectedJours, setSelectedJours] = useState<number[]>([1, 2, 3, 4, 5]); // Lun-Ven par défaut
   const [dateDebut, setDateDebut] = useState(format(new Date(), "yyyy-MM-dd"));
+  const [isIndefinite, setIsIndefinite] = useState(true); // Par défaut indéfini
   const [hasDateFin, setHasDateFin] = useState(false);
   const [dateFin, setDateFin] = useState("");
   const [heureDebut, setHeureDebut] = useState("09:00");
@@ -86,19 +87,24 @@ export const CreateScheduleDialog = ({
       const [yearDebut, monthDebut, dayDebut] = dateDebut.split('-').map(Number);
       const debut = startOfDay(new Date(yearDebut, monthDebut - 1, dayDebut));
       
-      // Si pas de date de fin, on prend 4 semaines par défaut pour couvrir tous les jours sélectionnés
-      const fin = hasDateFin && dateFin 
-        ? (() => {
-            const [yearFin, monthFin, dayFin] = dateFin.split('-').map(Number);
-            return startOfDay(new Date(yearFin, monthFin - 1, dayFin));
-          })()
-        : addDays(debut, 27); // 4 semaines
+      // Calcul de la date de fin selon le mode choisi
+      let fin: Date;
+      if (hasDateFin && dateFin) {
+        // Date de fin explicite
+        const [yearFin, monthFin, dayFin] = dateFin.split('-').map(Number);
+        fin = startOfDay(new Date(yearFin, monthFin - 1, dayFin));
+      } else if (isIndefinite) {
+        // Planning indéfini = 52 semaines (1 an)
+        fin = addDays(debut, 364);
+      } else {
+        // Par défaut 4 semaines
+        fin = addDays(debut, 27);
+      }
 
       console.log("=== CRÉATION DE PLANNING ===");
-      console.log("Date de début string:", dateDebut);
-      console.log("Date de début objet:", debut);
-      console.log("Date de début jour de semaine:", debut.getDay(), "- Jour:", format(debut, "EEEE dd/MM/yyyy"));
-      console.log("Date de fin:", fin);
+      console.log("Date de début:", dateDebut);
+      console.log("Mode indéfini:", isIndefinite);
+      console.log("Date de fin calculée:", fin);
       console.log("Jours sélectionnés:", selectedJours);
 
       // Générer toutes les dates entre début et fin
@@ -121,6 +127,7 @@ export const CreateScheduleDialog = ({
               commentaire: commentaire || null,
               created_by: user.id,
               schedule_group_id: scheduleGroupId,
+              is_indefinite: isIndefinite && !hasDateFin,
             });
           });
         }
@@ -157,6 +164,7 @@ export const CreateScheduleDialog = ({
     setSelectedEmployees([]);
     setSelectedJours([1, 2, 3, 4, 5]);
     setDateDebut(format(new Date(), "yyyy-MM-dd"));
+    setIsIndefinite(true);
     setHasDateFin(false);
     setDateFin("");
     setHeureDebut("09:00");
@@ -258,12 +266,28 @@ export const CreateScheduleDialog = ({
             <div className="space-y-2">
               <div className="flex items-center space-x-2 mb-2">
                 <Checkbox
+                  id="isIndefinite"
+                  checked={isIndefinite && !hasDateFin}
+                  onCheckedChange={(checked) => {
+                    setIsIndefinite(checked === true);
+                    if (checked) setHasDateFin(false);
+                  }}
+                />
+                <Label htmlFor="isIndefinite" className="cursor-pointer">
+                  Planning récurrent (1 an)
+                </Label>
+              </div>
+              <div className="flex items-center space-x-2 mb-2">
+                <Checkbox
                   id="hasDateFin"
                   checked={hasDateFin}
-                  onCheckedChange={(checked) => setHasDateFin(checked === true)}
+                  onCheckedChange={(checked) => {
+                    setHasDateFin(checked === true);
+                    if (checked) setIsIndefinite(false);
+                  }}
                 />
                 <Label htmlFor="hasDateFin" className="cursor-pointer">
-                  Date de fin
+                  Date de fin spécifique
                 </Label>
               </div>
               {hasDateFin && (
@@ -274,6 +298,11 @@ export const CreateScheduleDialog = ({
                   onChange={(e) => setDateFin(e.target.value)}
                   min={dateDebut}
                 />
+              )}
+              {!isIndefinite && !hasDateFin && (
+                <p className="text-xs text-muted-foreground">
+                  Par défaut : 4 semaines
+                </p>
               )}
             </div>
           </div>

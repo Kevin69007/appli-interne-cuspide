@@ -5,6 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { CreateScheduleDialog } from "./CreateScheduleDialog";
 import { AddEventDialog } from "@/components/objectifs-primes/AddEventDialog";
 import { CreateTaskDialog } from "@/components/taches/CreateTaskDialog";
+import { EmployeeScheduleDetailsDialog } from "./EmployeeScheduleDetailsDialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useUserRole } from "@/hooks/useUserRole";
 import { toast } from "sonner";
@@ -37,6 +38,20 @@ interface WorkSchedule {
   };
 }
 
+interface Absence {
+  id: string;
+  employee_id: string;
+  date: string;
+  detail: string | null;
+  type_absence: string | null;
+  statut_validation: string | null;
+  employees: {
+    nom: string;
+    prenom: string;
+    equipe: string | null;
+  };
+}
+
 export const PlanningCalendar = () => {
   const { user } = useAuth();
   const { isAdmin, isManager } = useUserRole();
@@ -45,6 +60,7 @@ export const PlanningCalendar = () => {
   
   const [currentDate, setCurrentDate] = useState(new Date());
   const [schedules, setSchedules] = useState<WorkSchedule[]>([]);
+  const [absences, setAbsences] = useState<Absence[]>([]);
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [showEventDialog, setShowEventDialog] = useState(false);
@@ -55,9 +71,15 @@ export const PlanningCalendar = () => {
   const [scheduleToDelete, setScheduleToDelete] = useState<WorkSchedule | null>(null);
   const [deleteMode, setDeleteMode] = useState<'single' | 'series'>('single');
   const [currentEmployeeId, setCurrentEmployeeId] = useState<string | null>(null);
+  // Employee details dialog state
+  const [showEmployeeDetails, setShowEmployeeDetails] = useState(false);
+  const [selectedEmployeeId, setSelectedEmployeeId] = useState<string | null>(null);
+  const [selectedEmployeeName, setSelectedEmployeeName] = useState("");
+  const [selectedEmployeeDate, setSelectedEmployeeDate] = useState<Date | null>(null);
 
   useEffect(() => {
     fetchSchedules();
+    fetchAbsences();
     fetchTeams();
     if (user) {
       fetchCurrentEmployee();
@@ -113,6 +135,36 @@ export const PlanningCalendar = () => {
     }
   };
 
+  const fetchAbsences = async () => {
+    const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+    const endOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() + 1, 0);
+
+    let query = supabase
+      .from("agenda_entries")
+      .select(`
+        id,
+        employee_id,
+        date,
+        detail,
+        type_absence,
+        statut_validation,
+        employees!inner(nom, prenom, equipe)
+      `)
+      .eq("categorie", "absence")
+      .gte("date", startOfMonth.toISOString().split("T")[0])
+      .lte("date", endOfMonth.toISOString().split("T")[0]);
+
+    if (selectedTeam !== "all") {
+      query = query.eq("employees.equipe", selectedTeam);
+    }
+
+    const { data, error } = await query;
+
+    if (!error && data) {
+      setAbsences(data as any);
+    }
+  };
+
   const getDaysInMonth = () => {
     const year = currentDate.getFullYear();
     const month = currentDate.getMonth();
@@ -146,6 +198,29 @@ export const PlanningCalendar = () => {
     const day = String(date.getDate()).padStart(2, '0');
     const dateStr = `${year}-${month}-${day}`;
     return schedules.filter((s) => s.date === dateStr);
+  };
+
+  const getAbsencesForDate = (date: Date | null) => {
+    if (!date) return [];
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const dateStr = `${year}-${month}-${day}`;
+    return absences.filter((a) => a.date === dateStr);
+  };
+
+  const handleEmployeeClick = (
+    employeeId: string,
+    employeeName: string,
+    date: Date,
+    e: React.MouseEvent
+  ) => {
+    e.stopPropagation();
+    if (!canManage) return;
+    setSelectedEmployeeId(employeeId);
+    setSelectedEmployeeName(employeeName);
+    setSelectedEmployeeDate(date);
+    setShowEmployeeDetails(true);
   };
 
   const handleDayClick = (date: Date) => {
@@ -256,6 +331,7 @@ export const PlanningCalendar = () => {
 
         {days.map((date, index) => {
           const daySchedules = getSchedulesForDate(date);
+          const dayAbsences = getAbsencesForDate(date);
           const isToday = date?.toDateString() === new Date().toDateString();
 
           return (
@@ -275,11 +351,18 @@ export const PlanningCalendar = () => {
                 <>
                   <div className="text-sm font-medium mb-1">{date.getDate()}</div>
                   <div className="space-y-1">
+                    {/* Horaires de travail */}
                     {daySchedules.map((schedule) => (
                       <div
                         key={schedule.id}
-                        className="text-xs bg-primary/10 rounded px-1 py-0.5 group relative"
-                        title={`${schedule.employees.prenom} ${schedule.employees.nom}: ${schedule.heure_debut} - ${schedule.heure_fin}`}
+                        className="text-xs bg-cyan-500/10 border-l-2 border-cyan-500 rounded px-1 py-0.5 group relative cursor-pointer hover:bg-cyan-500/20"
+                        title={`${schedule.employees.prenom} ${schedule.employees.nom}: ${schedule.heure_debut} - ${schedule.heure_fin}${canManage ? ' - Cliquer pour voir détails' : ''}`}
+                        onClick={(e) => date && handleEmployeeClick(
+                          schedule.employee_id,
+                          `${schedule.employees.prenom} ${schedule.employees.nom}`,
+                          date,
+                          e
+                        )}
                       >
                         <div className="flex items-center justify-between gap-1">
                           <div className="flex-1 min-w-0">
@@ -306,6 +389,27 @@ export const PlanningCalendar = () => {
                         </div>
                       </div>
                     ))}
+                    
+                    {/* Absences */}
+                    {dayAbsences.map((absence) => (
+                      <div
+                        key={absence.id}
+                        className={`text-xs rounded px-1 py-0.5 ${
+                          absence.statut_validation === 'valide'
+                            ? 'bg-purple-500/10 border-l-2 border-purple-500'
+                            : 'bg-yellow-500/10 border-l-2 border-yellow-500'
+                        }`}
+                        title={`${absence.employees.prenom} ${absence.employees.nom}: ${absence.type_absence || absence.detail || 'Absence'} (${absence.statut_validation === 'valide' ? 'Validée' : 'En attente'})`}
+                      >
+                        <div className="font-medium truncate">
+                          {absence.employees.prenom} {absence.employees.nom}
+                        </div>
+                        <div className="text-muted-foreground truncate">
+                          {absence.type_absence || absence.detail || 'Absence'}
+                          {absence.statut_validation !== 'valide' && ' ⏳'}
+                        </div>
+                      </div>
+                    ))}
                   </div>
                 </>
               )}
@@ -314,26 +418,47 @@ export const PlanningCalendar = () => {
         })}
       </div>
 
+      {/* Légende */}
+      <div className="mt-4 pt-4 border-t grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
+        <div className="flex items-center gap-2">
+          <div className="w-3 h-3 rounded bg-cyan-500/10 border-l-2 border-cyan-500" />
+          <span>Horaires de travail</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-3 h-3 rounded bg-purple-500/10 border-l-2 border-purple-500" />
+          <span>Absence validée</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-3 h-3 rounded bg-yellow-500/10 border-l-2 border-yellow-500" />
+          <span>Absence en attente</span>
+        </div>
+        {canManage && (
+          <div className="text-muted-foreground italic">
+            Cliquez sur un employé pour voir ses détails
+          </div>
+        )}
+      </div>
+
       {canManage && (
         <>
           <CreateScheduleDialog
             open={showCreateDialog}
             onOpenChange={setShowCreateDialog}
-            onScheduleCreated={fetchSchedules}
+            onScheduleCreated={() => { fetchSchedules(); fetchAbsences(); }}
           />
           {selectedDate && (
             <AddEventDialog
               open={showEventDialog}
               onOpenChange={setShowEventDialog}
               selectedDate={selectedDate}
-              onEventAdded={fetchSchedules}
+              onEventAdded={() => { fetchSchedules(); fetchAbsences(); }}
             />
           )}
           <CreateTaskDialog
             open={showMaintenanceDialog}
             onOpenChange={setShowMaintenanceDialog}
             currentEmployeeId={currentEmployeeId}
-            onTaskCreated={fetchSchedules}
+            onTaskCreated={() => { fetchSchedules(); fetchAbsences(); }}
             canAssignOthers={true}
             isMaintenance={true}
           />
@@ -437,6 +562,17 @@ export const PlanningCalendar = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Employee Details Dialog */}
+      {selectedEmployeeId && selectedEmployeeDate && (
+        <EmployeeScheduleDetailsDialog
+          open={showEmployeeDetails}
+          onOpenChange={setShowEmployeeDetails}
+          employeeId={selectedEmployeeId}
+          employeeName={selectedEmployeeName}
+          date={selectedEmployeeDate}
+        />
+      )}
     </div>
   );
 };
