@@ -19,6 +19,32 @@ import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import tuttiLogo from "@/assets/tutti-logo.png";
 
+// Normalise le texte en supprimant les accents
+const normalizeText = (text: string) => {
+  return text
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "");
+};
+
+// Mots-clés de recherche pour chaque module
+const moduleKeywords: Record<string, string[]> = {
+  "/conges-mood-bar": ["congé", "conges", "congés", "vacances", "absence", "demande congé", "rh", "humeur", "mood", "demande de vacance", "demande de congé"],
+  "/taches": ["tache", "taches", "tâche", "tâches", "todo", "travail", "mission"],
+  "/agenda": ["planning", "calendrier", "horaires", "emploi du temps", "agenda"],
+  "/projets": ["projet", "projets", "chantier", "gestion de projet"],
+  "/formation": ["formation", "documentation", "apprendre", "tutoriel", "quiz"],
+  "/communication-generale": ["communication", "annonce", "message", "info", "information"],
+  "/reunions": ["réunion", "reunion", "meeting", "rendez-vous", "rencontre"],
+  "/commandes-stock": ["commande", "stock", "inventaire", "fourniture", "achat", "fournisseur"],
+  "/indicateurs-primes": ["indicateur", "prime", "objectif", "bonus", "salaire", "performance"],
+  "/suivi-direction": ["direction", "kpi", "tableau de bord", "dashboard", "suivi"],
+  "/detente": ["détente", "detente", "jeu", "pause", "break", "divertissement"],
+  "/entretiens-machines": ["entretien", "maintenance", "machine", "équipement"],
+  "/job-documents": ["document", "fiche de poste", "poste", "emploi"],
+  "/calendrier-projets": ["calendrier", "gantt", "timeline", "planning projet"],
+};
+
 const Index = () => {
   const { user, loading } = useAuth();
   const { employee } = useEmployee();
@@ -33,9 +59,19 @@ const Index = () => {
   const [hasVotedMood, setHasVotedMood] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
 
-  const filteredModules = modules.filter(module =>
-    module.module_name.toLowerCase().includes(searchQuery.toLowerCase())
-  );
+  const filteredModules = modules.filter(module => {
+    if (!searchQuery.trim()) return true;
+    
+    const normalizedQuery = normalizeText(searchQuery);
+    const normalizedName = normalizeText(module.module_name);
+    
+    // Recherche dans le nom du module
+    if (normalizedName.includes(normalizedQuery)) return true;
+    
+    // Recherche dans les mots-clés
+    const keywords = moduleKeywords[module.path] || [];
+    return keywords.some(keyword => normalizeText(keyword).includes(normalizedQuery));
+  });
 
   useEffect(() => {
     if (!loading && user) {
@@ -71,7 +107,17 @@ const Index = () => {
               </h1>
             </div>
             <div className="flex items-center gap-2 sm:gap-4">
-              <span className="hidden md:inline-block text-sm text-muted-foreground truncate max-w-[150px] lg:max-w-none">{user.email}</span>
+              {/* Barre de recherche dans le header */}
+              <div className="relative hidden sm:block">
+                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Input
+                  placeholder="Rechercher..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-8 w-40 lg:w-56 h-9 glass border-border/50 text-sm"
+                />
+              </div>
+              <span className="hidden lg:inline-block text-sm text-muted-foreground truncate max-w-[150px]">{user.email}</span>
               <NotificationBell />
               {employee && (
                 <EmployeeAvatar
@@ -134,8 +180,8 @@ const Index = () => {
             );
           })()}
 
-          {/* Barre de recherche globale */}
-          <div className="relative max-w-md mx-auto mb-6">
+          {/* Barre de recherche mobile uniquement */}
+          <div className="relative max-w-md mx-auto mb-6 sm:hidden">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input
               placeholder="Rechercher un module..."

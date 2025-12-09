@@ -303,25 +303,31 @@ export const PlanningCalendar = () => {
           </Select>
         </div>
 
-        {canManage && (
-          <div className="flex gap-2">
-            <Button onClick={() => setShowCreateDialog(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Ajouter un planning
-            </Button>
-            <Button onClick={() => {
-              setSelectedDate(new Date());
-              setShowEventDialog(true);
-            }} variant="outline">
-              <Plus className="h-4 w-4 mr-2" />
-              Ajouter un événement
-            </Button>
-            <Button onClick={() => setShowMaintenanceDialog(true)} variant="outline">
-              <Plus className="h-4 w-4 mr-2" />
-              Nouvelle tâche d'entretien
-            </Button>
-          </div>
-        )}
+        <div className="flex gap-2">
+          <Button variant="outline" onClick={() => navigate('/conges-mood-bar')}>
+            <Plus className="h-4 w-4 mr-2" />
+            Demander un congé
+          </Button>
+          {canManage && (
+            <>
+              <Button onClick={() => setShowCreateDialog(true)}>
+                <Plus className="h-4 w-4 mr-2" />
+                Ajouter un planning
+              </Button>
+              <Button onClick={() => {
+                setSelectedDate(new Date());
+                setShowEventDialog(true);
+              }} variant="outline">
+                <Plus className="h-4 w-4 mr-2" />
+                Ajouter un événement
+              </Button>
+              <Button onClick={() => setShowMaintenanceDialog(true)} variant="outline">
+                <Plus className="h-4 w-4 mr-2" />
+                Nouvelle tâche d'entretien
+              </Button>
+            </>
+          )}
+        </div>
       </div>
 
       <div className="grid grid-cols-7 gap-2">
@@ -412,7 +418,7 @@ export const PlanningCalendar = () => {
                           onClick={(e) => {
                             if (canClickToValidate) {
                               e.stopPropagation();
-                              navigate('/conges-moodbar');
+                              navigate('/conges-mood-bar');
                             }
                           }}
                         >
