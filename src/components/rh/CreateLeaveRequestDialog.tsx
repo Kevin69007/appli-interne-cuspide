@@ -16,6 +16,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Plus, CalendarIcon, Info } from "lucide-react";
 import { format, differenceInBusinessDays, addDays, eachDayOfInterval, isSunday } from "date-fns";
+import { v4 as uuidv4 } from "uuid";
 import { fr } from "date-fns/locale";
 import { DateRange } from "react-day-picker";
 import { cn } from "@/lib/utils";
@@ -76,6 +77,9 @@ export const CreateLeaveRequestDialog = ({ employeeId, onSuccess }: CreateLeaveR
         ? `Du ${format(startDate, "dd/MM/yyyy")} au ${format(endDate, "dd/MM/yyyy")}${motif ? ` - ${motif}` : ""}`
         : `${format(startDate, "dd/MM/yyyy")}${motif ? ` - ${motif}` : ""}`;
 
+      // Generate a unique group ID to link all entries of this request
+      const requestGroupId = uuidv4();
+
       // Create an entry for EACH day of the period (all displayed as pending)
       const allDays = eachDayOfInterval({ start: startDate, end: endDate });
       const entriesToCreate = allDays.map((day, index) => ({
@@ -87,6 +91,7 @@ export const CreateLeaveRequestDialog = ({ employeeId, onSuccess }: CreateLeaveR
         duree_minutes: index === 0 ? durationMinutes : 0, // Duration only on first entry
         statut_validation: "en_attente" as const,
         points: 0,
+        request_group_id: requestGroupId,
       }));
 
       const { error } = await supabase
