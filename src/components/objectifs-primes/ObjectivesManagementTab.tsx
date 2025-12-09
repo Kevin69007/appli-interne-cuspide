@@ -21,6 +21,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Search, Filter, X } from "lucide-react";
+import { Combobox } from "@/components/ui/combobox";
 import { toast } from "sonner";
 import { EditObjectiveDialog } from "./EditObjectiveDialog";
 import { DuplicateObjectiveDialog } from "./DuplicateObjectiveDialog";
@@ -333,17 +334,16 @@ export const ObjectivesManagementTab = () => {
             />
           </div>
 
-          <Select value={tempSelectedEmployee} onValueChange={setTempSelectedEmployee}>
-            <SelectTrigger>
-              <SelectValue placeholder={t("management.allEmployees")} />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">{t("management.allEmployees")}</SelectItem>
-              {employees.map(emp => (
-                <SelectItem key={emp.id} value={emp.id}>{emp.name}</SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
+          <Combobox
+            value={tempSelectedEmployee}
+            onValueChange={setTempSelectedEmployee}
+            options={[
+              { value: "all", label: t("management.allEmployees") },
+              ...employees.map(emp => ({ value: emp.id, label: emp.name }))
+            ]}
+            placeholder={t("management.allEmployees")}
+            searchPlaceholder="Rechercher un employé..."
+          />
 
           <Select value={tempSelectedRecurrence} onValueChange={setTempSelectedRecurrence}>
             <SelectTrigger>

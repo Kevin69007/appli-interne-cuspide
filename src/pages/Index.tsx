@@ -15,6 +15,8 @@ import { AnimatedBackground } from "@/components/AnimatedBackground";
 import { useModuleVisibility } from "@/hooks/useModuleVisibility";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { EmployeeAvatar } from "@/components/ui/employee-avatar";
+import { Input } from "@/components/ui/input";
+import { Search } from "lucide-react";
 import tuttiLogo from "@/assets/tutti-logo.png";
 
 const Index = () => {
@@ -29,6 +31,11 @@ const Index = () => {
   const [hasPriorityTasks, setHasPriorityTasks] = useState<boolean | null>(null);
   const [hasInfos, setHasInfos] = useState<boolean | null>(null);
   const [hasVotedMood, setHasVotedMood] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  const filteredModules = modules.filter(module =>
+    module.module_name.toLowerCase().includes(searchQuery.toLowerCase())
+  );
 
   useEffect(() => {
     if (!loading && user) {
@@ -127,6 +134,17 @@ const Index = () => {
             );
           })()}
 
+          {/* Barre de recherche globale */}
+          <div className="relative max-w-md mx-auto mb-6">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
+              placeholder="Rechercher un module..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              className="pl-10 glass border-border/50"
+            />
+          </div>
+
           {/* Modules de navigation */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {modulesLoading ? (
@@ -138,8 +156,12 @@ const Index = () => {
                   </div>
                 ))}
               </>
+            ) : filteredModules.length === 0 ? (
+              <div className="col-span-full text-center py-8 text-muted-foreground">
+                Aucun module trouvé pour "{searchQuery}"
+              </div>
             ) : (
-              modules.map((module) => (
+              filteredModules.map((module) => (
                 <div
                   key={module.id}
                   onClick={() => {
