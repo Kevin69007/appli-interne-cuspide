@@ -644,6 +644,7 @@ export const PlanningCalendar = () => {
           employeeId={selectedEmployeeId}
           employeeName={selectedEmployeeName}
           date={selectedEmployeeDate}
+          onSchedulesUpdated={() => { fetchSchedules(); fetchAbsences(); }}
         />
       )}
 
