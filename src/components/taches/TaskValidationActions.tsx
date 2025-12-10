@@ -32,11 +32,15 @@ export const TaskValidationActions = ({
   const [rejectComment, setRejectComment] = useState("");
   const [dateRejectComment, setDateRejectComment] = useState("");
 
+  // Le validateur est soit validation_responsable_id, soit le créateur si non défini
+  const validationResponsableId = task.validation_responsable_id || task.created_by;
+  const isValidator = validationResponsableId === currentEmployeeId;
   const isCreator = task.created_by === currentEmployeeId;
   const isPendingValidation = task.statut === "en_attente_validation";
   const isDateChangePending = task.date_change_pending === true;
 
-  if (!isCreator || (!isPendingValidation && !isDateChangePending)) return null;
+  // Afficher si l'utilisateur est validateur (pour validation) ou créateur (pour date change)
+  if ((!isValidator || !isPendingValidation) && (!isCreator || !isDateChangePending)) return null;
 
   const completedByName = task.completed_by_employee 
     ? `${task.completed_by_employee.prenom} ${task.completed_by_employee.nom}`

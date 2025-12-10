@@ -3942,6 +3942,7 @@ export type Database = {
           statut: string | null
           titre: string
           updated_at: string
+          validation_responsable_id: string | null
         }
         Insert: {
           assigned_to: string
@@ -3980,6 +3981,7 @@ export type Database = {
           statut?: string | null
           titre: string
           updated_at?: string
+          validation_responsable_id?: string | null
         }
         Update: {
           assigned_to?: string
@@ -4018,6 +4020,7 @@ export type Database = {
           statut?: string | null
           titre?: string
           updated_at?: string
+          validation_responsable_id?: string | null
         }
         Relationships: [
           {
@@ -4123,6 +4126,20 @@ export type Database = {
             columns: ["parent_task_id"]
             isOneToOne: false
             referencedRelation: "tasks"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tasks_validation_responsable_id_fkey"
+            columns: ["validation_responsable_id"]
+            isOneToOne: false
+            referencedRelation: "employee_badge_summary"
+            referencedColumns: ["employee_id"]
+          },
+          {
+            foreignKeyName: "tasks_validation_responsable_id_fkey"
+            columns: ["validation_responsable_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
             referencedColumns: ["id"]
           },
         ]

@@ -94,13 +94,17 @@ export const TaskCard = ({ task, currentEmployeeId, onUpdate, isHelpRequest, isM
 
   const isCreator = task.created_by === currentEmployeeId;
   const isAssigned = task.assigned_to === currentEmployeeId;
-  const needsValidation = isAssigned && !isCreator;
+  // Le validateur est soit validation_responsable_id, soit le créateur si non défini
+  const validationResponsableId = task.validation_responsable_id || task.created_by;
+  const isValidator = validationResponsableId === currentEmployeeId;
+  // La validation est requise si un responsable de validation est défini et que l'assigné n'est pas le validateur
+  const needsValidation = validationResponsableId !== null && task.assigned_to !== validationResponsableId;
 
   const toggleStatus = async () => {
-    // Si la tâche est en attente de validation, seul le créateur peut la valider
+    // Si la tâche est en attente de validation, seul le validateur peut la valider
     if (task.statut === "en_attente_validation") {
-      if (!isCreator) {
-        toast.error("Seul le créateur peut valider cette tâche");
+      if (!isValidator) {
+        toast.error("Seul le responsable de validation peut valider cette tâche");
         return;
       }
       // Valider la tâche
@@ -118,8 +122,8 @@ export const TaskCard = ({ task, currentEmployeeId, onUpdate, isHelpRequest, isM
       return;
     }
 
-    // Si l'utilisateur est l'assigné mais pas le créateur, marquer comme en attente de validation
-    if (needsValidation) {
+    // Si l'utilisateur est l'assigné et qu'une validation est requise, marquer comme en attente de validation
+    if (isAssigned && needsValidation && !isValidator) {
       const newStatut = task.statut === "terminee" ? "en_cours" : "en_attente_validation";
       
       const updateData: any = { 
@@ -146,11 +150,11 @@ export const TaskCard = ({ task, currentEmployeeId, onUpdate, isHelpRequest, isM
       }
 
       if (newStatut === "en_attente_validation") {
-        // Notifier le créateur
+        // Notifier le responsable de validation
         await supabase.from("notifications").insert({
-          employee_id: task.created_by,
+          employee_id: validationResponsableId,
           titre: "📋 Tâche à valider",
-          message: `Une tâche que vous avez créée a été marquée comme terminée : ${task.titre}`,
+          message: `Une tâche que vous devez valider a été marquée comme terminée : ${task.titre}`,
           type: "task_validation_pending",
           url: "/taches",
         });
@@ -162,9 +166,9 @@ export const TaskCard = ({ task, currentEmployeeId, onUpdate, isHelpRequest, isM
       return;
     }
 
-    // Comportement standard pour le créateur
-    if (!isCreator) {
-      toast.error("Seul le créateur de cette tâche peut la clôturer");
+    // Comportement standard pour le créateur ou si pas de validation requise
+    if (!isCreator && !isValidator) {
+      toast.error("Seul le créateur ou le validateur de cette tâche peut la clôturer");
       return;
     }
 
@@ -184,7 +188,7 @@ export const TaskCard = ({ task, currentEmployeeId, onUpdate, isHelpRequest, isM
     onUpdate();
   };
 
-  const canToggleStatus = isCreator || (isAssigned && task.statut !== "terminee");
+  const canToggleStatus = isCreator || isValidator || (isAssigned && task.statut !== "terminee" && !needsValidation) || (isAssigned && needsValidation && task.statut !== "en_attente_validation");
 
   const handleAddComment = async () => {
     const comment = actionInput;

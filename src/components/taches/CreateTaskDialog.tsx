@@ -52,6 +52,8 @@ export const CreateTaskDialog = ({
     machine_piece: "",
     maintenance_type: "" as "machine" | "piece" | "",
     is_priority: false,
+    validation_mode: "creator" as "creator" | "none" | "other",
+    validation_responsable_id: "",
   });
   // Pour la sélection multiple en maintenance
   const [multipleAssignees, setMultipleAssignees] = useState<string[]>([]);
@@ -112,6 +114,15 @@ export const CreateTaskDialog = ({
 
     setLoading(true);
     try {
+      // Déterminer le responsable de validation
+      let validationResponsableId: string | null = null;
+      if (formData.validation_mode === "creator") {
+        validationResponsableId = currentEmployeeId;
+      } else if (formData.validation_mode === "other" && formData.validation_responsable_id) {
+        validationResponsableId = formData.validation_responsable_id;
+      }
+      // Si "none", validationResponsableId reste null
+
       // Créer une tâche pour chaque assigné
       const tasksToCreate = assignees.map(assigneeId => {
         const taskData: any = {
@@ -124,6 +135,7 @@ export const CreateTaskDialog = ({
           recurrence: formData.recurrence,
           statut: "en_cours",
           is_priority: formData.is_priority,
+          validation_responsable_id: validationResponsableId,
         };
 
         if (isMaintenance && formData.machine_piece && formData.maintenance_type) {
@@ -179,6 +191,8 @@ export const CreateTaskDialog = ({
         machine_piece: "",
         maintenance_type: "",
         is_priority: false,
+        validation_mode: "creator",
+        validation_responsable_id: "",
       });
       setMultipleAssignees([]);
       onOpenChange(false);
@@ -340,6 +354,45 @@ export const CreateTaskDialog = ({
             value={formData.recurrence}
             onChange={(recurrence) => setFormData({ ...formData, recurrence })}
           />
+
+          {/* Validation de la clôture */}
+          <div className="space-y-3 p-3 bg-muted/50 rounded-lg">
+            <Label className="font-medium">Validation de la clôture</Label>
+            <Select
+              value={formData.validation_mode}
+              onValueChange={(v: "creator" | "none" | "other") => setFormData({ ...formData, validation_mode: v })}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="creator">Par moi-même (créateur)</SelectItem>
+                <SelectItem value="none">Pas de validation requise</SelectItem>
+                <SelectItem value="other">Par une autre personne</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-xs text-muted-foreground">
+              {formData.validation_mode === "creator" && "Vous devrez valider quand l'assigné marquera la tâche comme terminée."}
+              {formData.validation_mode === "none" && "L'assigné pourra clôturer la tâche directement sans validation."}
+              {formData.validation_mode === "other" && "La personne sélectionnée devra valider la clôture."}
+            </p>
+            
+            {formData.validation_mode === "other" && (
+              <div>
+                <Label className="text-sm">Responsable de la validation</Label>
+                <Combobox
+                  value={formData.validation_responsable_id}
+                  onValueChange={(v) => setFormData({ ...formData, validation_responsable_id: v })}
+                  options={employees.map((emp) => ({
+                    value: emp.id,
+                    label: `${emp.prenom} ${emp.nom}`,
+                  }))}
+                  placeholder="Sélectionner un responsable..."
+                  searchPlaceholder="Rechercher..."
+                />
+              </div>
+            )}
+          </div>
 
           <div className="flex justify-end gap-2 pt-4">
             <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
