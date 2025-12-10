@@ -219,6 +219,7 @@ const Taches = () => {
           .order("sort_order", { ascending: true })
           .order("boomerang_deadline", { ascending: true }),
         
+        // Pending validations - tasks where current employee is the validation responsible
         supabase
           .from("tasks")
           .select(`
@@ -226,9 +227,10 @@ const Taches = () => {
             assigned_employee:employees!tasks_assigned_to_fkey(nom, prenom, photo_url),
             creator_employee:employees!tasks_created_by_fkey(nom, prenom, photo_url),
             completed_by_employee:employees!tasks_completed_by_fkey(nom, prenom, photo_url),
-            date_change_requester:employees!tasks_date_change_requested_by_fkey(nom, prenom, photo_url)
+            date_change_requester:employees!tasks_date_change_requested_by_fkey(nom, prenom, photo_url),
+            validation_responsable:employees!tasks_validation_responsable_id_fkey(nom, prenom, photo_url)
           `)
-          .eq("created_by", currentEmployeeId)
+          .or(`validation_responsable_id.eq.${currentEmployeeId},and(validation_responsable_id.is.null,created_by.eq.${currentEmployeeId})`)
           .neq("assigned_to", currentEmployeeId)
           .or("statut.eq.en_attente_validation,date_change_pending.eq.true")
           .order("updated_at", { ascending: false }),
