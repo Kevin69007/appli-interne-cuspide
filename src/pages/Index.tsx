@@ -9,6 +9,7 @@ import { TachesWidget } from "@/components/employe/TachesWidget";
 import { InfosImportantesWidget } from "@/components/employe/InfosImportantesWidget";
 import { TachesPrioritairesWidget } from "@/components/employe/TachesPrioritairesWidget";
 import { MoodBarWidget } from "@/components/employe/MoodBarWidget";
+import { TimeDeclarationWidget } from "@/components/employe/TimeDeclarationWidget";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { AnimatedBackground } from "@/components/AnimatedBackground";
@@ -202,6 +203,13 @@ const Index = () => {
           {!hasVotedMood && (
             <div className="max-w-3xl mx-auto mb-8 sm:mb-12">
               <MoodBarWidget onVoted={setHasVotedMood} />
+            </div>
+          )}
+
+          {/* Time Declaration Widget for remote employees */}
+          {employee?.is_remote && (
+            <div className="max-w-md mx-auto mb-8 sm:mb-12">
+              <TimeDeclarationWidget />
             </div>
           )}
 
