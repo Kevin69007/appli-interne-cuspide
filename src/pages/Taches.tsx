@@ -5,15 +5,38 @@ import { useUserRole } from "@/hooks/useUserRole";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, ArrowLeft } from "lucide-react";
+import { Plus, ArrowLeft, Trash2, Calendar, UserPlus } from "lucide-react";
 import { CreateTaskDialog } from "@/components/taches/CreateTaskDialog";
 import { TaskCard } from "@/components/taches/TaskCard";
 import { SortableTaskCard } from "@/components/taches/SortableTaskCard";
 import { TaskFilters, TaskFilters as TaskFiltersType } from "@/components/taches/TaskFilters";
 import { ModuleHelpButton } from "@/components/communication/ModuleHelpButton";
 import { toast } from "sonner";
-import { isAfter, isBefore, startOfDay } from "date-fns";
+import { isAfter, isBefore, startOfDay, format } from "date-fns";
+import { fr } from "date-fns/locale";
 import { useTranslation } from "react-i18next";
+import { Checkbox } from "@/components/ui/checkbox";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Combobox } from "@/components/ui/combobox";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
 import {
   DndContext,
   closestCenter,
@@ -52,6 +75,12 @@ interface Task {
   dependency_employee?: { nom: string; prenom: string; photo_url?: string };
 }
 
+interface Employee {
+  id: string;
+  nom: string;
+  prenom: string;
+}
+
 const Taches = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
@@ -61,6 +90,7 @@ const Taches = () => {
   const [boomerangsSent, setBoomerangsSent] = useState<Task[]>([]);
   const [boomerangsReceived, setBoomerangsReceived] = useState<Task[]>([]);
   const [assignedPendingValidation, setAssignedPendingValidation] = useState<Task[]>([]);
+  const [allAssignedTasks, setAllAssignedTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [currentEmployeeId, setCurrentEmployeeId] = useState<string | null>(null);
@@ -72,6 +102,15 @@ const Taches = () => {
     dateFin: null,
     hideCompleted: true,
   });
+
+  // States for bulk actions
+  const [selectedTasks, setSelectedTasks] = useState<string[]>([]);
+  const [employees, setEmployees] = useState<Employee[]>([]);
+  const [showReassignDialog, setShowReassignDialog] = useState(false);
+  const [showChangeDateDialog, setShowChangeDateDialog] = useState(false);
+  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
+  const [newAssignee, setNewAssignee] = useState("");
+  const [newDate, setNewDate] = useState("");
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -95,37 +134,40 @@ const Taches = () => {
   useEffect(() => {
     if (currentEmployeeId) {
       fetchTasks();
+      if (isAdmin || isManager) {
+        fetchEmployees();
+      }
     }
-  }, [currentEmployeeId]);
+  }, [currentEmployeeId, isAdmin, isManager]);
 
   const fetchCurrentEmployee = async () => {
-    console.log("Fetching employee for user_id:", user?.id);
     const { data, error } = await supabase
       .from("employees")
       .select("id, nom, prenom, user_id")
       .eq("user_id", user?.id)
       .maybeSingle();
 
-    console.log("Employee data:", data, "Error:", error);
     if (!error && data) {
       setCurrentEmployeeId(data.id);
-      console.log("Current employee ID set to:", data.id);
     } else {
-      console.error("Failed to fetch employee:", error);
       toast.error("Vous devez être associé à un employé pour créer des tâches");
     }
   };
 
-  const fetchTasks = useCallback(async () => {
-    if (!currentEmployeeId) {
-      console.log("No currentEmployeeId, skipping task fetch");
-      return;
-    }
+  const fetchEmployees = async () => {
+    const { data } = await supabase
+      .from("employees")
+      .select("id, nom, prenom")
+      .order("nom");
+    if (data) setEmployees(data);
+  };
 
-    console.log("Fetching tasks for employee ID:", currentEmployeeId);
+  const fetchTasks = useCallback(async () => {
+    if (!currentEmployeeId) return;
+
     setLoading(true);
     try {
-      const [myTasksResult, sentBoomerangsResult, receivedBoomerangsResult, assignedPendingResult] = await Promise.all([
+      const queries = [
         supabase
           .from("tasks")
           .select(`
@@ -178,8 +220,23 @@ const Taches = () => {
           .eq("created_by", currentEmployeeId)
           .neq("assigned_to", currentEmployeeId)
           .or("statut.eq.en_attente_validation,date_change_pending.eq.true")
-          .order("updated_at", { ascending: false })
-      ]);
+          .order("updated_at", { ascending: false }),
+
+        // All assigned tasks (for admin/manager bulk management)
+        supabase
+          .from("tasks")
+          .select(`
+            *,
+            assigned_employee:employees!tasks_assigned_to_fkey(nom, prenom, photo_url),
+            creator_employee:employees!tasks_created_by_fkey(nom, prenom, photo_url)
+          `)
+          .eq("created_by", currentEmployeeId)
+          .neq("assigned_to", currentEmployeeId)
+          .neq("statut", "annulee")
+          .order("date_echeance", { ascending: true })
+      ];
+
+      const [myTasksResult, sentBoomerangsResult, receivedBoomerangsResult, assignedPendingResult, allAssignedResult] = await Promise.all(queries);
 
       if (myTasksResult.error) throw myTasksResult.error;
       if (sentBoomerangsResult.error) throw sentBoomerangsResult.error;
@@ -190,6 +247,7 @@ const Taches = () => {
       setBoomerangsSent(sentBoomerangsResult.data || []);
       setBoomerangsReceived(receivedBoomerangsResult.data || []);
       setAssignedPendingValidation(assignedPendingResult.data || []);
+      setAllAssignedTasks(allAssignedResult.data || []);
     } catch (error) {
       console.error("Error fetching tasks:", error);
       toast.error("Erreur lors du chargement des tâches");
@@ -211,11 +269,9 @@ const Taches = () => {
 
     if (oldIndex === -1 || newIndex === -1) return;
 
-    // Optimistic update
     const reorderedTasks = arrayMove(taskList, oldIndex, newIndex);
     setTaskList(reorderedTasks);
 
-    // Persist to database
     try {
       const updates = reorderedTasks.map((task, index) => ({
         id: task.id,
@@ -231,11 +287,76 @@ const Taches = () => {
     } catch (error) {
       console.error("Error updating task order:", error);
       toast.error("Erreur lors de la mise à jour de l'ordre");
-      fetchTasks(); // Revert on error
+      fetchTasks();
     }
   };
 
-  // Filter tasks based on active filters
+  // Bulk actions handlers
+  const handleBulkReassign = async () => {
+    if (!newAssignee || selectedTasks.length === 0) return;
+    
+    try {
+      const { error } = await supabase
+        .from("tasks")
+        .update({ assigned_to: newAssignee })
+        .in("id", selectedTasks);
+
+      if (error) throw error;
+
+      toast.success(`${selectedTasks.length} tâche(s) réassignée(s)`);
+      setSelectedTasks([]);
+      setShowReassignDialog(false);
+      setNewAssignee("");
+      fetchTasks();
+    } catch (error) {
+      console.error("Error reassigning tasks:", error);
+      toast.error("Erreur lors de la réassignation");
+    }
+  };
+
+  const handleBulkChangeDate = async () => {
+    if (!newDate || selectedTasks.length === 0) return;
+    
+    try {
+      const { error } = await supabase
+        .from("tasks")
+        .update({ date_echeance: newDate })
+        .in("id", selectedTasks);
+
+      if (error) throw error;
+
+      toast.success(`Date modifiée pour ${selectedTasks.length} tâche(s)`);
+      setSelectedTasks([]);
+      setShowChangeDateDialog(false);
+      setNewDate("");
+      fetchTasks();
+    } catch (error) {
+      console.error("Error changing dates:", error);
+      toast.error("Erreur lors du changement de date");
+    }
+  };
+
+  const handleBulkDelete = async () => {
+    if (selectedTasks.length === 0) return;
+    
+    try {
+      const { error } = await supabase
+        .from("tasks")
+        .update({ statut: "annulee" })
+        .in("id", selectedTasks);
+
+      if (error) throw error;
+
+      toast.success(`${selectedTasks.length} tâche(s) supprimée(s)`);
+      setSelectedTasks([]);
+      setShowDeleteConfirm(false);
+      fetchTasks();
+    } catch (error) {
+      console.error("Error deleting tasks:", error);
+      toast.error("Erreur lors de la suppression");
+    }
+  };
+
   const filterTasks = (taskList: Task[]) => {
     return taskList.filter((task) => {
       if (filters.searchTerm) {
@@ -245,11 +366,8 @@ const Taches = () => {
         if (!matchTitle && !matchDesc) return false;
       }
 
-      // Multi-select statut filter
       if (filters.statut.length > 0 && !filters.statut.includes(task.statut)) return false;
       if (filters.hideCompleted && task.statut === "terminee") return false;
-      
-      // Multi-select priorite filter
       if (filters.priorite.length > 0 && !filters.priorite.includes(task.priorite)) return false;
 
       if (filters.dateDebut || filters.dateFin) {
@@ -274,9 +392,10 @@ const Taches = () => {
   const filteredBoomerangsSent = filterTasks(boomerangsSent);
   const filteredBoomerangsReceived = filterTasks(boomerangsReceived);
   const filteredAssignedPending = filterTasks(assignedPendingValidation);
+  const filteredAllAssigned = filterTasks(allAssignedTasks);
 
-  const totalTasks = tasks.length + boomerangsSent.length + boomerangsReceived.length + assignedPendingValidation.length;
-  const totalFiltered = filteredTasks.length + filteredBoomerangsSent.length + filteredBoomerangsReceived.length + filteredAssignedPending.length;
+  const totalTasks = tasks.length + boomerangsSent.length + boomerangsReceived.length + assignedPendingValidation.length + allAssignedTasks.length;
+  const totalFiltered = filteredTasks.length + filteredBoomerangsSent.length + filteredBoomerangsReceived.length + filteredAssignedPending.length + filteredAllAssigned.length;
 
   const renderResetButton = (hasItems: boolean) => (
     hasItems && (
@@ -292,6 +411,22 @@ const Taches = () => {
       </Button>
     )
   );
+
+  const toggleTaskSelection = (taskId: string) => {
+    setSelectedTasks(prev => 
+      prev.includes(taskId) 
+        ? prev.filter(id => id !== taskId)
+        : [...prev, taskId]
+    );
+  };
+
+  const toggleSelectAll = () => {
+    if (selectedTasks.length === filteredAllAssigned.length) {
+      setSelectedTasks([]);
+    } else {
+      setSelectedTasks(filteredAllAssigned.map(t => t.id));
+    }
+  };
 
   return (
     <div className="min-h-screen bg-background p-2 sm:p-4">
@@ -319,7 +454,7 @@ const Taches = () => {
         />
 
         <Tabs defaultValue="my-tasks" className="w-full">
-          <TabsList className="grid w-full grid-cols-4 h-auto">
+          <TabsList className={`grid w-full h-auto ${(isAdmin || isManager) ? 'grid-cols-5' : 'grid-cols-4'}`}>
             <TabsTrigger value="my-tasks" className="text-xs sm:text-sm px-1 sm:px-2 py-2">
               <span className="hidden sm:inline">{t('tabs.myTasks')}</span>
               <span className="sm:hidden">Tâches</span>
@@ -344,6 +479,13 @@ const Taches = () => {
                 </span>
               )}
             </TabsTrigger>
+            {(isAdmin || isManager) && (
+              <TabsTrigger value="all-assigned" className="text-xs sm:text-sm px-1 sm:px-2 py-2">
+                📤 <span className="hidden sm:inline">Tâches assignées</span>
+                <span className="sm:hidden">Assignées</span>
+                <span className="ml-1">({filteredAllAssigned.length})</span>
+              </TabsTrigger>
+            )}
           </TabsList>
 
           <TabsContent value="my-tasks" className="space-y-4 mt-6">
@@ -464,6 +606,79 @@ const Taches = () => {
               ))
             )}
           </TabsContent>
+
+          {(isAdmin || isManager) && (
+            <TabsContent value="all-assigned" className="space-y-4 mt-6">
+              {/* Bulk actions bar */}
+              {selectedTasks.length > 0 && (
+                <div className="flex flex-wrap items-center gap-2 p-3 bg-muted rounded-lg">
+                  <span className="text-sm font-medium">
+                    {selectedTasks.length} tâche(s) sélectionnée(s)
+                  </span>
+                  <div className="flex gap-2 ml-auto">
+                    <Button size="sm" variant="outline" onClick={() => setShowReassignDialog(true)}>
+                      <UserPlus className="h-4 w-4 mr-1" />
+                      Réassigner
+                    </Button>
+                    <Button size="sm" variant="outline" onClick={() => setShowChangeDateDialog(true)}>
+                      <Calendar className="h-4 w-4 mr-1" />
+                      Changer date
+                    </Button>
+                    <Button size="sm" variant="destructive" onClick={() => setShowDeleteConfirm(true)}>
+                      <Trash2 className="h-4 w-4 mr-1" />
+                      Supprimer
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {loading ? (
+                <p className="text-center text-muted-foreground">Chargement...</p>
+              ) : filteredAllAssigned.length === 0 ? (
+                <div className="text-center space-y-2">
+                  <p className="text-muted-foreground">
+                    {allAssignedTasks.length === 0 
+                      ? "Aucune tâche assignée à d'autres employés" 
+                      : "Aucune tâche ne correspond à vos critères"}
+                  </p>
+                  {renderResetButton(allAssignedTasks.length > 0)}
+                </div>
+              ) : (
+                <>
+                  <div className="flex items-center gap-2 mb-4">
+                    <Checkbox 
+                      id="select-all"
+                      checked={selectedTasks.length === filteredAllAssigned.length && filteredAllAssigned.length > 0}
+                      onCheckedChange={toggleSelectAll}
+                    />
+                    <Label htmlFor="select-all" className="text-sm cursor-pointer">
+                      Tout sélectionner ({filteredAllAssigned.length})
+                    </Label>
+                  </div>
+
+                  <div className="space-y-2">
+                    {filteredAllAssigned.map((task) => (
+                      <div key={task.id} className="flex items-start gap-2">
+                        <Checkbox 
+                          checked={selectedTasks.includes(task.id)}
+                          onCheckedChange={() => toggleTaskSelection(task.id)}
+                          className="mt-4"
+                        />
+                        <div className="flex-1">
+                          <TaskCard
+                            task={task}
+                            currentEmployeeId={currentEmployeeId}
+                            onUpdate={fetchTasks}
+                            highlightTerm={filters.searchTerm}
+                          />
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </>
+              )}
+            </TabsContent>
+          )}
         </Tabs>
       </div>
 
@@ -474,6 +689,85 @@ const Taches = () => {
         onTaskCreated={fetchTasks}
         canAssignOthers={isAdmin || isManager}
       />
+
+      {/* Reassign Dialog */}
+      <Dialog open={showReassignDialog} onOpenChange={setShowReassignDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Réassigner {selectedTasks.length} tâche(s)</DialogTitle>
+            <DialogDescription>
+              Sélectionnez le nouvel employé à qui assigner ces tâches.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <Label>Nouvel assigné</Label>
+            <Combobox
+              value={newAssignee}
+              onValueChange={setNewAssignee}
+              options={employees.map(emp => ({
+                value: emp.id,
+                label: `${emp.prenom} ${emp.nom}`
+              }))}
+              placeholder="Sélectionner un employé"
+              searchPlaceholder="Rechercher..."
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowReassignDialog(false)}>
+              Annuler
+            </Button>
+            <Button onClick={handleBulkReassign} disabled={!newAssignee}>
+              Réassigner
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Change Date Dialog */}
+      <Dialog open={showChangeDateDialog} onOpenChange={setShowChangeDateDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Changer la date de {selectedTasks.length} tâche(s)</DialogTitle>
+            <DialogDescription>
+              Sélectionnez la nouvelle date d'échéance.
+            </DialogDescription>
+          </DialogHeader>
+          <div className="py-4">
+            <Label>Nouvelle date d'échéance</Label>
+            <Input
+              type="date"
+              value={newDate}
+              onChange={(e) => setNewDate(e.target.value)}
+            />
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowChangeDateDialog(false)}>
+              Annuler
+            </Button>
+            <Button onClick={handleBulkChangeDate} disabled={!newDate}>
+              Modifier
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Delete Confirmation */}
+      <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Supprimer {selectedTasks.length} tâche(s) ?</AlertDialogTitle>
+            <AlertDialogDescription>
+              Cette action est irréversible. Les tâches seront marquées comme annulées.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogAction onClick={handleBulkDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
+              Supprimer
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 };

@@ -93,6 +93,23 @@ export function MultiSelectCombobox({
         <PopoverContent className="w-full p-0" align="start">
           <Command>
             <CommandInput placeholder={searchPlaceholder} />
+            <div className="p-2 border-b">
+              <button
+                type="button"
+                className="w-full text-sm px-2 py-1.5 rounded hover:bg-accent text-left"
+                onClick={() => {
+                  if (safeSelectedValues.length === safeOptions.length) {
+                    onSelectedValuesChange([]);
+                  } else {
+                    onSelectedValuesChange(safeOptions.map(opt => opt.value));
+                  }
+                }}
+              >
+                {safeSelectedValues.length === safeOptions.length 
+                  ? "✓ Tout désélectionner" 
+                  : "☐ Tout sélectionner"}
+              </button>
+            </div>
             <CommandList>
               <CommandEmpty>{emptyMessage}</CommandEmpty>
               <CommandGroup className="max-h-64 overflow-auto">
