@@ -5,7 +5,7 @@ import { useUserRole } from "@/hooks/useUserRole";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus, ArrowLeft, Trash2, Calendar, UserPlus } from "lucide-react";
+import { Plus, ArrowLeft, Trash2, Calendar, UserPlus, ArrowUpDown } from "lucide-react";
 import { CreateTaskDialog } from "@/components/taches/CreateTaskDialog";
 import { TaskCard } from "@/components/taches/TaskCard";
 import { SortableTaskCard } from "@/components/taches/SortableTaskCard";
@@ -19,6 +19,13 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Combobox } from "@/components/ui/combobox";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   Dialog,
   DialogContent,
@@ -111,6 +118,10 @@ const Taches = () => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [newAssignee, setNewAssignee] = useState("");
   const [newDate, setNewDate] = useState("");
+
+  // Sorting state for "Tâches assignées" tab
+  const [assignedSortBy, setAssignedSortBy] = useState<"date" | "assignee" | "priority" | "status">("date");
+  const [assignedFilterEmployee, setAssignedFilterEmployee] = useState<string>("all");
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -394,6 +405,38 @@ const Taches = () => {
   const filteredAssignedPending = filterTasks(assignedPendingValidation);
   const filteredAllAssigned = filterTasks(allAssignedTasks);
 
+  // Apply additional filtering and sorting for "Tâches assignées" tab
+  const getFilteredAndSortedAssigned = () => {
+    let result = filteredAllAssigned;
+    
+    // Filter by employee
+    if (assignedFilterEmployee !== "all") {
+      result = result.filter(t => t.assigned_to === assignedFilterEmployee);
+    }
+    
+    // Sort
+    result = [...result].sort((a, b) => {
+      switch (assignedSortBy) {
+        case "assignee":
+          const nameA = `${a.assigned_employee?.prenom || ''} ${a.assigned_employee?.nom || ''}`;
+          const nameB = `${b.assigned_employee?.prenom || ''} ${b.assigned_employee?.nom || ''}`;
+          return nameA.localeCompare(nameB);
+        case "priority":
+          const priorityOrder = { haute: 0, normale: 1, basse: 2 };
+          return (priorityOrder[a.priorite as keyof typeof priorityOrder] || 1) - (priorityOrder[b.priorite as keyof typeof priorityOrder] || 1);
+        case "status":
+          return a.statut.localeCompare(b.statut);
+        case "date":
+        default:
+          return new Date(a.date_echeance).getTime() - new Date(b.date_echeance).getTime();
+      }
+    });
+    
+    return result;
+  };
+
+  const sortedAllAssigned = getFilteredAndSortedAssigned();
+
   const totalTasks = tasks.length + boomerangsSent.length + boomerangsReceived.length + assignedPendingValidation.length + allAssignedTasks.length;
   const totalFiltered = filteredTasks.length + filteredBoomerangsSent.length + filteredBoomerangsReceived.length + filteredAssignedPending.length + filteredAllAssigned.length;
 
@@ -421,10 +464,10 @@ const Taches = () => {
   };
 
   const toggleSelectAll = () => {
-    if (selectedTasks.length === filteredAllAssigned.length) {
+    if (selectedTasks.length === sortedAllAssigned.length) {
       setSelectedTasks([]);
     } else {
-      setSelectedTasks(filteredAllAssigned.map(t => t.id));
+      setSelectedTasks(sortedAllAssigned.map(t => t.id));
     }
   };
 
@@ -455,37 +498,78 @@ const Taches = () => {
 
         <Tabs defaultValue="my-tasks" className="w-full">
           <TabsList className={`grid w-full h-auto ${(isAdmin || isManager) ? 'grid-cols-5' : 'grid-cols-4'}`}>
-            <TabsTrigger value="my-tasks" className="text-xs sm:text-sm px-1 sm:px-2 py-2">
-              <span className="hidden sm:inline">{t('tabs.myTasks')}</span>
-              <span className="sm:hidden">Tâches</span>
-              <span className="ml-1">({filteredTasks.length})</span>
-            </TabsTrigger>
-            <TabsTrigger value="boomerangs-sent" className="text-xs sm:text-sm px-1 sm:px-2 py-2">
-              🪃 <span className="hidden sm:inline">{t('tabs.boomerangsSent')}</span>
-              <span className="sm:hidden">Envoyés</span>
-              <span className="ml-1">({filteredBoomerangsSent.length})</span>
-            </TabsTrigger>
-            <TabsTrigger value="boomerangs-received" className="text-xs sm:text-sm px-1 sm:px-2 py-2">
-              🪃 <span className="hidden sm:inline">{t('tabs.boomerangsReceived')}</span>
-              <span className="sm:hidden">Reçus</span>
-              <span className="ml-1">({filteredBoomerangsReceived.length})</span>
-            </TabsTrigger>
-            <TabsTrigger value="assigned-tracking" className="text-xs sm:text-sm px-1 sm:px-2 py-2">
-              📋 <span className="hidden sm:inline">{t('tabs.assignedTracking')}</span>
-              <span className="sm:hidden">Suivi</span>
-              {filteredAssignedPending.length > 0 && (
-                <span className="ml-1 bg-amber-500 text-white rounded-full px-1.5 text-xs">
-                  {filteredAssignedPending.length}
-                </span>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <TabsTrigger value="my-tasks" className="text-xs sm:text-sm px-1 sm:px-2 py-2">
+                    <span className="hidden sm:inline">{t('tabs.myTasks')}</span>
+                    <span className="sm:hidden">Tâches</span>
+                    <span className="ml-1">({filteredTasks.length})</span>
+                  </TabsTrigger>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="max-w-xs">
+                  <p>Vos tâches personnelles qui vous sont assignées directement.</p>
+                </TooltipContent>
+              </Tooltip>
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <TabsTrigger value="boomerangs-sent" className="text-xs sm:text-sm px-1 sm:px-2 py-2">
+                    🪃 <span className="hidden sm:inline">{t('tabs.boomerangsSent')}</span>
+                    <span className="sm:hidden">Envoyés</span>
+                    <span className="ml-1">({filteredBoomerangsSent.length})</span>
+                  </TabsTrigger>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="max-w-xs">
+                  <p>Tâches que vous avez temporairement déléguées à un collègue et qui vous reviendront automatiquement.</p>
+                </TooltipContent>
+              </Tooltip>
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <TabsTrigger value="boomerangs-received" className="text-xs sm:text-sm px-1 sm:px-2 py-2">
+                    🪃 <span className="hidden sm:inline">{t('tabs.boomerangsReceived')}</span>
+                    <span className="sm:hidden">Reçus</span>
+                    <span className="ml-1">({filteredBoomerangsReceived.length})</span>
+                  </TabsTrigger>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="max-w-xs">
+                  <p>Tâches qu'un collègue vous a temporairement déléguées.</p>
+                </TooltipContent>
+              </Tooltip>
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <TabsTrigger value="assigned-tracking" className="text-xs sm:text-sm px-1 sm:px-2 py-2">
+                    📋 <span className="hidden sm:inline">Validations</span>
+                    <span className="sm:hidden">Valid.</span>
+                    {filteredAssignedPending.length > 0 && (
+                      <span className="ml-1 bg-amber-500 text-white rounded-full px-1.5 text-xs">
+                        {filteredAssignedPending.length}
+                      </span>
+                    )}
+                  </TabsTrigger>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="max-w-xs">
+                  <p><strong>Validations en attente :</strong> Tâches que vous avez créées et assignées à d'autres, nécessitant votre validation (clôture ou changement de date).</p>
+                </TooltipContent>
+              </Tooltip>
+
+              {(isAdmin || isManager) && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <TabsTrigger value="all-assigned" className="text-xs sm:text-sm px-1 sm:px-2 py-2">
+                      📤 <span className="hidden sm:inline">Tâches déléguées</span>
+                      <span className="sm:hidden">Déléguées</span>
+                      <span className="ml-1">({filteredAllAssigned.length})</span>
+                    </TabsTrigger>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom" className="max-w-xs">
+                    <p><strong>Gestion des tâches déléguées :</strong> Toutes les tâches que vous avez créées et assignées à d'autres employés. Permet de gérer en lot (réassigner, supprimer, modifier les dates).</p>
+                  </TooltipContent>
+                </Tooltip>
               )}
-            </TabsTrigger>
-            {(isAdmin || isManager) && (
-              <TabsTrigger value="all-assigned" className="text-xs sm:text-sm px-1 sm:px-2 py-2">
-                📤 <span className="hidden sm:inline">Tâches assignées</span>
-                <span className="sm:hidden">Assignées</span>
-                <span className="ml-1">({filteredAllAssigned.length})</span>
-              </TabsTrigger>
-            )}
+            </TooltipProvider>
           </TabsList>
 
           <TabsContent value="my-tasks" className="space-y-4 mt-6">
@@ -609,6 +693,41 @@ const Taches = () => {
 
           {(isAdmin || isManager) && (
             <TabsContent value="all-assigned" className="space-y-4 mt-6">
+              {/* Filters and sorting */}
+              <div className="flex flex-wrap items-center gap-3 p-3 bg-muted/50 rounded-lg">
+                <div className="flex items-center gap-2">
+                  <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
+                  <Select value={assignedSortBy} onValueChange={(v: any) => setAssignedSortBy(v)}>
+                    <SelectTrigger className="w-[140px] h-8">
+                      <SelectValue placeholder="Trier par" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="date">Date d'échéance</SelectItem>
+                      <SelectItem value="assignee">Assigné</SelectItem>
+                      <SelectItem value="priority">Priorité</SelectItem>
+                      <SelectItem value="status">Statut</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Label className="text-sm text-muted-foreground whitespace-nowrap">Filtrer par employé :</Label>
+                  <Select value={assignedFilterEmployee} onValueChange={setAssignedFilterEmployee}>
+                    <SelectTrigger className="w-[180px] h-8">
+                      <SelectValue placeholder="Tous les employés" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="all">Tous les employés</SelectItem>
+                      {employees.map(emp => (
+                        <SelectItem key={emp.id} value={emp.id}>
+                          {emp.prenom} {emp.nom}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+              </div>
+
               {/* Bulk actions bar */}
               {selectedTasks.length > 0 && (
                 <div className="flex flex-wrap items-center gap-2 p-3 bg-muted rounded-lg">
@@ -634,7 +753,7 @@ const Taches = () => {
 
               {loading ? (
                 <p className="text-center text-muted-foreground">Chargement...</p>
-              ) : filteredAllAssigned.length === 0 ? (
+              ) : sortedAllAssigned.length === 0 ? (
                 <div className="text-center space-y-2">
                   <p className="text-muted-foreground">
                     {allAssignedTasks.length === 0 
@@ -648,16 +767,16 @@ const Taches = () => {
                   <div className="flex items-center gap-2 mb-4">
                     <Checkbox 
                       id="select-all"
-                      checked={selectedTasks.length === filteredAllAssigned.length && filteredAllAssigned.length > 0}
+                      checked={selectedTasks.length === sortedAllAssigned.length && sortedAllAssigned.length > 0}
                       onCheckedChange={toggleSelectAll}
                     />
                     <Label htmlFor="select-all" className="text-sm cursor-pointer">
-                      Tout sélectionner ({filteredAllAssigned.length})
+                      Tout sélectionner ({sortedAllAssigned.length})
                     </Label>
                   </div>
 
                   <div className="space-y-2">
-                    {filteredAllAssigned.map((task) => (
+                    {sortedAllAssigned.map((task) => (
                       <div key={task.id} className="flex items-start gap-2">
                         <Checkbox 
                           checked={selectedTasks.includes(task.id)}
