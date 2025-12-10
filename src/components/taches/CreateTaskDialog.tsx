@@ -100,12 +100,12 @@ export const CreateTaskDialog = ({
       return;
     }
 
-    // Pour maintenance avec sélection multiple
-    const assignees = isMaintenance && multipleAssignees.length > 0 
+    // Sélection multiple pour toutes les tâches
+    const assignees = multipleAssignees.length > 0 
       ? multipleAssignees 
-      : [formData.assigned_to];
+      : (formData.assigned_to ? [formData.assigned_to] : []);
 
-    if (assignees.length === 0 || (assignees.length === 1 && !assignees[0])) {
+    if (assignees.length === 0) {
       toast.error("Veuillez sélectionner au moins un employé");
       return;
     }
@@ -260,35 +260,27 @@ export const CreateTaskDialog = ({
             <div>
               <Label htmlFor="assigned_to">
                 Assigner à *
-                {isMaintenance && (
-                  <span className="text-xs text-muted-foreground ml-2">
-                    (sélection multiple possible)
-                  </span>
-                )}
+                <span className="text-xs text-muted-foreground ml-2">
+                  (sélection multiple possible)
+                </span>
               </Label>
-              {isMaintenance ? (
-                <MultiSelectCombobox
-                  selectedValues={multipleAssignees}
-                  onSelectedValuesChange={setMultipleAssignees}
-                  options={employees.map((emp) => ({
-                    value: emp.id,
-                    label: `${emp.prenom} ${emp.nom}`,
-                  }))}
-                  placeholder="Sélectionner les employés"
-                  searchPlaceholder="Rechercher un employé..."
-                />
-              ) : (
-                <Combobox
-                  value={formData.assigned_to}
-                  onValueChange={(v) => setFormData({ ...formData, assigned_to: v })}
-                  options={employees.map((emp) => ({
-                    value: emp.id,
-                    label: `${emp.prenom} ${emp.nom}`,
-                  }))}
-                  placeholder="Sélectionner un employé"
-                  searchPlaceholder="Rechercher un employé..."
-                />
-              )}
+              <MultiSelectCombobox
+                selectedValues={multipleAssignees.length > 0 ? multipleAssignees : (formData.assigned_to ? [formData.assigned_to] : [])}
+                onSelectedValuesChange={(values) => {
+                  setMultipleAssignees(values);
+                  if (values.length === 1) {
+                    setFormData(prev => ({ ...prev, assigned_to: values[0] }));
+                  } else if (values.length === 0) {
+                    setFormData(prev => ({ ...prev, assigned_to: "" }));
+                  }
+                }}
+                options={employees.map((emp) => ({
+                  value: emp.id,
+                  label: `${emp.prenom} ${emp.nom}`,
+                }))}
+                placeholder="Sélectionner les employés"
+                searchPlaceholder="Rechercher un employé..."
+              />
             </div>
           )}
 
