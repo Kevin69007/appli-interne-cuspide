@@ -11,6 +11,7 @@ interface Employee {
   email?: string;
   equipe?: string;
   groupe?: string;
+  is_remote?: boolean;
 }
 
 interface EmployeeContextType {
@@ -32,7 +33,7 @@ export const EmployeeProvider = ({ children }: { children: ReactNode }) => {
       if (!user?.id) return null;
       const { data } = await supabase
         .from('employees')
-        .select('id, nom, prenom, photo_url, email, equipe, groupe')
+        .select('id, nom, prenom, photo_url, email, equipe, groupe, is_remote')
         .eq('user_id', user.id)
         .maybeSingle();
       return data;
