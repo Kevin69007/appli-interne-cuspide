@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole } from "@/hooks/useUserRole";
@@ -28,6 +29,7 @@ export const Trombinoscope = () => {
   const { user } = useAuth();
   const { isAdmin, isManager } = useUserRole();
   const { toast } = useToast();
+  const { t } = useTranslation("rh");
   const [employees, setEmployees] = useState<Employee[]>([]);
   const [groupedEmployees, setGroupedEmployees] = useState<Record<string, Employee[]>>({});
   const [loading, setLoading] = useState(true);
@@ -52,7 +54,7 @@ export const Trombinoscope = () => {
       
       // Grouper par équipe
       const grouped = (data || []).reduce((acc, emp) => {
-        const team = emp.equipe || "Sans équipe";
+        const team = emp.equipe || t("noEmployees");
         if (!acc[team]) acc[team] = [];
         acc[team].push(emp);
         return acc;
@@ -60,10 +62,10 @@ export const Trombinoscope = () => {
       
       setGroupedEmployees(grouped);
     } catch (error) {
-      console.error("Erreur:", error);
+      console.error("Error:", error);
       toast({
-        title: "Erreur",
-        description: "Impossible de charger les employés",
+        title: t("error"),
+        description: t("errorLoadingEmployees"),
         variant: "destructive",
       });
     } finally {
@@ -94,16 +96,16 @@ export const Trombinoscope = () => {
       if (updateError) throw updateError;
 
       toast({
-        title: "Photo mise à jour",
-        description: "La photo a été mise à jour avec succès",
+        title: t("trombinoscope.photoUpdated"),
+        description: t("trombinoscope.photoUpdatedSuccess"),
       });
       
       fetchEmployees();
     } catch (error) {
-      console.error("Erreur:", error);
+      console.error("Error:", error);
       toast({
-        title: "Erreur",
-        description: "Impossible de mettre à jour la photo",
+        title: t("error"),
+        description: t("trombinoscope.errorUpdatePhoto"),
         variant: "destructive",
       });
     }
@@ -129,16 +131,16 @@ export const Trombinoscope = () => {
       if (updateError) throw updateError;
 
       toast({
-        title: "Photo supprimée",
-        description: "La photo a été supprimée avec succès",
+        title: t("trombinoscope.photoDeleted"),
+        description: t("trombinoscope.photoDeletedSuccess"),
       });
       
       fetchEmployees();
     } catch (error) {
-      console.error("Erreur:", error);
+      console.error("Error:", error);
       toast({
-        title: "Erreur",
-        description: "Impossible de supprimer la photo",
+        title: t("error"),
+        description: t("trombinoscope.errorDeletePhoto"),
         variant: "destructive",
       });
     }
@@ -154,7 +156,7 @@ export const Trombinoscope = () => {
   };
 
   if (loading) {
-    return <div className="text-center py-8">Chargement...</div>;
+    return <div className="text-center py-8">{t("loading")}</div>;
   }
 
   return (
@@ -167,7 +169,7 @@ export const Trombinoscope = () => {
                 {team}
               </Badge>
               <span className="text-xs sm:text-sm text-muted-foreground">
-                ({teamEmployees.length} {teamEmployees.length > 1 ? "membres" : "membre"})
+                ({teamEmployees.length} {teamEmployees.length > 1 ? t("trombinoscope.members") : t("trombinoscope.member")})
               </span>
             </h2>
             
@@ -207,6 +209,7 @@ interface EmployeeCardProps {
 }
 
 function EmployeeCard({ employee, canManagePhoto, onPhotoUpload, onPhotoDelete, onClick }: EmployeeCardProps) {
+  const { t } = useTranslation("rh");
   const { summary, loading } = useEmployeeBadgeSummary(employee.id);
   
   if (loading) {
@@ -343,7 +346,7 @@ function EmployeeCard({ employee, canManagePhoto, onPhotoUpload, onPhotoDelete, 
             <div className="absolute bottom-1 sm:bottom-2 right-1 sm:right-2 opacity-0 group-hover:opacity-100 transition-opacity hidden sm:block">
               <Badge variant="outline" className="bg-background/90 text-xs">
                 <FileText className="w-3 h-3 mr-1" />
-                Fiche
+                {t("trombinoscope.viewCard")}
               </Badge>
             </div>
           </div>
@@ -353,7 +356,7 @@ function EmployeeCard({ employee, canManagePhoto, onPhotoUpload, onPhotoDelete, 
               {employee.prenom} {employee.nom}
             </p>
             <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1 line-clamp-1">
-              {employee.poste || "Non défini"}
+              {employee.poste || t("fichePoste.notSpecified")}
             </p>
             {totalUnlocked > 0 && (
               <p className="text-[10px] sm:text-xs text-primary mt-0.5 sm:mt-1 font-medium">

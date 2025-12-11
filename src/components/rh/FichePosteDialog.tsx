@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -26,6 +27,7 @@ interface FichePosteDialogProps {
 }
 
 export const FichePosteDialog = ({ employee, open, onOpenChange, onEmployeeUpdated }: FichePosteDialogProps) => {
+  const { t } = useTranslation("rh");
   const { isAdmin, isManager } = useUserRole();
   const [editDialogOpen, setEditDialogOpen] = useState(false);
 
@@ -38,7 +40,7 @@ export const FichePosteDialog = ({ employee, open, onOpenChange, onEmployeeUpdat
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <div className="flex items-center justify-between">
-            <DialogTitle>Fiche de poste</DialogTitle>
+            <DialogTitle>{t("fichePoste.title")}</DialogTitle>
             {canEdit && (
               <Button
                 variant="outline"
@@ -46,7 +48,7 @@ export const FichePosteDialog = ({ employee, open, onOpenChange, onEmployeeUpdat
                 onClick={() => setEditDialogOpen(true)}
               >
                 <Edit className="w-4 h-4 mr-2" />
-                Modifier
+                {t("fichePoste.edit")}
               </Button>
             )}
           </div>
@@ -95,23 +97,23 @@ export const FichePosteDialog = ({ employee, open, onOpenChange, onEmployeeUpdat
           {/* Informations détaillées */}
           <div className="grid grid-cols-2 gap-4 pt-4 border-t">
             <div>
-              <p className="text-sm text-muted-foreground mb-1">Email</p>
-              <p className="font-medium">{employee.email || "Non renseigné"}</p>
+              <p className="text-sm text-muted-foreground mb-1">{t("fichePoste.email")}</p>
+              <p className="font-medium">{employee.email || t("fichePoste.notSpecified")}</p>
             </div>
 
             <div>
-              <p className="text-sm text-muted-foreground mb-1">Groupe</p>
-              <p className="font-medium">{employee.groupe || "Non renseigné"}</p>
+              <p className="text-sm text-muted-foreground mb-1">{t("fichePoste.group")}</p>
+              <p className="font-medium">{employee.groupe || t("fichePoste.notSpecified")}</p>
             </div>
 
             <div>
-              <p className="text-sm text-muted-foreground mb-1">Équipe</p>
-              <p className="font-medium">{employee.equipe || "Non renseigné"}</p>
+              <p className="text-sm text-muted-foreground mb-1">{t("fichePoste.team")}</p>
+              <p className="font-medium">{employee.equipe || t("fichePoste.notSpecified")}</p>
             </div>
 
             <div>
-              <p className="text-sm text-muted-foreground mb-1">Poste</p>
-              <p className="font-medium">{employee.poste || "Non renseigné"}</p>
+              <p className="text-sm text-muted-foreground mb-1">{t("fichePoste.position")}</p>
+              <p className="font-medium">{employee.poste || t("fichePoste.notSpecified")}</p>
             </div>
           </div>
 

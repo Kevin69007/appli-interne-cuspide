@@ -8,6 +8,150 @@
   "noEmployees": "No employees found",
   "isRemote": "Remote Employee",
   "isRemoteDescription": "An automatic task will be created daily for time declaration",
+  "loading": "Loading...",
+  "error": "Error",
+  "errorLoadingData": "Error loading data",
+  "errorLoadingEmployees": "Unable to load employees",
+
+  "tabs": {
+    "leaveRequests": "Requests",
+    "absences": "Absences",
+    "mood": "Mood",
+    "leaveConfig": "Leave config",
+    "myRequests": "My requests",
+    "myAbsences": "My absences",
+    "myMood": "My mood",
+    "trombinoscope": "Directory",
+    "team": "Team",
+    "payslips": "Payslips",
+    "pay": "Pay"
+  },
+
+  "leaveRequests": {
+    "noPending": "No pending requests",
+    "period": "Period",
+    "days": "days",
+    "details": "Details",
+    "approve": "Approve",
+    "reject": "Reject",
+    "approved": "Request approved",
+    "rejected": "Request rejected",
+    "validationError": "Error during validation",
+    "pending": "Pending",
+    "approved_status": "Approved",
+    "rejected_status": "Rejected",
+    "noLeaveRequest": "No leave requests. Create your first request!",
+    "validatedBy": "Validated by",
+    "on": "on",
+    "revoke": "Revoke",
+    "noAbsences": "No absences recorded",
+    "validated": "Validated",
+    "refused": "Refused"
+  },
+
+  "absenceTypes": {
+    "demande_conges": "Leave",
+    "arret_maladie": "Sick leave",
+    "injustifie": "Unjustified"
+  },
+
+  "mood": {
+    "lowMoodAlerts": "Low Mood Alerts",
+    "moodHistory": "Mood History",
+    "myMoodHistory": "My Mood History",
+    "noMoodRecords": "No mood records",
+    "need": "Need"
+  },
+
+  "trombinoscope": {
+    "members": "members",
+    "member": "member",
+    "photoUpdated": "Photo updated",
+    "photoUpdatedSuccess": "Photo updated successfully",
+    "photoDeleted": "Photo deleted",
+    "photoDeletedSuccess": "Photo deleted successfully",
+    "errorUpdatePhoto": "Unable to update photo",
+    "errorDeletePhoto": "Unable to delete photo",
+    "viewCard": "View card"
+  },
+
+  "fichePoste": {
+    "title": "Job Description",
+    "edit": "Edit",
+    "email": "Email",
+    "group": "Group",
+    "team": "Team",
+    "position": "Position",
+    "notSpecified": "Not specified"
+  },
+
+  "payslips": {
+    "title": "Payslip Access",
+    "description": "View your payslips on the Silae platform.",
+    "accessSilae": "Access Silae"
+  },
+
+  "leaveBalance": {
+    "title": "Leave Balance",
+    "myBalance": "My leave balance",
+    "currentBalance": "Current balance",
+    "provisionalBalance": "Provisional balance",
+    "period": "Period",
+    "totalAllocated": "Total allocated",
+    "allocated": "Allocated",
+    "remaining": "Remaining",
+    "provisional": "Provisional",
+    "taken": "Taken",
+    "pendingRequests": "pending request(s)",
+    "defaultConfig": "Default configuration (ask your manager)",
+    "workingDays": "working days",
+    "businessDays": "business days"
+  },
+
+  "leaveConfig": {
+    "periodStartMonth": "Reference period (start month)",
+    "selectMonth": "Select month",
+    "leaveDaysAllocated": "Leave days allocated",
+    "weeklyHours": "Contracted weekly hours",
+    "dailyBase": "Daily base",
+    "calculationType": "Calculation type",
+    "workingDaysDesc": "Working days (Mon-Fri)",
+    "businessDaysDesc": "Business days (Mon-Sat)",
+    "enabledBusinessDays": "Enabled = business days | Disabled = working days",
+    "referenceYear": "Reference year",
+    "balanceSummary": "Balance Summary",
+    "pending": "Pending",
+    "cancel": "Cancel",
+    "save": "Save",
+    "configSaved": "Leave configuration saved",
+    "errorSaving": "Error saving",
+    "configure": "Configure",
+    "configured": "Configured",
+    "notConfigured": "Not configured",
+    "employeesFound": "employee(s) found"
+  },
+
+  "createLeaveRequest": {
+    "title": "Leave Request",
+    "newRequest": "New request",
+    "request": "Request",
+    "calculationInfo": "Calculation in",
+    "dates": "Dates",
+    "selectDates": "Select dates",
+    "day": "day(s)",
+    "from": "from",
+    "to": "to",
+    "inclusive": "inclusive",
+    "motif": "Reason (optional)",
+    "motifPlaceholder": "E.g.: Summer vacation, family event...",
+    "cancel": "Cancel",
+    "submit": "Submit request",
+    "sending": "Sending...",
+    "selectDateError": "Please select at least one date",
+    "requestSent": "Leave request submitted",
+    "errorCreating": "Error creating the request"
+  },
+
   "badges": {
     "myBadges": "My Badges",
     "unlocked": "Unlocked",
@@ -19,6 +163,17 @@
     "maxLevel": "Maximum level reached!",
     "howToEarn": "How to earn badges?",
     "howToEarnDesc": "Complete actions in the app: finish tasks, submit ideas, participate in projects, vote for your daily mood, and much more! The more active you are, the more badges you unlock and the higher your level.",
+    "currentLevel": "Current level",
+    "progressToNext": "Progress to next level",
+    "monthlySystem": "Monthly badge system",
+    "monthlySystemDesc": "Each month, achieve objectives to unlock badges. The more you earn a badge in the year, the more it evolves: 🥉 Bronze → 🥈 Silver → 🥇 Gold → 💎 Platinum.",
+    "thisMonth": "This month",
+    "progressThisMonth": "Progress this month",
+    "towardsSilver": "Towards 🥈:",
+    "towardsGold": "Towards 🥇:",
+    "towardsPlatinum": "Towards 💎:",
+    "remaining": "remaining",
+    "platinumReached": "💎 Platinum reached!",
     "categories": {
       "all": "All",
       "tasks": "Tasks",
@@ -29,5 +184,20 @@
       "objectives": "Objectives",
       "training": "Training"
     }
+  },
+
+  "months": {
+    "january": "January",
+    "february": "February",
+    "march": "March",
+    "april": "April",
+    "may": "May",
+    "june": "June",
+    "july": "July",
+    "august": "August",
+    "september": "September",
+    "october": "October",
+    "november": "November",
+    "december": "December"
   }
 }

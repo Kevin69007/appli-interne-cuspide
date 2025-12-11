@@ -8,6 +8,150 @@
   "noEmployees": "Aucun employé trouvé",
   "isRemote": "Employé en distanciel",
   "isRemoteDescription": "Une tâche automatique sera créée chaque jour pour la déclaration d'heures",
+  "loading": "Chargement...",
+  "error": "Erreur",
+  "errorLoadingData": "Erreur lors du chargement des données",
+  "errorLoadingEmployees": "Impossible de charger les employés",
+
+  "tabs": {
+    "leaveRequests": "Demandes",
+    "absences": "Absences",
+    "mood": "Mood",
+    "leaveConfig": "Config. congés",
+    "myRequests": "Mes demandes",
+    "myAbsences": "Mes absences",
+    "myMood": "Mon humeur",
+    "trombinoscope": "Trombinoscope",
+    "team": "Équipe",
+    "payslips": "Fiches de paie",
+    "pay": "Paie"
+  },
+
+  "leaveRequests": {
+    "noPending": "Aucune demande en attente",
+    "period": "Période",
+    "days": "jours",
+    "details": "Détails",
+    "approve": "Approuver",
+    "reject": "Refuser",
+    "approved": "Demande approuvée",
+    "rejected": "Demande refusée",
+    "validationError": "Erreur lors de la validation",
+    "pending": "En attente",
+    "approved_status": "Approuvée",
+    "rejected_status": "Refusée",
+    "noLeaveRequest": "Aucune demande de congés. Créez votre première demande !",
+    "validatedBy": "Validé par",
+    "on": "le",
+    "revoke": "Révoquer",
+    "noAbsences": "Aucune absence enregistrée",
+    "validated": "Validée",
+    "refused": "Refusée"
+  },
+
+  "absenceTypes": {
+    "demande_conges": "Congés",
+    "arret_maladie": "Arrêt maladie",
+    "injustifie": "Injustifié"
+  },
+
+  "mood": {
+    "lowMoodAlerts": "Alertes Mood Bas",
+    "moodHistory": "Historique Mood",
+    "myMoodHistory": "Mon historique Mood",
+    "noMoodRecords": "Aucun enregistrement mood",
+    "need": "Besoin"
+  },
+
+  "trombinoscope": {
+    "members": "membres",
+    "member": "membre",
+    "photoUpdated": "Photo mise à jour",
+    "photoUpdatedSuccess": "La photo a été mise à jour avec succès",
+    "photoDeleted": "Photo supprimée",
+    "photoDeletedSuccess": "La photo a été supprimée avec succès",
+    "errorUpdatePhoto": "Impossible de mettre à jour la photo",
+    "errorDeletePhoto": "Impossible de supprimer la photo",
+    "viewCard": "Fiche"
+  },
+
+  "fichePoste": {
+    "title": "Fiche de poste",
+    "edit": "Modifier",
+    "email": "Email",
+    "group": "Groupe",
+    "team": "Équipe",
+    "position": "Poste",
+    "notSpecified": "Non renseigné"
+  },
+
+  "payslips": {
+    "title": "Accès aux fiches de paie",
+    "description": "Consultez vos fiches de paie sur la plateforme Silae.",
+    "accessSilae": "Accéder à Silae"
+  },
+
+  "leaveBalance": {
+    "title": "Solde de congés",
+    "myBalance": "Mon solde de congés",
+    "currentBalance": "Solde actuel",
+    "provisionalBalance": "Solde prévisionnel",
+    "period": "Période",
+    "totalAllocated": "Total alloué",
+    "allocated": "Alloués",
+    "remaining": "Restants",
+    "provisional": "Prévisionnel",
+    "taken": "Pris",
+    "pendingRequests": "demande(s) en attente",
+    "defaultConfig": "Configuration par défaut (demandez à votre manager)",
+    "workingDays": "ouvrés",
+    "businessDays": "ouvrables"
+  },
+
+  "leaveConfig": {
+    "periodStartMonth": "Période de référence (mois de début)",
+    "selectMonth": "Sélectionnez le mois",
+    "leaveDaysAllocated": "Jours de congés alloués",
+    "weeklyHours": "Heures hebdomadaires contractuelles",
+    "dailyBase": "Base journalière",
+    "calculationType": "Type de calcul",
+    "workingDaysDesc": "Jours ouvrés (lun-ven)",
+    "businessDaysDesc": "Jours ouvrables (lun-sam)",
+    "enabledBusinessDays": "Activé = jours ouvrables | Désactivé = jours ouvrés",
+    "referenceYear": "Année de référence",
+    "balanceSummary": "Résumé des soldes",
+    "pending": "En attente",
+    "cancel": "Annuler",
+    "save": "Enregistrer",
+    "configSaved": "Configuration des congés enregistrée",
+    "errorSaving": "Erreur lors de l'enregistrement",
+    "configure": "Configurer",
+    "configured": "Configuré",
+    "notConfigured": "Non configuré",
+    "employeesFound": "employé(s) trouvé(s)"
+  },
+
+  "createLeaveRequest": {
+    "title": "Demande de congés",
+    "newRequest": "Nouvelle demande",
+    "request": "Demande",
+    "calculationInfo": "Calcul en jours",
+    "dates": "Dates",
+    "selectDates": "Sélectionner les dates",
+    "day": "jour(s)",
+    "from": "du",
+    "to": "au",
+    "inclusive": "inclus",
+    "motif": "Motif (optionnel)",
+    "motifPlaceholder": "Ex: Vacances d'été, événement familial...",
+    "cancel": "Annuler",
+    "submit": "Envoyer la demande",
+    "sending": "Envoi...",
+    "selectDateError": "Veuillez sélectionner au moins une date",
+    "requestSent": "Demande de congés envoyée",
+    "errorCreating": "Erreur lors de la création de la demande"
+  },
+
   "badges": {
     "myBadges": "Mes Badges",
     "unlocked": "Débloqué",
@@ -19,6 +163,17 @@
     "maxLevel": "Niveau maximum atteint !",
     "howToEarn": "Comment gagner des badges ?",
     "howToEarnDesc": "Accomplissez des actions dans l'application : terminez des tâches, soumettez des idées, participez aux projets, votez pour votre humeur quotidienne, et bien plus encore ! Plus vous êtes actif, plus vous débloquez de badges et montez de niveau.",
+    "currentLevel": "Niveau actuel",
+    "progressToNext": "Progression vers le niveau suivant",
+    "monthlySystem": "Système de badges mensuels",
+    "monthlySystemDesc": "Chaque mois, accomplissez les objectifs pour débloquer des badges. Plus vous obtenez un badge dans l'année, plus il évolue : 🥉 Bronze → 🥈 Argent → 🥇 Or → 💎 Platine.",
+    "thisMonth": "Ce mois",
+    "progressThisMonth": "Progression ce mois",
+    "towardsSilver": "Vers 🥈:",
+    "towardsGold": "Vers 🥇:",
+    "towardsPlatinum": "Vers 💎:",
+    "remaining": "restant(s)",
+    "platinumReached": "💎 Platine atteint!",
     "categories": {
       "all": "Tous",
       "tasks": "Tâches",
@@ -29,5 +184,20 @@
       "objectives": "Objectifs",
       "training": "Formation"
     }
+  },
+
+  "months": {
+    "january": "Janvier",
+    "february": "Février",
+    "march": "Mars",
+    "april": "Avril",
+    "may": "Mai",
+    "june": "Juin",
+    "july": "Juillet",
+    "august": "Août",
+    "september": "Septembre",
+    "october": "Octobre",
+    "november": "Novembre",
+    "december": "Décembre"
   }
 }
