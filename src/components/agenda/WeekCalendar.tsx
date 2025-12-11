@@ -78,24 +78,24 @@ const SortableTaskCard = ({ task }: SortableTaskCardProps) => {
       {...listeners}
       {...attributes}
       className={`
-        p-3 rounded-lg border bg-card shadow-sm cursor-grab active:cursor-grabbing
+        p-2 sm:p-3 rounded-lg border bg-card shadow-sm cursor-grab active:cursor-grabbing
         ${isDragging ? "opacity-50 shadow-lg ring-2 ring-primary z-50" : "hover:shadow-md hover:border-primary/50"}
         transition-all
       `}
     >
-      <div className="flex items-start gap-2">
-        <GripVertical className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+      <div className="flex items-start gap-1.5 sm:gap-2">
+        <GripVertical className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground shrink-0 mt-0.5" />
         <div className="flex-1 min-w-0">
-          <div className="flex items-center gap-2 mb-1">
-            {task.is_priority && <Flag className="h-3 w-3 text-destructive shrink-0" />}
-            <span className="font-medium text-sm truncate">{task.titre}</span>
+          <div className="flex items-center gap-1 sm:gap-2 mb-0.5 sm:mb-1">
+            {task.is_priority && <Flag className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-destructive shrink-0" />}
+            <span className="font-medium text-xs sm:text-sm truncate">{task.titre}</span>
           </div>
-          <div className="flex items-center gap-2 flex-wrap">
-            <Badge variant={getPriorityColor(task.priorite)} className="text-[10px] px-1.5 py-0">
+          <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
+            <Badge variant={getPriorityColor(task.priorite)} className="text-[8px] sm:text-[10px] px-1 sm:px-1.5 py-0">
               {task.priorite}
             </Badge>
-            <span className={`text-[10px] px-1.5 py-0.5 rounded ${getStatusColor(task.statut)}`}>
-              {task.statut === "en_attente_validation" ? "En validation" : task.statut.replace("_", " ")}
+            <span className={`text-[8px] sm:text-[10px] px-1 sm:px-1.5 py-0.5 rounded ${getStatusColor(task.statut)}`}>
+              {task.statut === "en_attente_validation" ? "Valid." : task.statut.replace("_", " ")}
             </span>
           </div>
         </div>
@@ -117,23 +117,24 @@ const DroppableWeekDay = ({ date, isToday, tasks }: DroppableWeekDayProps) => {
     <div
       data-droppable-date={dateStr}
       className={`
-        flex flex-col min-h-[300px] border rounded-lg overflow-hidden
+        flex flex-col min-h-[200px] sm:min-h-[300px] border rounded-lg overflow-hidden
+        min-w-[140px] sm:min-w-0 flex-shrink-0 sm:flex-shrink
         ${isToday ? "border-primary bg-primary/5" : "border-border"}
         transition-colors
       `}
     >
-      <div className={`p-3 border-b ${isToday ? "bg-primary/10" : "bg-muted/30"}`}>
-        <div className="text-sm font-medium capitalize">
-          {format(date, "EEEE", { locale: fr })}
+      <div className={`p-2 sm:p-3 border-b ${isToday ? "bg-primary/10" : "bg-muted/30"}`}>
+        <div className="text-xs sm:text-sm font-medium capitalize">
+          {format(date, "EEE", { locale: fr })}
         </div>
-        <div className={`text-lg font-bold ${isToday ? "text-primary" : ""}`}>
-          {format(date, "d MMMM", { locale: fr })}
+        <div className={`text-sm sm:text-lg font-bold ${isToday ? "text-primary" : ""}`}>
+          {format(date, "d MMM", { locale: fr })}
         </div>
       </div>
-      <div className="flex-1 p-2 flex flex-col gap-2 overflow-y-auto">
+      <div className="flex-1 p-1.5 sm:p-2 flex flex-col gap-1.5 sm:gap-2 overflow-y-auto">
         <SortableContext items={tasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
           {tasks.length === 0 ? (
-            <div className="flex-1 flex items-center justify-center text-muted-foreground text-sm min-h-[100px]">
+            <div className="flex-1 flex items-center justify-center text-muted-foreground text-xs sm:text-sm min-h-[60px] sm:min-h-[100px]">
               Aucune tâche
             </div>
           ) : (
@@ -385,17 +386,18 @@ export const WeekCalendar = ({ onDateClick }: WeekCalendarProps) => {
   const weekLabel = `${format(currentWeekStart, "d MMM", { locale: fr })} - ${format(addDays(currentWeekStart, 6), "d MMM yyyy", { locale: fr })}`;
 
   return (
-    <Card className="p-4">
-      <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold">{weekLabel}</h3>
-        <div className="flex gap-2">
-          <Button variant="outline" size="icon" onClick={() => setCurrentWeekStart(prev => subWeeks(prev, 1))}>
+    <Card className="p-2 sm:p-4">
+      {/* Header - Responsive */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-0 mb-3 sm:mb-4">
+        <h3 className="text-sm sm:text-lg font-semibold">{weekLabel}</h3>
+        <div className="flex gap-1 sm:gap-2">
+          <Button variant="outline" size="icon" className="h-8 w-8 sm:h-10 sm:w-10" onClick={() => setCurrentWeekStart(prev => subWeeks(prev, 1))}>
             <ChevronLeft className="h-4 w-4" />
           </Button>
-          <Button variant="outline" size="sm" onClick={() => setCurrentWeekStart(startOfWeek(new Date(), { weekStartsOn: 1 }))}>
+          <Button variant="outline" size="sm" className="text-xs sm:text-sm h-8 sm:h-10 px-2 sm:px-4" onClick={() => setCurrentWeekStart(startOfWeek(new Date(), { weekStartsOn: 1 }))}>
             Aujourd'hui
           </Button>
-          <Button variant="outline" size="icon" onClick={() => setCurrentWeekStart(prev => addWeeks(prev, 1))}>
+          <Button variant="outline" size="icon" className="h-8 w-8 sm:h-10 sm:w-10" onClick={() => setCurrentWeekStart(prev => addWeeks(prev, 1))}>
             <ChevronRight className="h-4 w-4" />
           </Button>
         </div>
@@ -406,21 +408,24 @@ export const WeekCalendar = ({ onDateClick }: WeekCalendarProps) => {
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >
-        <div className="grid grid-cols-7 gap-2">
-          {weekDays.map(date => (
-            <DroppableWeekDay
-              key={format(date, "yyyy-MM-dd")}
-              date={date}
-              isToday={isSameDay(date, today)}
-              tasks={getTasksForDate(date)}
-            />
-          ))}
+        {/* Week Grid - Horizontal scroll on mobile */}
+        <div className="overflow-x-auto -mx-2 px-2 pb-2 sm:mx-0 sm:px-0 sm:pb-0 sm:overflow-visible">
+          <div className="grid grid-cols-7 gap-1.5 sm:gap-2 min-w-[700px] sm:min-w-0">
+            {weekDays.map(date => (
+              <DroppableWeekDay
+                key={format(date, "yyyy-MM-dd")}
+                date={date}
+                isToday={isSameDay(date, today)}
+                tasks={getTasksForDate(date)}
+              />
+            ))}
+          </div>
         </div>
 
         <DragOverlay>
           {activeTask && (
-            <div className="p-3 rounded-lg border bg-card shadow-xl max-w-[200px]">
-              <div className="font-medium text-sm">{activeTask.titre}</div>
+            <div className="p-2 sm:p-3 rounded-lg border bg-card shadow-xl max-w-[150px] sm:max-w-[200px]">
+              <div className="font-medium text-xs sm:text-sm">{activeTask.titre}</div>
             </div>
           )}
         </DragOverlay>
