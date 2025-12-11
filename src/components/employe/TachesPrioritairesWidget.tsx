@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { supabase } from "@/integrations/supabase/client";
-import { useAuth } from "@/contexts/AuthContext";
+import { useEmployee } from "@/contexts/EmployeeContext";
 import { useNavigate } from "react-router-dom";
 import { AlertTriangle, MessageSquare, Send } from "lucide-react";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -25,7 +25,7 @@ interface PriorityTask {
 }
 
 export const TachesPrioritairesWidget = ({ onDataLoaded }: { onDataLoaded?: (hasData: boolean) => void } = {}) => {
-  const { user } = useAuth();
+  const { employee, loading: employeeLoading } = useEmployee();
   const navigate = useNavigate();
   const { t } = useTranslation('indicators');
   const [tasks, setTasks] = useState<PriorityTask[]>([]);
@@ -34,21 +34,18 @@ export const TachesPrioritairesWidget = ({ onDataLoaded }: { onDataLoaded?: (has
   const [comment, setComment] = useState("");
 
   useEffect(() => {
-    if (user) {
+    if (!employeeLoading && employee) {
       fetchPriorityTasks();
+    } else if (!employeeLoading && !employee) {
+      setLoading(false);
+      onDataLoaded?.(false);
     }
-  }, [user]);
+  }, [employee, employeeLoading]);
 
   const fetchPriorityTasks = async () => {
+    if (!employee) return;
+
     try {
-      const { data: employeeData } = await supabase
-        .from("employees")
-        .select("id")
-        .eq("user_id", user?.id)
-        .single();
-
-      if (!employeeData) return;
-
       const { data, error } = await supabase
         .from("tasks")
         .select(`
@@ -60,7 +57,7 @@ export const TachesPrioritairesWidget = ({ onDataLoaded }: { onDataLoaded?: (has
             project:projects!project_tasks_project_id_fkey(id, titre)
           )
         `)
-        .eq("assigned_to", employeeData.id)
+        .eq("assigned_to", employee.id)
         .eq("is_priority", true)
         .in("statut", ["en_cours", "a_venir"])
         .order("date_echeance");
@@ -85,17 +82,20 @@ export const TachesPrioritairesWidget = ({ onDataLoaded }: { onDataLoaded?: (has
   };
 
   const handleAddComment = async (taskId: string) => {
-    if (!comment.trim() || !user) return;
+    if (!comment.trim() || !employee) return;
+
+    // Optimistic update - update UI immediately
+    const now = new Date().toISOString();
+    setTasks(prev => prev.map(task => 
+      task.id === taskId 
+        ? { ...task, last_progress_comment_at: now }
+        : task
+    ));
+    const savedComment = comment;
+    setComment("");
+    setCommentingTaskId(null);
 
     try {
-      const { data: employeeData } = await supabase
-        .from("employees")
-        .select("id, nom, prenom")
-        .eq("user_id", user.id)
-        .single();
-
-      if (!employeeData) return;
-
       const { data: taskData } = await supabase
         .from("tasks")
         .select("commentaires")
@@ -109,10 +109,10 @@ export const TachesPrioritairesWidget = ({ onDataLoaded }: { onDataLoaded?: (has
       const updatedComments = [
         ...existingComments,
         {
-          auteur_id: employeeData.id,
-          auteur_nom: `${employeeData.prenom} ${employeeData.nom}`,
-          texte: comment,
-          date: new Date().toISOString(),
+          auteur_id: employee.id,
+          auteur_nom: `${employee.prenom} ${employee.nom}`,
+          texte: savedComment,
+          date: now,
         },
       ];
 
@@ -120,19 +120,18 @@ export const TachesPrioritairesWidget = ({ onDataLoaded }: { onDataLoaded?: (has
         .from("tasks")
         .update({
           commentaires: updatedComments,
-          last_progress_comment_at: new Date().toISOString(),
+          last_progress_comment_at: now,
         })
         .eq("id", taskId);
 
       if (error) throw error;
 
       toast.success(t('employee.priorityTasks.progressAdded'));
-      setComment("");
-      setCommentingTaskId(null);
-      fetchPriorityTasks();
     } catch (error) {
       console.error("Error adding comment:", error);
       toast.error(t('employee.priorityTasks.addError'));
+      // Revert on error
+      fetchPriorityTasks();
     }
   };
 

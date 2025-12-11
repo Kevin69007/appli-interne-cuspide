@@ -11,6 +11,7 @@ import { TachesPrioritairesWidget } from "@/components/employe/TachesPrioritaire
 import { MoodBarWidget } from "@/components/employe/MoodBarWidget";
 import { TimeDeclarationWidget } from "@/components/employe/TimeDeclarationWidget";
 import { ThreeShapeLMSWidget } from "@/components/employe/ThreeShapeLMSWidget";
+import { TranslatorWidget } from "@/components/employe/TranslatorWidget";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { AnimatedBackground } from "@/components/AnimatedBackground";
@@ -242,11 +243,6 @@ const Index = () => {
             </div>
           )}
 
-          {/* 3Shape LMS Widget */}
-          <div className="max-w-xs mx-auto mb-6 sm:mb-12">
-            <ThreeShapeLMSWidget />
-          </div>
-
           {/* Widgets rapides - Layout adaptatif centré selon le nombre */}
           {(() => {
             const visibleCount = 1 + (hasTasks ? 1 : 0) + (hasPriorityTasks ? 1 : 0) + (hasInfos ? 1 : 0);
@@ -267,6 +263,12 @@ const Index = () => {
               </div>
             );
           })()}
+
+          {/* Outils externes - 3Shape LMS et Traducteur côte à côte */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-6 max-w-md mx-auto mb-6 sm:mb-12">
+            <ThreeShapeLMSWidget />
+            <TranslatorWidget />
+          </div>
 
           {/* Barre de recherche mobile avec dropdown - visible only on mobile */}
           <div className="relative max-w-md mx-auto mb-4 md:hidden">
