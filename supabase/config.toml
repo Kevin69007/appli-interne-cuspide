@@ -45,3 +45,6 @@ verify_jwt = false
 
 [functions.setup-weekly-game-cron]
 verify_jwt = false
+
+[functions.send-push-notification]
+verify_jwt = false

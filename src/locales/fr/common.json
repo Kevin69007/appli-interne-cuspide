@@ -72,5 +72,11 @@
     "delays": "retards",
     "allUpToDate": "Tout est à jour !",
     "hours": "heures"
+  },
+  "notifications": {
+    "push": "Notifications push",
+    "enable": "Activer les notifications",
+    "disable": "Désactiver les notifications",
+    "blocked": "Bloquées dans le navigateur"
   }
 }

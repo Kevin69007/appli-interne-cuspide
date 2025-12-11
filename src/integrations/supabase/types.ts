@@ -2194,6 +2194,69 @@ export type Database = {
           },
         ]
       }
+      notification_preferences: {
+        Row: {
+          communication_new: boolean | null
+          created_at: string | null
+          employee_id: string
+          id: string
+          leave_approved: boolean | null
+          leave_request: boolean | null
+          meeting_reminder: boolean | null
+          push_enabled: boolean | null
+          task_assigned: boolean | null
+          task_completed: boolean | null
+          task_overdue: boolean | null
+          task_reminder: boolean | null
+          updated_at: string | null
+        }
+        Insert: {
+          communication_new?: boolean | null
+          created_at?: string | null
+          employee_id: string
+          id?: string
+          leave_approved?: boolean | null
+          leave_request?: boolean | null
+          meeting_reminder?: boolean | null
+          push_enabled?: boolean | null
+          task_assigned?: boolean | null
+          task_completed?: boolean | null
+          task_overdue?: boolean | null
+          task_reminder?: boolean | null
+          updated_at?: string | null
+        }
+        Update: {
+          communication_new?: boolean | null
+          created_at?: string | null
+          employee_id?: string
+          id?: string
+          leave_approved?: boolean | null
+          leave_request?: boolean | null
+          meeting_reminder?: boolean | null
+          push_enabled?: boolean | null
+          task_assigned?: boolean | null
+          task_completed?: boolean | null
+          task_overdue?: boolean | null
+          task_reminder?: boolean | null
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "notification_preferences_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: true
+            referencedRelation: "employee_badge_summary"
+            referencedColumns: ["employee_id"]
+          },
+          {
+            foreignKeyName: "notification_preferences_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: true
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notifications: {
         Row: {
           created_at: string
@@ -3114,6 +3177,54 @@ export type Database = {
           updated_at?: string
         }
         Relationships: []
+      }
+      push_subscriptions: {
+        Row: {
+          auth: string
+          created_at: string | null
+          device_name: string | null
+          employee_id: string
+          endpoint: string
+          id: string
+          p256dh: string
+          updated_at: string | null
+        }
+        Insert: {
+          auth: string
+          created_at?: string | null
+          device_name?: string | null
+          employee_id: string
+          endpoint: string
+          id?: string
+          p256dh: string
+          updated_at?: string | null
+        }
+        Update: {
+          auth?: string
+          created_at?: string | null
+          device_name?: string | null
+          employee_id?: string
+          endpoint?: string
+          id?: string
+          p256dh?: string
+          updated_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "push_subscriptions_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employee_badge_summary"
+            referencedColumns: ["employee_id"]
+          },
+          {
+            foreignKeyName: "push_subscriptions_employee_id_fkey"
+            columns: ["employee_id"]
+            isOneToOne: false
+            referencedRelation: "employees"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       quiz: {
         Row: {
