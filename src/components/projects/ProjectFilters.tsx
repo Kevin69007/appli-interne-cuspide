@@ -57,99 +57,100 @@ export const ProjectFilters = ({
   };
 
   return (
-    <div className="space-y-4 mb-6 p-4 bg-card rounded-lg border border-border">
-      <div className="flex flex-col sm:flex-row gap-4">
-        {/* Filtre par responsable */}
-        <div className="flex-1">
-          <label className="text-sm font-medium mb-2 block">
-            👤 Responsable
-          </label>
-          <Select
-            value={filters.responsableId || "tous"}
-            onValueChange={(value) =>
-              onFiltersChange({
-                ...filters,
-                responsableId: value === "tous" ? null : value,
-              })
-            }
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Tous les responsables" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="tous">Tous les responsables</SelectItem>
-              {responsables.map((resp) => (
-                <SelectItem key={resp.id} value={resp.id}>
-                  {resp.prenom} {resp.nom}
-                </SelectItem>
-              ))}
-            </SelectContent>
-          </Select>
-        </div>
-
-        {/* Filtre par statut */}
-        <div className="flex-1">
-          <label className="text-sm font-medium mb-2 block">
-            📊 Statut
-          </label>
-          <MultiSelect
-            selectedValues={filters.statut}
-            onSelectedValuesChange={(values) =>
-              onFiltersChange({ ...filters, statut: values })
-            }
-            options={[
-              { value: "en_cours", label: "🟢 En cours" },
-              { value: "a_venir", label: "🔵 À venir" },
-              { value: "en_pause", label: "🟠 En pause" },
-              { value: "termine", label: "✅ Terminé" },
-            ]}
-            placeholder="Tous les statuts"
-          />
-        </div>
-
-        {/* Tri */}
-        <div className="flex-1">
-          <label className="text-sm font-medium mb-2 block">
-            ↕️ Trier par
-          </label>
-          <Select
-            value={`${filters.sortBy || "default"}_${filters.sortOrder}`}
-            onValueChange={(value) => {
-              if (value === "default_desc") {
-                onFiltersChange({ ...filters, sortBy: null, sortOrder: "desc" });
-                return;
+    <div className="space-y-3 sm:space-y-4 mb-4 sm:mb-6 p-3 sm:p-4 bg-card rounded-lg border border-border">
+      <div className="flex flex-col gap-3 sm:gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 sm:gap-4">
+          {/* Filtre par responsable */}
+          <div>
+            <label className="text-xs sm:text-sm font-medium mb-1.5 sm:mb-2 block">
+              👤 Responsable
+            </label>
+            <Select
+              value={filters.responsableId || "tous"}
+              onValueChange={(value) =>
+                onFiltersChange({
+                  ...filters,
+                  responsableId: value === "tous" ? null : value,
+                })
               }
-              const lastUnderscoreIndex = value.lastIndexOf("_");
-              const sortBy = value.substring(0, lastUnderscoreIndex);
-              const sortOrder = value.substring(lastUnderscoreIndex + 1) as "asc" | "desc";
-              onFiltersChange({ ...filters, sortBy, sortOrder });
-            }}
-          >
-            <SelectTrigger>
-              <SelectValue placeholder="Par défaut" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="default_desc">Par défaut</SelectItem>
-              <SelectItem value="date_echeance_asc">📅 Échéance (proche → loin)</SelectItem>
-              <SelectItem value="date_echeance_desc">📅 Échéance (loin → proche)</SelectItem>
-              <SelectItem value="created_at_desc">🕐 Plus récent d'abord</SelectItem>
-              <SelectItem value="created_at_asc">🕐 Plus ancien d'abord</SelectItem>
-              <SelectItem value="priorite_desc">⭐ Prioritaires d'abord</SelectItem>
-            </SelectContent>
-          </Select>
+            >
+              <SelectTrigger className="h-9 sm:h-10 text-xs sm:text-sm">
+                <SelectValue placeholder="Tous les responsables" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="tous">Tous les responsables</SelectItem>
+                {responsables.map((resp) => (
+                  <SelectItem key={resp.id} value={resp.id}>
+                    {resp.prenom} {resp.nom}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Filtre par statut */}
+          <div>
+            <label className="text-xs sm:text-sm font-medium mb-1.5 sm:mb-2 block">
+              📊 Statut
+            </label>
+            <MultiSelect
+              selectedValues={filters.statut}
+              onSelectedValuesChange={(values) =>
+                onFiltersChange({ ...filters, statut: values })
+              }
+              options={[
+                { value: "en_cours", label: "🟢 En cours" },
+                { value: "a_venir", label: "🔵 À venir" },
+                { value: "en_pause", label: "🟠 En pause" },
+                { value: "termine", label: "✅ Terminé" },
+              ]}
+              placeholder="Tous les statuts"
+            />
+          </div>
+
+          {/* Tri */}
+          <div>
+            <label className="text-xs sm:text-sm font-medium mb-1.5 sm:mb-2 block">
+              ↕️ Trier par
+            </label>
+            <Select
+              value={`${filters.sortBy || "default"}_${filters.sortOrder}`}
+              onValueChange={(value) => {
+                if (value === "default_desc") {
+                  onFiltersChange({ ...filters, sortBy: null, sortOrder: "desc" });
+                  return;
+                }
+                const lastUnderscoreIndex = value.lastIndexOf("_");
+                const sortBy = value.substring(0, lastUnderscoreIndex);
+                const sortOrder = value.substring(lastUnderscoreIndex + 1) as "asc" | "desc";
+                onFiltersChange({ ...filters, sortBy, sortOrder });
+              }}
+            >
+              <SelectTrigger className="h-9 sm:h-10 text-xs sm:text-sm">
+                <SelectValue placeholder="Par défaut" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="default_desc">Par défaut</SelectItem>
+                <SelectItem value="date_echeance_asc">📅 Échéance (proche)</SelectItem>
+                <SelectItem value="date_echeance_desc">📅 Échéance (loin)</SelectItem>
+                <SelectItem value="created_at_desc">🕐 Plus récent</SelectItem>
+                <SelectItem value="created_at_asc">🕐 Plus ancien</SelectItem>
+                <SelectItem value="priorite_desc">⭐ Prioritaires</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
         </div>
       </div>
 
       {/* Barre d'info et réinitialisation */}
-      <div className="flex items-center justify-between pt-2 border-t border-border">
+      <div className="flex flex-wrap items-center justify-between gap-2 pt-2 border-t border-border">
         <div className="flex items-center gap-2">
           {activeFiltersCount > 0 && (
-            <Badge variant="secondary" className="animate-fade-in">
-              🔍 {activeFiltersCount} filtre{activeFiltersCount > 1 ? "s" : ""}{" "}
-              actif{activeFiltersCount > 1 ? "s" : ""}
+            <Badge variant="secondary" className="animate-fade-in text-xs">
+              🔍 {activeFiltersCount} filtre{activeFiltersCount > 1 ? "s" : ""}
             </Badge>
           )}
-          <span className="text-sm text-muted-foreground">
+          <span className="text-xs sm:text-sm text-muted-foreground">
             {filteredCount} / {totalProjects} projet{totalProjects > 1 ? "s" : ""}
           </span>
         </div>
@@ -159,9 +160,9 @@ export const ProjectFilters = ({
             variant="ghost"
             size="sm"
             onClick={handleReset}
-            className="gap-2"
+            className="gap-1.5 h-7 sm:h-8 text-xs sm:text-sm"
           >
-            <X className="h-4 w-4" />
+            <X className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
             Réinitialiser
           </Button>
         )}
