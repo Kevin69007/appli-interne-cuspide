@@ -9,6 +9,7 @@ import { fr } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
+import { useEmployee } from "@/contexts/EmployeeContext";
 
 interface Task {
   id: string;
@@ -21,26 +22,23 @@ interface Task {
 export const TachesWidget = ({ onDataLoaded }: { onDataLoaded?: (hasData: boolean) => void } = {}) => {
   const navigate = useNavigate();
   const { t } = useTranslation('indicators');
+  const { employee, loading: employeeLoading } = useEmployee();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetchUserTasks();
-  }, []);
+    if (!employeeLoading && employee) {
+      fetchUserTasks();
+    } else if (!employeeLoading && !employee) {
+      setLoading(false);
+      onDataLoaded?.(false);
+    }
+  }, [employee, employeeLoading]);
 
   const fetchUserTasks = async () => {
+    if (!employee) return;
+    
     try {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) return;
-
-      const { data: employee } = await supabase
-        .from("employees")
-        .select("id")
-        .eq("user_id", user.id)
-        .single();
-
-      if (!employee) return;
-
       const today = format(new Date(), "yyyy-MM-dd");
 
       const { data } = await supabase
