@@ -151,21 +151,23 @@ export const CommunicationsList = ({ communications, onRefresh }: Communications
 
   return (
     <>
-      <div className="space-y-4">
+      <div className="space-y-3 sm:space-y-4">
         {communications.map((comm) => (
-          <div key={comm.id} className="border rounded-lg p-4 space-y-3">
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex-1">
-                <h3 className="font-semibold text-lg">{comm.titre}</h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {format(new Date(comm.created_at), "dd MMMM yyyy 'à' HH:mm", { locale: fr })}
+          <div key={comm.id} className="border rounded-lg p-3 sm:p-4 space-y-2 sm:space-y-3">
+            <div className="flex items-start justify-between gap-2 sm:gap-4">
+              <div className="flex-1 min-w-0">
+                <h3 className="font-semibold text-sm sm:text-lg line-clamp-2">{comm.titre}</h3>
+                <p className="text-xs sm:text-sm text-muted-foreground mt-1">
+                  {format(new Date(comm.created_at), "dd MMM yyyy", { locale: fr })}
+                  <span className="hidden sm:inline"> à {format(new Date(comm.created_at), "HH:mm", { locale: fr })}</span>
                 </p>
               </div>
-              <div className="flex gap-2">
+              <div className="flex gap-1 sm:gap-2 shrink-0">
                 {comm.require_confirmation && (
                   <Button
                     variant="ghost"
                     size="icon"
+                    className="h-8 w-8"
                     onClick={() => handleViewReadStatus(comm.id)}
                     title="Voir le statut de lecture"
                   >
@@ -175,6 +177,7 @@ export const CommunicationsList = ({ communications, onRefresh }: Communications
                 <Button
                   variant="ghost"
                   size="icon"
+                  className="h-8 w-8"
                   onClick={() => handleDelete(comm.id)}
                 >
                   <Trash2 className="h-4 w-4" />
@@ -182,33 +185,34 @@ export const CommunicationsList = ({ communications, onRefresh }: Communications
               </div>
             </div>
 
-            <p className="text-sm whitespace-pre-wrap">{comm.contenu}</p>
+            <p className="text-xs sm:text-sm whitespace-pre-wrap line-clamp-3 sm:line-clamp-none">{comm.contenu}</p>
 
-            <div className="flex flex-wrap gap-2">
-              <Badge variant="outline" className="flex items-center gap-1">
+            <div className="flex flex-wrap gap-1.5 sm:gap-2">
+              <Badge variant="outline" className="flex items-center gap-1 text-[10px] sm:text-xs">
                 <Users className="h-3 w-3" />
-                {getDestinataireLabel(comm)}
+                <span className="truncate max-w-[120px] sm:max-w-none">{getDestinataireLabel(comm)}</span>
               </Badge>
 
               {comm.require_confirmation && (
-                <Badge variant="secondary">Confirmation requise</Badge>
+                <Badge variant="secondary" className="text-[10px] sm:text-xs">Confirmation</Badge>
               )}
 
               {comm.show_in_calendar && (
-                <Badge variant="secondary" className="flex items-center gap-1">
+                <Badge variant="secondary" className="flex items-center gap-1 text-[10px] sm:text-xs">
                   <Calendar className="h-3 w-3" />
-                  Dans le calendrier
+                  <span className="hidden sm:inline">Dans le calendrier</span>
+                  <span className="sm:hidden">Cal.</span>
                 </Badge>
               )}
 
               {comm.date_expiration && (
-                <Badge variant="outline">
-                  Expire le {format(new Date(comm.date_expiration), "dd/MM/yyyy", { locale: fr })}
+                <Badge variant="outline" className="text-[10px] sm:text-xs">
+                  <span className="hidden sm:inline">Expire le </span>{format(new Date(comm.date_expiration), "dd/MM/yyyy", { locale: fr })}
                 </Badge>
               )}
 
               {!comm.is_active && (
-                <Badge variant="destructive">Inactive</Badge>
+                <Badge variant="destructive" className="text-[10px] sm:text-xs">Inactive</Badge>
               )}
             </div>
           </div>
@@ -216,11 +220,11 @@ export const CommunicationsList = ({ communications, onRefresh }: Communications
       </div>
 
       <Dialog open={selectedComm !== null} onOpenChange={() => setSelectedComm(null)}>
-        <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl w-[calc(100%-2rem)] sm:w-full max-h-[80vh] overflow-y-auto">
           <DialogHeader>
-            <DialogTitle>Statut de lecture</DialogTitle>
-            <DialogDescription>
-              Suivi des confirmations de lecture pour cette communication
+            <DialogTitle className="text-base sm:text-lg">Statut de lecture</DialogTitle>
+            <DialogDescription className="text-xs sm:text-sm">
+              Suivi des confirmations de lecture
             </DialogDescription>
           </DialogHeader>
 

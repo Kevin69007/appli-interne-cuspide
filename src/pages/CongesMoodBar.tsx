@@ -298,62 +298,81 @@ const CongesMoodBar = () => {
   }
 
   return (
-    <div className="min-h-screen bg-background p-4">
+    <div className="min-h-screen bg-background p-3 sm:p-4">
       <div className="max-w-7xl mx-auto">
-        <div className="flex items-center gap-4 mb-6">
-          <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
-            <ArrowLeft className="h-5 w-5" />
+        <div className="flex items-center gap-2 sm:gap-4 mb-4 sm:mb-6">
+          <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-10 sm:w-10" onClick={() => navigate("/")}>
+            <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
           </Button>
-          <h1 className="text-3xl font-bold">Ressources Humaines</h1>
+          <h1 className="text-xl sm:text-3xl font-bold truncate">Ressources Humaines</h1>
           <ModuleHelpButton moduleId="rh" />
         </div>
 
         <Tabs defaultValue={isAdminOrManager ? "leave-requests" : "my-requests"} className="w-full">
-          <TabsList className={`grid w-full ${isAdminOrManager ? 'grid-cols-6' : 'grid-cols-4'}`}>
+          <TabsList scrollable className="mb-4">
             {isAdminOrManager ? (
               <>
-                <TabsTrigger value="leave-requests">
-                  Demandes ({groupByPeriod(leaveRequests).length})
+                <TabsTrigger value="leave-requests" className="text-xs sm:text-sm">
+                  <span className="hidden sm:inline">Demandes</span>
+                  <span className="sm:hidden">Dem.</span>
+                  {" "}({groupByPeriod(leaveRequests).length})
                 </TabsTrigger>
-                <TabsTrigger value="absences">Absences</TabsTrigger>
-                <TabsTrigger value="mood">
+                <TabsTrigger value="absences" className="text-xs sm:text-sm">Absences</TabsTrigger>
+                <TabsTrigger value="mood" className="text-xs sm:text-sm">
                   Mood {lowMoodAlerts.length > 0 && `(${lowMoodAlerts.length})`}
                 </TabsTrigger>
-                <TabsTrigger value="leave-config">Config. congés</TabsTrigger>
+                <TabsTrigger value="leave-config" className="text-xs sm:text-sm">
+                  <span className="hidden sm:inline">Config. congés</span>
+                  <span className="sm:hidden">Config.</span>
+                </TabsTrigger>
               </>
             ) : (
               <>
-                <TabsTrigger value="my-requests">
-                  Mes demandes ({groupByPeriod(leaveRequests).length})
+                <TabsTrigger value="my-requests" className="text-xs sm:text-sm">
+                  <span className="hidden sm:inline">Mes demandes</span>
+                  <span className="sm:hidden">Demandes</span>
+                  {" "}({groupByPeriod(leaveRequests).length})
                 </TabsTrigger>
-                <TabsTrigger value="my-absences">Mes absences</TabsTrigger>
-                <TabsTrigger value="my-mood">Mon humeur</TabsTrigger>
+                <TabsTrigger value="my-absences" className="text-xs sm:text-sm">
+                  <span className="hidden sm:inline">Mes absences</span>
+                  <span className="sm:hidden">Absences</span>
+                </TabsTrigger>
+                <TabsTrigger value="my-mood" className="text-xs sm:text-sm">
+                  <span className="hidden sm:inline">Mon humeur</span>
+                  <span className="sm:hidden">Humeur</span>
+                </TabsTrigger>
               </>
             )}
-            <TabsTrigger value="trombinoscope">Trombinoscope</TabsTrigger>
-            <TabsTrigger value="payslips">Fiches de paie</TabsTrigger>
+            <TabsTrigger value="trombinoscope" className="text-xs sm:text-sm">
+              <span className="hidden sm:inline">Trombinoscope</span>
+              <span className="sm:hidden">Équipe</span>
+            </TabsTrigger>
+            <TabsTrigger value="payslips" className="text-xs sm:text-sm">
+              <span className="hidden sm:inline">Fiches de paie</span>
+              <span className="sm:hidden">Paie</span>
+            </TabsTrigger>
           </TabsList>
 
           {/* Admin/Manager: Demandes de congés avec actions */}
           {isAdminOrManager && (
-            <TabsContent value="leave-requests" className="space-y-4 mt-6">
+            <TabsContent value="leave-requests" className="space-y-3 sm:space-y-4 mt-4 sm:mt-6">
               {groupByPeriod(leaveRequests).length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">
+                <p className="text-center text-muted-foreground py-8 text-sm sm:text-base">
                   Aucune demande en attente
                 </p>
               ) : (
                 groupByPeriod(leaveRequests).map((request) => (
                   <Card key={request.id}>
-                    <CardHeader>
-                      <CardTitle className="flex items-center justify-between">
+                    <CardHeader className="pb-2 sm:pb-4 p-3 sm:p-6">
+                      <CardTitle className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 text-sm sm:text-base">
                         <span>
                           {request.employees.prenom} {request.employees.nom}
                         </span>
-                        <Badge>{request.employees.equipe}</Badge>
+                        <Badge className="w-fit">{request.employees.equipe}</Badge>
                       </CardTitle>
                     </CardHeader>
-                    <CardContent className="space-y-4">
-                      <div className="grid gap-2 text-sm">
+                    <CardContent className="space-y-3 sm:space-y-4 p-3 sm:p-6 pt-0">
+                      <div className="grid gap-1 sm:gap-2 text-xs sm:text-sm">
                         <div>
                           <strong>Période :</strong>{" "}
                           {request.dateRange.start === request.dateRange.end
@@ -362,7 +381,7 @@ const CongesMoodBar = () => {
                           {request.daysCount > 1 && ` (${request.daysCount} jours)`}
                         </div>
                         {request.detail && (
-                          <div>
+                          <div className="line-clamp-2">
                             <strong>Détails :</strong> {request.detail}
                           </div>
                         )}
@@ -376,10 +395,10 @@ const CongesMoodBar = () => {
                         />
                       )}
                       
-                      <div className="flex gap-2">
+                      <div className="flex flex-col sm:flex-row gap-2">
                         <Button
                           onClick={() => handleLeaveValidation(request.id, true)}
-                          className="flex-1"
+                          className="flex-1 h-9 text-sm"
                         >
                           <Check className="h-4 w-4 mr-2" />
                           Approuver
@@ -387,7 +406,7 @@ const CongesMoodBar = () => {
                         <Button
                           variant="destructive"
                           onClick={() => handleLeaveValidation(request.id, false)}
-                          className="flex-1"
+                          className="flex-1 h-9 text-sm"
                         >
                           <X className="h-4 w-4 mr-2" />
                           Refuser
@@ -402,7 +421,7 @@ const CongesMoodBar = () => {
 
           {/* Employé: Mes demandes avec bouton de création */}
           {!isAdminOrManager && employee?.id && (
-            <TabsContent value="my-requests" className="space-y-4 mt-6">
+            <TabsContent value="my-requests" className="space-y-3 sm:space-y-4 mt-4 sm:mt-6">
               {/* Widget solde de congés pour l'employé */}
               <LeaveBalanceCard 
                 employeeId={employee.id} 
@@ -410,27 +429,27 @@ const CongesMoodBar = () => {
                 showPendingLink 
               />
               
-              <div className="flex justify-end mb-4">
+              <div className="flex justify-end mb-3 sm:mb-4">
                 <CreateLeaveRequestDialog employeeId={employee.id} onSuccess={fetchData} />
               </div>
               {groupByPeriod(leaveRequests).length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">
+                <p className="text-center text-muted-foreground py-8 text-sm sm:text-base">
                   Aucune demande de congés. Créez votre première demande !
                 </p>
               ) : (
                 groupByPeriod(leaveRequests).map((request) => (
                   <Card key={request.id}>
-                    <CardContent className="p-4">
-                      <div className="flex items-center justify-between">
-                        <div>
-                          <div className="font-medium">
+                    <CardContent className="p-3 sm:p-4">
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:justify-between">
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium text-sm sm:text-base">
                             {request.dateRange.start === request.dateRange.end
                               ? new Date(request.dateRange.start).toLocaleDateString("fr-FR")
                               : `${new Date(request.dateRange.start).toLocaleDateString("fr-FR")} - ${new Date(request.dateRange.end).toLocaleDateString("fr-FR")}`}
                             {request.daysCount > 1 && ` (${request.daysCount} jours)`}
                           </div>
                           {request.detail && (
-                            <div className="text-sm text-muted-foreground mt-1">{request.detail}</div>
+                            <div className="text-xs sm:text-sm text-muted-foreground mt-1 line-clamp-1">{request.detail}</div>
                           )}
                         </div>
                         <Badge
@@ -441,6 +460,7 @@ const CongesMoodBar = () => {
                               ? "destructive"
                               : "outline"
                           }
+                          className="w-fit text-xs"
                         >
                           {request.statut_validation === "en_attente" ? "En attente" : 
                            request.statut_validation === "valide" ? "Approuvée" : "Refusée"}
@@ -455,71 +475,74 @@ const CongesMoodBar = () => {
 
           {/* Admin/Manager: Récapitulatif absences avec actions */}
           {isAdminOrManager && (
-            <TabsContent value="absences" className="space-y-4 mt-6">
+            <TabsContent value="absences" className="space-y-3 sm:space-y-4 mt-4 sm:mt-6">
               <div className="grid gap-2">
                 {groupByPeriod(allAbsences).map((absence) => (
                   <Card key={absence.id}>
-                    <CardContent className="p-4 flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="font-medium">
-                          {absence.employees?.prenom} {absence.employees?.nom}
-                        </div>
-                        <div className="text-sm text-muted-foreground">
-                          {absence.dateRange.start === absence.dateRange.end
-                            ? new Date(absence.dateRange.start).toLocaleDateString("fr-FR")
-                            : `${new Date(absence.dateRange.start).toLocaleDateString("fr-FR")} - ${new Date(absence.dateRange.end).toLocaleDateString("fr-FR")}`}
-                          {absence.daysCount > 1 && ` (${absence.daysCount} jours)`}
-                          {" - "}
-                          {getAbsenceTypeLabel(absence.type_absence)}
-                        </div>
-                        {absence.detail && (
-                          <div className="text-sm text-muted-foreground mt-1">{absence.detail}</div>
-                        )}
-                        {absence.statut_validation === "valide" && absence.date_validation && (
-                          <div className="text-xs text-muted-foreground mt-2">
-                            Validé par {absence.validator?.email || "N/A"} le{" "}
-                            {new Date(absence.date_validation).toLocaleString("fr-FR", {
-                              day: "2-digit",
-                              month: "2-digit",
-                              year: "numeric",
-                              hour: "2-digit",
-                              minute: "2-digit",
-                            })}
+                    <CardContent className="p-3 sm:p-4">
+                      <div className="flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-between">
+                        <div className="flex-1 min-w-0">
+                          <div className="font-medium text-sm sm:text-base">
+                            {absence.employees?.prenom} {absence.employees?.nom}
                           </div>
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Badge
-                          variant={
-                            absence.statut_validation === "valide"
-                              ? "default"
-                              : absence.statut_validation === "refuse"
-                              ? "destructive"
-                              : "outline"
-                          }
-                        >
-                          {absence.statut_validation}
-                        </Badge>
-                        {absence.statut_validation === "valide" && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleLeaveValidation(absence.id, false, true)}
+                          <div className="text-xs sm:text-sm text-muted-foreground">
+                            {absence.dateRange.start === absence.dateRange.end
+                              ? new Date(absence.dateRange.start).toLocaleDateString("fr-FR")
+                              : `${new Date(absence.dateRange.start).toLocaleDateString("fr-FR")} - ${new Date(absence.dateRange.end).toLocaleDateString("fr-FR")}`}
+                            {absence.daysCount > 1 && ` (${absence.daysCount}j)`}
+                            {" - "}
+                            {getAbsenceTypeLabel(absence.type_absence)}
+                          </div>
+                          {absence.detail && (
+                            <div className="text-xs text-muted-foreground mt-1 line-clamp-1">{absence.detail}</div>
+                          )}
+                          {absence.statut_validation === "valide" && absence.date_validation && (
+                            <div className="text-[10px] sm:text-xs text-muted-foreground mt-1 sm:mt-2">
+                              Validé par {absence.validator?.email || "N/A"} le{" "}
+                              {new Date(absence.date_validation).toLocaleString("fr-FR", {
+                                day: "2-digit",
+                                month: "2-digit",
+                                year: "numeric",
+                              })}
+                            </div>
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2 self-end sm:self-center">
+                          <Badge
+                            variant={
+                              absence.statut_validation === "valide"
+                                ? "default"
+                                : absence.statut_validation === "refuse"
+                                ? "destructive"
+                                : "outline"
+                            }
+                            className="text-xs"
                           >
-                            <X className="h-3 w-3 mr-1" />
-                            Révoquer
-                          </Button>
-                        )}
-                        {absence.statut_validation === "refuse" && (
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleLeaveValidation(absence.id, true, true)}
-                          >
-                            <Check className="h-3 w-3 mr-1" />
-                            Approuver
-                          </Button>
-                        )}
+                            {absence.statut_validation}
+                          </Badge>
+                          {absence.statut_validation === "valide" && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-7 text-xs"
+                              onClick={() => handleLeaveValidation(absence.id, false, true)}
+                            >
+                              <X className="h-3 w-3 sm:mr-1" />
+                              <span className="hidden sm:inline">Révoquer</span>
+                            </Button>
+                          )}
+                          {absence.statut_validation === "refuse" && (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-7 text-xs"
+                              onClick={() => handleLeaveValidation(absence.id, true, true)}
+                            >
+                              <Check className="h-3 w-3 sm:mr-1" />
+                              <span className="hidden sm:inline">Approuver</span>
+                            </Button>
+                          )}
+                        </div>
                       </div>
                     </CardContent>
                   </Card>
@@ -530,41 +553,44 @@ const CongesMoodBar = () => {
 
           {/* Employé: Mes absences (lecture seule) */}
           {!isAdminOrManager && (
-            <TabsContent value="my-absences" className="space-y-4 mt-6">
+            <TabsContent value="my-absences" className="space-y-3 sm:space-y-4 mt-4 sm:mt-6">
               {allAbsences.length === 0 ? (
-                <p className="text-center text-muted-foreground py-8">
+                <p className="text-center text-muted-foreground py-8 text-sm sm:text-base">
                   Aucune absence enregistrée
                 </p>
               ) : (
                 <div className="grid gap-2">
                   {groupByPeriod(allAbsences).map((absence) => (
                     <Card key={absence.id}>
-                      <CardContent className="p-4 flex items-center justify-between">
-                        <div className="flex-1">
-                          <div className="font-medium">
-                            {absence.dateRange.start === absence.dateRange.end
-                              ? new Date(absence.dateRange.start).toLocaleDateString("fr-FR")
-                              : `${new Date(absence.dateRange.start).toLocaleDateString("fr-FR")} - ${new Date(absence.dateRange.end).toLocaleDateString("fr-FR")}`}
-                            {absence.daysCount > 1 && ` (${absence.daysCount} jours)`}
-                            {" - "}
-                            {getAbsenceTypeLabel(absence.type_absence)}
+                      <CardContent className="p-3 sm:p-4">
+                        <div className="flex flex-col sm:flex-row gap-2 sm:items-center sm:justify-between">
+                          <div className="flex-1 min-w-0">
+                            <div className="font-medium text-sm sm:text-base">
+                              {absence.dateRange.start === absence.dateRange.end
+                                ? new Date(absence.dateRange.start).toLocaleDateString("fr-FR")
+                                : `${new Date(absence.dateRange.start).toLocaleDateString("fr-FR")} - ${new Date(absence.dateRange.end).toLocaleDateString("fr-FR")}`}
+                              {absence.daysCount > 1 && ` (${absence.daysCount}j)`}
+                              {" - "}
+                              {getAbsenceTypeLabel(absence.type_absence)}
+                            </div>
+                            {absence.detail && (
+                              <div className="text-xs text-muted-foreground mt-1 line-clamp-1">{absence.detail}</div>
+                            )}
                           </div>
-                          {absence.detail && (
-                            <div className="text-sm text-muted-foreground mt-1">{absence.detail}</div>
-                          )}
+                          <Badge
+                            variant={
+                              absence.statut_validation === "valide"
+                                ? "default"
+                                : absence.statut_validation === "refuse"
+                                ? "destructive"
+                                : "outline"
+                            }
+                            className="w-fit text-xs"
+                          >
+                            {absence.statut_validation === "valide" ? "Validée" : 
+                             absence.statut_validation === "refuse" ? "Refusée" : "En attente"}
+                          </Badge>
                         </div>
-                        <Badge
-                          variant={
-                            absence.statut_validation === "valide"
-                              ? "default"
-                              : absence.statut_validation === "refuse"
-                              ? "destructive"
-                              : "outline"
-                          }
-                        >
-                          {absence.statut_validation === "valide" ? "Validée" : 
-                           absence.statut_validation === "refuse" ? "Refusée" : "En attente"}
-                        </Badge>
                       </CardContent>
                     </Card>
                   ))}
@@ -575,22 +601,22 @@ const CongesMoodBar = () => {
 
           {/* Admin/Manager: Mood Bar avec alertes */}
           {isAdminOrManager && (
-            <TabsContent value="mood" className="space-y-4 mt-6">
+            <TabsContent value="mood" className="space-y-3 sm:space-y-4 mt-4 sm:mt-6">
               {lowMoodAlerts.length > 0 && (
                 <Card className="border-destructive">
-                  <CardHeader>
-                    <CardTitle className="flex items-center gap-2 text-destructive">
-                      <AlertCircle className="h-5 w-5" />
+                  <CardHeader className="p-3 sm:p-6 pb-2 sm:pb-4">
+                    <CardTitle className="flex items-center gap-2 text-destructive text-sm sm:text-base">
+                      <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5" />
                       Alertes Mood Bas
                     </CardTitle>
                   </CardHeader>
-                  <CardContent className="space-y-2">
+                  <CardContent className="space-y-2 p-3 sm:p-6 pt-0">
                     {lowMoodAlerts.slice(0, 5).map((entry) => (
-                      <div key={entry.id} className="border-l-4 border-destructive pl-3 py-2">
-                        <div className="font-medium">
+                      <div key={entry.id} className="border-l-4 border-destructive pl-2 sm:pl-3 py-1.5 sm:py-2">
+                        <div className="font-medium text-xs sm:text-sm">
                           {entry.employees?.prenom} {entry.employees?.nom}
                         </div>
-                        <div className="text-sm text-muted-foreground">
+                        <div className="text-[10px] sm:text-sm text-muted-foreground">
                           {getMoodEmoji(entry.mood_emoji)} {entry.mood_label} -{" "}
                           {new Date(entry.date).toLocaleDateString("fr-FR")}
                         </div>
@@ -601,32 +627,32 @@ const CongesMoodBar = () => {
               )}
 
               <Card>
-                <CardHeader>
-                  <CardTitle>Historique Mood</CardTitle>
+                <CardHeader className="p-3 sm:p-6 pb-2 sm:pb-4">
+                  <CardTitle className="text-sm sm:text-base">Historique Mood</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-2">
+                <CardContent className="space-y-2 p-3 sm:p-6 pt-0">
                   {moodEntries.length === 0 ? (
-                    <p className="text-center text-muted-foreground py-4">
+                    <p className="text-center text-muted-foreground py-4 text-sm">
                       Aucun enregistrement mood
                     </p>
                   ) : (
                     moodEntries.map((entry) => (
-                      <div key={entry.id} className="border rounded-lg p-3">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            <div className="font-medium">
+                      <div key={entry.id} className="border rounded-lg p-2 sm:p-3">
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="min-w-0 flex-1">
+                            <div className="font-medium text-xs sm:text-sm truncate">
                               {entry.employees?.prenom} {entry.employees?.nom}
                             </div>
-                            <div className="text-sm text-muted-foreground">
+                            <div className="text-[10px] sm:text-sm text-muted-foreground">
                               {new Date(entry.date).toLocaleDateString("fr-FR")}
                             </div>
                           </div>
-                          <div className="text-2xl">
+                          <div className="text-xl sm:text-2xl shrink-0">
                             {getMoodEmoji(entry.mood_emoji)}
                           </div>
                         </div>
                         {entry.need_type && (
-                          <div className="text-sm text-muted-foreground mt-2">
+                          <div className="text-[10px] sm:text-sm text-muted-foreground mt-1 sm:mt-2">
                             Besoin : {entry.need_type}
                           </div>
                         )}
@@ -640,37 +666,37 @@ const CongesMoodBar = () => {
 
           {/* Admin/Manager: Configuration des congés */}
           {isAdminOrManager && (
-            <TabsContent value="leave-config" className="mt-6">
+            <TabsContent value="leave-config" className="mt-4 sm:mt-6">
               <LeaveConfigPanel />
             </TabsContent>
           )}
 
           {/* Employé: Mon humeur (lecture seule) */}
           {!isAdminOrManager && (
-            <TabsContent value="my-mood" className="space-y-4 mt-6">
+            <TabsContent value="my-mood" className="space-y-3 sm:space-y-4 mt-4 sm:mt-6">
               <Card>
-                <CardHeader>
-                  <CardTitle>Mon historique Mood</CardTitle>
+                <CardHeader className="p-3 sm:p-6 pb-2 sm:pb-4">
+                  <CardTitle className="text-sm sm:text-base">Mon historique Mood</CardTitle>
                 </CardHeader>
-                <CardContent className="space-y-2">
+                <CardContent className="space-y-2 p-3 sm:p-6 pt-0">
                   {moodEntries.length === 0 ? (
-                    <p className="text-center text-muted-foreground py-4">
+                    <p className="text-center text-muted-foreground py-4 text-sm">
                       Aucun enregistrement mood
                     </p>
                   ) : (
                     moodEntries.map((entry) => (
-                      <div key={entry.id} className="border rounded-lg p-3">
-                        <div className="flex items-center justify-between">
-                          <div className="text-sm text-muted-foreground">
+                      <div key={entry.id} className="border rounded-lg p-2 sm:p-3">
+                        <div className="flex items-center justify-between gap-2">
+                          <div className="text-xs sm:text-sm text-muted-foreground">
                             {new Date(entry.date).toLocaleDateString("fr-FR")}
                           </div>
                           <div className="flex items-center gap-2">
-                            <span className="text-2xl">{getMoodEmoji(entry.mood_emoji)}</span>
-                            <span className="text-sm">{entry.mood_label}</span>
+                            <span className="text-xl sm:text-2xl">{getMoodEmoji(entry.mood_emoji)}</span>
+                            <span className="text-xs sm:text-sm">{entry.mood_label}</span>
                           </div>
                         </div>
                         {entry.need_type && (
-                          <div className="text-xs text-muted-foreground mt-2">
+                          <div className="text-[10px] sm:text-xs text-muted-foreground mt-1 sm:mt-2">
                             Besoin : {entry.need_type}
                           </div>
                         )}
@@ -682,17 +708,17 @@ const CongesMoodBar = () => {
             </TabsContent>
           )}
 
-          <TabsContent value="trombinoscope" className="space-y-4 mt-6">
+          <TabsContent value="trombinoscope" className="space-y-3 sm:space-y-4 mt-4 sm:mt-6">
             <Trombinoscope />
           </TabsContent>
 
-          <TabsContent value="payslips" className="space-y-4 mt-6">
+          <TabsContent value="payslips" className="space-y-3 sm:space-y-4 mt-4 sm:mt-6">
             <Card>
-              <CardHeader>
-                <CardTitle>Accès aux fiches de paie</CardTitle>
+              <CardHeader className="p-3 sm:p-6 pb-2 sm:pb-4">
+                <CardTitle className="text-sm sm:text-base">Accès aux fiches de paie</CardTitle>
               </CardHeader>
-              <CardContent className="space-y-4">
-                <p className="text-muted-foreground">
+              <CardContent className="space-y-3 sm:space-y-4 p-3 sm:p-6 pt-0">
+                <p className="text-muted-foreground text-xs sm:text-sm">
                   Consultez vos fiches de paie sur la plateforme Silae.
                 </p>
                 <Button 
