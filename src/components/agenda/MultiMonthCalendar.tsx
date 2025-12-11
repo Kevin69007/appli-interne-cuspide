@@ -5,6 +5,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import {
   DndContext,
   DragEndEvent,
@@ -160,6 +161,7 @@ const MiniMonthGrid = ({ month, tasks, today }: MiniMonthGridProps) => {
 
 export const MultiMonthCalendar = () => {
   const { user } = useAuth();
+  const { t } = useTranslation('planning');
   const [startMonth, setStartMonth] = useState(() => startOfMonth(new Date()));
   const [tasks, setTasks] = useState<TaskEvent[]>([]);
   const [currentEmployeeId, setCurrentEmployeeId] = useState<string | null>(null);
@@ -250,7 +252,7 @@ export const MultiMonthCalendar = () => {
           .eq("id", draggedTask.id);
 
         if (error) throw error;
-        toast.success("Date modifiée");
+        toast.success(t('multiMonth.dateChanged'));
       } else {
         const { error } = await supabase
           .from("tasks")
@@ -268,17 +270,17 @@ export const MultiMonthCalendar = () => {
 
         await supabase.from("notifications").insert({
           employee_id: draggedTask.created_by,
-          titre: "📅 Changement de date demandé",
-          message: `${currentEmployeeName} demande à déplacer "${draggedTask.titre}"`,
+          titre: "📅 Date change requested",
+          message: `${currentEmployeeName} requests to move "${draggedTask.titre}"`,
           type: "task_date_change_pending",
           url: "/taches",
         });
 
-        toast.info("Demande envoyée au créateur");
+        toast.info(t('multiMonth.requestSentToCreator'));
       }
     } catch (error) {
       console.error("Error:", error);
-      toast.error("Erreur lors du changement");
+      toast.error(t('multiMonth.errorChanging'));
       fetchTasks();
     }
   };
@@ -294,7 +296,7 @@ export const MultiMonthCalendar = () => {
             <ChevronLeft className="h-4 w-4" />
           </Button>
           <Button variant="outline" size="sm" onClick={() => setStartMonth(startOfMonth(new Date()))}>
-            Aujourd'hui
+            {t('today')}
           </Button>
           <Button variant="outline" size="icon" onClick={() => setStartMonth(prev => addMonths(prev, 3))}>
             <ChevronRight className="h-4 w-4" />
@@ -330,11 +332,11 @@ export const MultiMonthCalendar = () => {
       <div className="mt-4 pt-3 border-t flex items-center gap-4 text-xs text-muted-foreground">
         <div className="flex items-center gap-1.5">
           <div className="w-2 h-2 rounded-full bg-blue-500" />
-          <span>Tâche (glisser pour déplacer)</span>
+          <span>{t('multiMonth.taskDragToMove')}</span>
         </div>
         <div className="flex items-center gap-1.5">
-          <div className="w-4 h-4 rounded bg-primary text-primary-foreground flex items-center justify-center text-[8px] font-bold">J</div>
-          <span>Aujourd'hui</span>
+          <div className="w-4 h-4 rounded bg-primary text-primary-foreground flex items-center justify-center text-[8px] font-bold">T</div>
+          <span>{t('today')}</span>
         </div>
       </div>
     </Card>

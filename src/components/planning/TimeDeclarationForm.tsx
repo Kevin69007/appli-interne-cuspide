@@ -99,7 +99,7 @@ export const TimeDeclarationForm = ({ onSuccess }: TimeDeclarationFormProps) => 
       toast({
         variant: "destructive",
         title: t('timeDeclaration.error'),
-        description: "Veuillez remplir tous les champs correctement"
+        description: t('timeDeclaration.fillAllFields')
       });
       return;
     }
@@ -108,7 +108,7 @@ export const TimeDeclarationForm = ({ onSuccess }: TimeDeclarationFormProps) => 
       toast({
         variant: "destructive",
         title: t('timeDeclaration.error'),
-        description: "Veuillez justifier votre écart d'heures"
+        description: t('timeDeclaration.justifyGap')
       });
       return;
     }
@@ -135,7 +135,7 @@ export const TimeDeclarationForm = ({ onSuccess }: TimeDeclarationFormProps) => 
 
       toast({
         title: t('timeDeclaration.success'),
-        description: `${hours}h déclarées pour le ${format(new Date(date), 'dd/MM/yyyy')}`
+        description: `${hours}h ${t('timeDeclaration.declaredFor')} ${format(new Date(date), 'dd/MM/yyyy')}`
       });
 
       // Reset form
@@ -172,7 +172,7 @@ export const TimeDeclarationForm = ({ onSuccess }: TimeDeclarationFormProps) => 
         {/* Display contracted hours info */}
         <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 rounded-md px-3 py-2">
           <Info className="h-4 w-4" />
-          <span>Base contractuelle : {dailyHoursBase.toFixed(1)}h/jour ({(dailyHoursBase * 5).toFixed(0)}h/semaine)</span>
+          <span>{t('timeDeclaration.contractualBase')} {dailyHoursBase.toFixed(1)}h{t('timeDeclaration.perDay')} ({(dailyHoursBase * 5).toFixed(0)}h{t('timeDeclaration.perWeek')})</span>
         </div>
         <div className="space-y-2">
           <Label htmlFor="date">{t('timeDeclaration.date')}</Label>
@@ -233,7 +233,7 @@ export const TimeDeclarationForm = ({ onSuccess }: TimeDeclarationFormProps) => 
               <AlertTriangle className="h-4 w-4" />
               <AlertTitle>{t('timeDeclaration.justification.required')}</AlertTitle>
               <AlertDescription>
-                Vous devez justifier les heures manquantes
+                {t('timeDeclaration.justifyMissingHours')}
               </AlertDescription>
             </Alert>
             <JustificationSection

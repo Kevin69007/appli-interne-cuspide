@@ -124,7 +124,7 @@ export const TimeDeclarationHistory = () => {
         </CardHeader>
         <CardContent>
           {loading ? (
-            <p className="text-center text-muted-foreground py-8">Chargement...</p>
+            <p className="text-center text-muted-foreground py-8">{t('timeDeclaration.history.loading')}</p>
           ) : declarations.length === 0 ? (
             <p className="text-center text-muted-foreground py-8">
               {t('timeDeclaration.history.noData')}

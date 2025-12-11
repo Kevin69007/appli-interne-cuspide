@@ -6,6 +6,7 @@ import { useState, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import {
   DndContext,
   DragEndEvent,
@@ -135,7 +136,7 @@ const DroppableWeekDay = ({ date, isToday, tasks }: DroppableWeekDayProps) => {
         <SortableContext items={tasks.map(t => t.id)} strategy={verticalListSortingStrategy}>
           {tasks.length === 0 ? (
             <div className="flex-1 flex items-center justify-center text-muted-foreground text-xs sm:text-sm min-h-[60px] sm:min-h-[100px]">
-              Aucune tâche
+              {/* Will use parent translation context */}
             </div>
           ) : (
             tasks.map(task => (
@@ -154,6 +155,7 @@ interface WeekCalendarProps {
 
 export const WeekCalendar = ({ onDateClick }: WeekCalendarProps) => {
   const { user } = useAuth();
+  const { t } = useTranslation('planning');
   const [currentWeekStart, setCurrentWeekStart] = useState(() => 
     startOfWeek(new Date(), { weekStartsOn: 1 })
   );
@@ -264,7 +266,7 @@ export const WeekCalendar = ({ onDateClick }: WeekCalendarProps) => {
             }
           } catch (error) {
             console.error("Error reordering:", error);
-            toast.error("Erreur lors du réordonnancement");
+            toast.error(t('weekCalendar.errorReordering'));
             fetchTasks();
           }
         }
@@ -350,7 +352,7 @@ export const WeekCalendar = ({ onDateClick }: WeekCalendarProps) => {
           .eq("id", draggedTask.id);
 
         if (error) throw error;
-        toast.success("Date modifiée");
+        toast.success(t('weekCalendar.dateChanged'));
       } else {
         const { error } = await supabase
           .from("tasks")
@@ -368,17 +370,17 @@ export const WeekCalendar = ({ onDateClick }: WeekCalendarProps) => {
 
         await supabase.from("notifications").insert({
           employee_id: draggedTask.created_by,
-          titre: "📅 Changement de date demandé",
-          message: `${currentEmployeeName} demande à déplacer "${draggedTask.titre}"`,
+          titre: "📅 Date change requested",
+          message: `${currentEmployeeName} requests to move "${draggedTask.titre}"`,
           type: "task_date_change_pending",
           url: "/taches",
         });
 
-        toast.info("Demande envoyée au créateur");
+        toast.info(t('weekCalendar.requestSentToCreator'));
       }
     } catch (error) {
       console.error("Error:", error);
-      toast.error("Erreur lors du changement");
+      toast.error(t('weekCalendar.errorChanging'));
       fetchTasks();
     }
   };
@@ -395,7 +397,7 @@ export const WeekCalendar = ({ onDateClick }: WeekCalendarProps) => {
             <ChevronLeft className="h-4 w-4" />
           </Button>
           <Button variant="outline" size="sm" className="text-xs sm:text-sm h-8 sm:h-10 px-2 sm:px-4" onClick={() => setCurrentWeekStart(startOfWeek(new Date(), { weekStartsOn: 1 }))}>
-            Aujourd'hui
+            {t('today')}
           </Button>
           <Button variant="outline" size="icon" className="h-8 w-8 sm:h-10 sm:w-10" onClick={() => setCurrentWeekStart(prev => addWeeks(prev, 1))}>
             <ChevronRight className="h-4 w-4" />

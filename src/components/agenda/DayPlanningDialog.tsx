@@ -5,9 +5,10 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
 import { format } from "date-fns";
-import { fr } from "date-fns/locale";
+import { fr, enUS } from "date-fns/locale";
 import { toast } from "sonner";
 import { GripVertical, Clock, Calendar, Plus, Minus, X } from "lucide-react";
+import { useTranslation } from "react-i18next";
 import {
   DndContext,
   DragEndEvent,
@@ -164,7 +165,6 @@ const DraggablePlacedTask = ({
             size="icon"
             className="h-5 w-5 shrink-0"
             onClick={() => onRemove(placement.id)}
-            title="Retirer du planning"
           >
             <X className="h-3 w-3" />
           </Button>
@@ -182,7 +182,6 @@ const DraggablePlacedTask = ({
               className="h-5 w-5"
               onClick={() => onResize(placement.id, placement.duration_slots - 1)}
               disabled={placement.duration_slots <= 1}
-              title="Réduire la durée"
             >
               <Minus className="h-3 w-3" />
             </Button>
@@ -192,7 +191,6 @@ const DraggablePlacedTask = ({
               className="h-5 w-5"
               onClick={() => onResize(placement.id, placement.duration_slots + 1)}
               disabled={placement.duration_slots >= 8}
-              title="Augmenter la durée"
             >
               <Plus className="h-3 w-3" />
             </Button>
@@ -231,11 +229,9 @@ const TaskListDropZone = ({
         >
           <div className="space-y-2 pr-2">
             {loading ? (
-              <p className="text-sm text-muted-foreground p-2">Chargement...</p>
+              <p className="text-sm text-muted-foreground p-2"></p>
             ) : tasks.length === 0 ? (
-              <p className="text-sm text-muted-foreground p-2">
-                {isOver ? "Déposer ici pour retirer du planning" : "Toutes les tâches sont planifiées"}
-              </p>
+              <p className="text-sm text-muted-foreground p-2"></p>
             ) : (
               tasks.map(task => (
                 <SortableTask key={task.id} task={task} />
@@ -295,6 +291,8 @@ export const DayPlanningDialog = ({
   onUpdate,
 }: DayPlanningDialogProps) => {
   const { user } = useAuth();
+  const { t, i18n } = useTranslation('planning');
+  const dateLocale = i18n.language === 'fr' ? fr : enUS;
   const [tasks, setTasks] = useState<Task[]>([]);
   const [plannings, setPlannings] = useState<(TaskPlanning & { task?: Task })[]>([]);
   const [loading, setLoading] = useState(true);
@@ -383,11 +381,11 @@ export const DayPlanningDialog = ({
           .eq("id", placementId);
 
         if (error) throw error;
-        toast.success("Tâche retirée du planning");
+        toast.success(t('dayPlanning.taskRemoved'));
         fetchData();
       } catch (error) {
         console.error("Error removing planning:", error);
-        toast.error("Erreur lors de la suppression");
+        toast.error(t('dayPlanning.errorRemoving'));
       }
       return;
     }
@@ -400,7 +398,7 @@ export const DayPlanningDialog = ({
       if (oldIndex !== -1 && newIndex !== -1 && oldIndex !== newIndex) {
         const newTasks = arrayMove(tasks, oldIndex, newIndex);
         setTasks(newTasks);
-        toast.success("Ordre des tâches modifié");
+        toast.success(t('dayPlanning.orderChanged'));
       }
       return;
     }
@@ -433,11 +431,11 @@ export const DayPlanningDialog = ({
 
       if (error) throw error;
       
-      toast.success("Tâche planifiée");
+      toast.success(t('dayPlanning.taskPlanned'));
       fetchData();
     } catch (error) {
       console.error("Error saving planning:", error);
-      toast.error("Erreur lors de la planification");
+      toast.error(t('dayPlanning.errorPlanning'));
     }
   };
 
@@ -450,11 +448,11 @@ export const DayPlanningDialog = ({
 
       if (error) throw error;
       
-      toast.success("Tâche retirée du planning");
+      toast.success(t('dayPlanning.taskRemoved'));
       fetchData();
     } catch (error) {
       console.error("Error removing planning:", error);
-      toast.error("Erreur lors de la suppression");
+      toast.error(t('dayPlanning.errorRemoving'));
     }
   };
 
@@ -478,7 +476,7 @@ export const DayPlanningDialog = ({
       ));
     } catch (error) {
       console.error("Error resizing planning:", error);
-      toast.error("Erreur lors du redimensionnement");
+      toast.error(t('dayPlanning.errorResizing'));
     }
   };
 
@@ -507,7 +505,7 @@ export const DayPlanningDialog = ({
         <DialogHeader className="px-3 sm:px-6 pt-4 sm:pt-6 pb-3 sm:pb-4 border-b">
           <DialogTitle className="flex items-center gap-2 text-sm sm:text-base">
             <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
-            <span className="truncate">{format(selectedDate, "EEE d MMM yyyy", { locale: fr })}</span>
+            <span className="truncate">{format(selectedDate, "EEE d MMM yyyy", { locale: dateLocale })}</span>
           </DialogTitle>
         </DialogHeader>
 
