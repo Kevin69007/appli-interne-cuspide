@@ -1,4 +1,4 @@
-import { Bell, BellOff, Loader2 } from 'lucide-react';
+import { Bell, BellOff, Loader2, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { usePushNotifications } from '@/hooks/usePushNotifications';
@@ -21,13 +21,11 @@ export function PushNotificationToggle({
     isSubscribed, 
     isLoading, 
     permission,
+    needsInstallation,
+    isIOS,
     subscribe, 
     unsubscribe 
   } = usePushNotifications();
-
-  if (!isSupported) {
-    return null;
-  }
 
   const handleToggle = async () => {
     if (isSubscribed) {
@@ -36,6 +34,38 @@ export function PushNotificationToggle({
       await subscribe();
     }
   };
+
+  // Show iOS installation guide
+  if (needsInstallation && isIOS) {
+    return (
+      <div className={`flex items-center gap-2 text-xs text-muted-foreground ${className}`}>
+        <Download className="h-4 w-4" />
+        <span>Installez l'app (Safari → Partager → Sur l'écran d'accueil)</span>
+      </div>
+    );
+  }
+
+  // Not supported
+  if (!isSupported) {
+    return null;
+  }
+
+  // Permission denied
+  if (permission === 'denied') {
+    return (
+      <div className={`flex items-center gap-3 ${className}`}>
+        {showLabel && (
+          <div className="flex items-center gap-2">
+            <BellOff className="h-4 w-4 text-muted-foreground" />
+            <span className="text-sm">{t('notifications.push')}</span>
+          </div>
+        )}
+        <span className="text-xs text-muted-foreground">
+          {t('notifications.blocked')}
+        </span>
+      </div>
+    );
+  }
 
   if (variant === 'button') {
     return (
@@ -72,16 +102,14 @@ export function PushNotificationToggle({
           </span>
         </div>
       )}
-      <Switch
-        checked={isSubscribed}
-        onCheckedChange={handleToggle}
-        disabled={isLoading || permission === 'denied'}
-      />
-      {isLoading && <Loader2 className="h-4 w-4 animate-spin" />}
-      {permission === 'denied' && (
-        <span className="text-xs text-muted-foreground">
-          {t('notifications.blocked')}
-        </span>
+      {isLoading ? (
+        <Loader2 className="h-4 w-4 animate-spin" />
+      ) : (
+        <Switch
+          checked={isSubscribed}
+          onCheckedChange={handleToggle}
+          disabled={isLoading}
+        />
       )}
     </div>
   );
