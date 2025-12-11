@@ -159,19 +159,19 @@ export const Trombinoscope = () => {
 
   return (
     <>
-      <div className="space-y-8">
+      <div className="space-y-6 sm:space-y-8">
         {Object.entries(groupedEmployees).map(([team, teamEmployees]) => (
           <div key={team}>
-            <h2 className="text-2xl font-bold mb-4 flex items-center gap-2">
-              <Badge variant="secondary" className="text-lg px-4 py-2">
+            <h2 className="text-lg sm:text-2xl font-bold mb-3 sm:mb-4 flex items-center gap-2 flex-wrap">
+              <Badge variant="secondary" className="text-sm sm:text-lg px-2 sm:px-4 py-1 sm:py-2">
                 {team}
               </Badge>
-              <span className="text-sm text-muted-foreground">
+              <span className="text-xs sm:text-sm text-muted-foreground">
                 ({teamEmployees.length} {teamEmployees.length > 1 ? "membres" : "membre"})
               </span>
             </h2>
             
-            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2 sm:gap-4">
               {teamEmployees.map((employee) => (
                 <EmployeeCard 
                   key={employee.id}
@@ -250,11 +250,11 @@ function EmployeeCard({ employee, canManagePhoto, onPhotoUpload, onPhotoDelete, 
           />
         )}
         
-        <CardContent className="p-4 bg-background/95 backdrop-blur">
+        <CardContent className="p-2 sm:p-4 bg-background/95 backdrop-blur">
           {/* Niveau badge */}
-          <div className="absolute top-2 left-2 z-10">
+          <div className="absolute top-1 sm:top-2 left-1 sm:left-2 z-10">
             <Badge 
-              className="text-xs px-2 py-0.5 font-semibold"
+              className="text-[10px] sm:text-xs px-1.5 sm:px-2 py-0.5 font-semibold"
               style={{
                 backgroundColor: level.cardColor.includes('linear-gradient') 
                   ? undefined 
@@ -266,19 +266,20 @@ function EmployeeCard({ employee, canManagePhoto, onPhotoUpload, onPhotoDelete, 
                 textShadow: '0 1px 2px rgba(0,0,0,0.3)'
               }}
             >
-              {level.emoji} {level.name}
+              <span className="hidden sm:inline">{level.emoji} {level.name}</span>
+              <span className="sm:hidden">{level.emoji}</span>
             </Badge>
           </div>
 
-          {/* Mini badges (3 derniers) avec tier */}
+          {/* Mini badges (3 derniers) avec tier - hidden on very small screens */}
           {recentBadges.length > 0 && (
-            <div className="absolute top-2 right-2 z-10 flex gap-1">
+            <div className="absolute top-1 sm:top-2 right-1 sm:right-2 z-10 hidden xs:flex gap-0.5 sm:gap-1">
               {recentBadges.map(badgeData => {
                 const tier = getBadgeTierFromCount(badgeData.annual_count);
                 return (
                   <div
                     key={badgeData.badge_id}
-                    className="w-7 h-7 rounded-full bg-background/90 backdrop-blur flex items-center justify-center text-xs"
+                    className="w-5 h-5 sm:w-7 sm:h-7 rounded-full bg-background/90 backdrop-blur flex items-center justify-center text-[10px] sm:text-xs"
                     style={{ borderColor: tier.color, borderWidth: '2px' }}
                     title={`x${badgeData.annual_count} ${tier.emoji}`}
                   >
@@ -289,7 +290,7 @@ function EmployeeCard({ employee, canManagePhoto, onPhotoUpload, onPhotoDelete, 
             </div>
           )}
 
-          <div className="relative aspect-square mb-3 bg-muted rounded-lg overflow-hidden mt-6">
+          <div className="relative aspect-square mb-2 sm:mb-3 bg-muted rounded-lg overflow-hidden mt-5 sm:mt-6">
             {employee.photo_url ? (
               <img 
                 src={employee.photo_url} 
@@ -298,15 +299,16 @@ function EmployeeCard({ employee, canManagePhoto, onPhotoUpload, onPhotoDelete, 
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center">
-                <User className="w-16 h-16 text-muted-foreground" />
+                <User className="w-10 h-10 sm:w-16 sm:h-16 text-muted-foreground" />
               </div>
             )}
             
             {canManagePhoto && (
-              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-2">
+              <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center gap-1 sm:gap-2">
                 <Button
                   size="sm"
                   variant="secondary"
+                  className="h-7 w-7 sm:h-8 sm:w-8 p-0"
                   onClick={(e) => {
                     e.stopPropagation();
                     const input = document.createElement('input');
@@ -319,26 +321,27 @@ function EmployeeCard({ employee, canManagePhoto, onPhotoUpload, onPhotoDelete, 
                     input.click();
                   }}
                 >
-                  <Upload className="w-4 h-4" />
+                  <Upload className="w-3 h-3 sm:w-4 sm:h-4" />
                 </Button>
                 
                 {employee.photo_url && (
                   <Button
                     size="sm"
                     variant="destructive"
+                    className="h-7 w-7 sm:h-8 sm:w-8 p-0"
                     onClick={(e) => {
                       e.stopPropagation();
                       onPhotoDelete(employee.id, employee.photo_url);
                     }}
                   >
-                    <Trash2 className="w-4 h-4" />
+                    <Trash2 className="w-3 h-3 sm:w-4 sm:h-4" />
                   </Button>
                 )}
               </div>
             )}
             
-            <div className="absolute bottom-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
-              <Badge variant="outline" className="bg-background/90">
+            <div className="absolute bottom-1 sm:bottom-2 right-1 sm:right-2 opacity-0 group-hover:opacity-100 transition-opacity hidden sm:block">
+              <Badge variant="outline" className="bg-background/90 text-xs">
                 <FileText className="w-3 h-3 mr-1" />
                 Fiche
               </Badge>
@@ -346,15 +349,15 @@ function EmployeeCard({ employee, canManagePhoto, onPhotoUpload, onPhotoDelete, 
           </div>
           
           <div className="text-center">
-            <p className="font-semibold text-sm">
+            <p className="font-semibold text-xs sm:text-sm line-clamp-1">
               {employee.prenom} {employee.nom}
             </p>
-            <p className="text-xs text-muted-foreground mt-1">
+            <p className="text-[10px] sm:text-xs text-muted-foreground mt-0.5 sm:mt-1 line-clamp-1">
               {employee.poste || "Non défini"}
             </p>
             {totalUnlocked > 0 && (
-              <p className="text-xs text-primary mt-1 font-medium">
-                🏆 {totalUnlocked} badge{totalUnlocked > 1 ? 's' : ''}
+              <p className="text-[10px] sm:text-xs text-primary mt-0.5 sm:mt-1 font-medium">
+                🏆 {totalUnlocked}
               </p>
             )}
           </div>

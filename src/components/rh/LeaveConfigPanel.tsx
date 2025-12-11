@@ -84,8 +84,8 @@ export const LeaveConfigPanel = () => {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center gap-4">
-        <div className="relative flex-1 max-w-md">
+      <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-4">
+        <div className="relative flex-1">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             placeholder="Rechercher un employé..."
@@ -94,14 +94,14 @@ export const LeaveConfigPanel = () => {
             className="pl-10"
           />
         </div>
-        <Badge variant="outline">{filteredEmployees.length} employé(s)</Badge>
+        <Badge variant="outline" className="w-fit">{filteredEmployees.length} employé(s)</Badge>
       </div>
 
-      <div className="grid gap-3">
+      <div className="grid gap-2 sm:gap-3">
         {filteredEmployees.map((emp) => (
           <Card key={emp.id} className="hover:border-primary/50 transition-colors">
-            <CardContent className="p-4">
-              <div className="flex items-center justify-between">
+            <CardContent className="p-3 sm:p-4">
+              <div className="flex flex-col sm:flex-row sm:items-center gap-3 sm:justify-between">
                 <div className="flex items-center gap-3">
                   <EmployeeAvatar
                     photoUrl={emp.photo_url}
@@ -109,21 +109,21 @@ export const LeaveConfigPanel = () => {
                     prenom={emp.prenom}
                     size="md"
                   />
-                  <div>
-                    <div className="font-medium">
+                  <div className="min-w-0 flex-1">
+                    <div className="font-medium text-sm sm:text-base truncate">
                       {emp.prenom} {emp.nom}
                     </div>
                     {emp.equipe && (
-                      <Badge variant="secondary" className="mt-1">
+                      <Badge variant="secondary" className="mt-1 text-xs">
                         {emp.equipe}
                       </Badge>
                     )}
                   </div>
                 </div>
 
-                <div className="flex items-center gap-4">
+                <div className="flex items-center justify-between sm:justify-end gap-3 sm:gap-4 pl-12 sm:pl-0">
                   {emp.config ? (
-                    <div className="text-right text-sm">
+                    <div className="text-right text-xs sm:text-sm">
                       <div className="text-muted-foreground">
                         {emp.config.total_days_allowed}j {getDayTypeLabel(emp.config.day_type)}
                       </div>
@@ -134,16 +134,17 @@ export const LeaveConfigPanel = () => {
                       )}
                     </div>
                   ) : (
-                    <div className="text-sm text-muted-foreground">Non configuré</div>
+                    <div className="text-xs sm:text-sm text-muted-foreground">Non configuré</div>
                   )}
 
                   <Button
                     variant="outline"
                     size="sm"
+                    className="h-8 text-xs sm:text-sm"
                     onClick={() => setSelectedEmployee(emp)}
                   >
-                    <Settings className="h-4 w-4 mr-2" />
-                    Configurer
+                    <Settings className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-2" />
+                    <span className="hidden sm:inline">Configurer</span>
                   </Button>
                 </div>
               </div>
@@ -153,9 +154,9 @@ export const LeaveConfigPanel = () => {
       </div>
 
       <Dialog open={!!selectedEmployee} onOpenChange={() => setSelectedEmployee(null)}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="max-w-md w-[calc(100%-2rem)] sm:w-full">
           <DialogHeader>
-            <DialogTitle>
+            <DialogTitle className="text-base sm:text-lg">
               Configuration congés - {selectedEmployee?.prenom} {selectedEmployee?.nom}
             </DialogTitle>
           </DialogHeader>

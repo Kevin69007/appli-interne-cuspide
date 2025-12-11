@@ -143,34 +143,35 @@ export const TutorialsList = ({ onRefresh }: TutorialsListProps) => {
   }, {} as Record<string, Tutorial[]>);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 sm:space-y-6">
       {Object.entries(groupedByModule).map(([moduleKey, moduleTutorials]) => (
         <div key={moduleKey}>
-          <h3 className="text-sm font-medium text-muted-foreground mb-3">
+          <h3 className="text-xs sm:text-sm font-medium text-muted-foreground mb-2 sm:mb-3">
             {MODULE_LABELS[moduleKey] || moduleKey}
           </h3>
-          <div className="space-y-3">
+          <div className="space-y-2 sm:space-y-3">
             {moduleTutorials.map((tutorial) => (
               <Card key={tutorial.id} className={!tutorial.is_active ? "opacity-60" : ""}>
-                <CardContent className="p-4">
-                  <div className="flex items-start justify-between gap-4">
+                <CardContent className="p-3 sm:p-4">
+                  <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-2 sm:gap-4">
                     <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 mb-1">
-                        <h4 className="font-medium truncate">{tutorial.titre}</h4>
-                        <Badge variant={tutorial.is_active ? "default" : "secondary"}>
+                      <div className="flex flex-wrap items-center gap-2 mb-1">
+                        <h4 className="font-medium text-sm sm:text-base truncate">{tutorial.titre}</h4>
+                        <Badge variant={tutorial.is_active ? "default" : "secondary"} className="text-xs">
                           {tutorial.is_active ? "Actif" : "Inactif"}
                         </Badge>
                       </div>
                       {tutorial.description && (
-                        <p className="text-sm text-muted-foreground line-clamp-2">
+                        <p className="text-xs sm:text-sm text-muted-foreground line-clamp-2">
                           {tutorial.description}
                         </p>
                       )}
                     </div>
-                    <div className="flex items-center gap-2 shrink-0">
+                    <div className="flex items-center gap-2 shrink-0 self-end sm:self-start">
                       <Button
                         variant="ghost"
                         size="icon"
+                        className="h-8 w-8"
                         onClick={() => {
                           setSelectedTutorial(tutorial);
                           setShowVideo(true);
@@ -185,7 +186,7 @@ export const TutorialsList = ({ onRefresh }: TutorialsListProps) => {
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="text-destructive hover:text-destructive"
+                        className="h-8 w-8 text-destructive hover:text-destructive"
                         onClick={() => setDeleteId(tutorial.id)}
                       >
                         <Trash2 className="h-4 w-4" />
@@ -208,16 +209,16 @@ export const TutorialsList = ({ onRefresh }: TutorialsListProps) => {
       )}
 
       <AlertDialog open={!!deleteId} onOpenChange={() => setDeleteId(null)}>
-        <AlertDialogContent>
+        <AlertDialogContent className="w-[calc(100%-2rem)] sm:w-full max-w-md">
           <AlertDialogHeader>
-            <AlertDialogTitle>Supprimer ce tutoriel ?</AlertDialogTitle>
-            <AlertDialogDescription>
+            <AlertDialogTitle className="text-base sm:text-lg">Supprimer ce tutoriel ?</AlertDialogTitle>
+            <AlertDialogDescription className="text-xs sm:text-sm">
               Cette action est irréversible. Le bouton d'aide disparaîtra du module concerné.
             </AlertDialogDescription>
           </AlertDialogHeader>
-          <AlertDialogFooter>
-            <AlertDialogCancel>Annuler</AlertDialogCancel>
-            <AlertDialogAction onClick={handleDelete} className="bg-destructive text-destructive-foreground">
+          <AlertDialogFooter className="flex-col sm:flex-row gap-2">
+            <AlertDialogCancel className="w-full sm:w-auto">Annuler</AlertDialogCancel>
+            <AlertDialogAction onClick={handleDelete} className="w-full sm:w-auto bg-destructive text-destructive-foreground">
               Supprimer
             </AlertDialogAction>
           </AlertDialogFooter>
