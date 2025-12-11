@@ -4,6 +4,8 @@ import { Check, Eye, EyeOff } from "lucide-react";
 import { formatDistanceToNow } from "date-fns";
 import { fr } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";
+import { PushNotificationToggle } from "./PushNotificationToggle";
+import { Separator } from "@/components/ui/separator";
 
 interface NotificationDropdownProps {
   onClose: () => void;
@@ -54,6 +56,11 @@ export const NotificationDropdown = ({ onClose, onOpenDialog }: NotificationDrop
     <div className="flex flex-col">
       <div className="p-3 border-b border-border">
         <h3 className="font-semibold text-foreground">Notifications</h3>
+      </div>
+      
+      {/* Push notification toggle */}
+      <div className="px-3 py-2 border-b border-border bg-muted/30">
+        <PushNotificationToggle variant="switch" showLabel={true} />
       </div>
 
       <div className="max-h-[400px] overflow-y-auto">
