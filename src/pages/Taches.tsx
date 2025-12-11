@@ -161,7 +161,7 @@ const Taches = () => {
     if (!error && data) {
       setCurrentEmployeeId(data.id);
     } else {
-      toast.error("Vous devez être associé à un employé pour créer des tâches");
+      toast.error(t('errors.mustBeEmployee'));
     }
   };
 
@@ -263,7 +263,7 @@ const Taches = () => {
       setAllAssignedTasks(allAssignedResult.data || []);
     } catch (error) {
       console.error("Error fetching tasks:", error);
-      toast.error("Erreur lors du chargement des tâches");
+      toast.error(t('errors.loadError'));
     } finally {
       setLoading(false);
     }
@@ -299,7 +299,7 @@ const Taches = () => {
       }
     } catch (error) {
       console.error("Error updating task order:", error);
-      toast.error("Erreur lors de la mise à jour de l'ordre");
+      toast.error(t('errors.updateOrderError'));
       fetchTasks();
     }
   };
@@ -316,14 +316,14 @@ const Taches = () => {
 
       if (error) throw error;
 
-      toast.success(`${selectedTasks.length} tâche(s) réassignée(s)`);
+      toast.success(t('bulk.reassignSuccess', { count: selectedTasks.length }));
       setSelectedTasks([]);
       setShowReassignDialog(false);
       setNewAssignee("");
       fetchTasks();
     } catch (error) {
       console.error("Error reassigning tasks:", error);
-      toast.error("Erreur lors de la réassignation");
+      toast.error(t('bulk.reassignError'));
     }
   };
 
@@ -338,14 +338,14 @@ const Taches = () => {
 
       if (error) throw error;
 
-      toast.success(`Date modifiée pour ${selectedTasks.length} tâche(s)`);
+      toast.success(t('bulk.changeDateSuccess', { count: selectedTasks.length }));
       setSelectedTasks([]);
       setShowChangeDateDialog(false);
       setNewDate("");
       fetchTasks();
     } catch (error) {
       console.error("Error changing dates:", error);
-      toast.error("Erreur lors du changement de date");
+      toast.error(t('bulk.changeDateError'));
     }
   };
 
@@ -360,13 +360,13 @@ const Taches = () => {
 
       if (error) throw error;
 
-      toast.success(`${selectedTasks.length} tâche(s) supprimée(s)`);
+      toast.success(t('bulk.deleteSuccess', { count: selectedTasks.length }));
       setSelectedTasks([]);
       setShowDeleteConfirm(false);
       fetchTasks();
     } catch (error) {
       console.error("Error deleting tasks:", error);
-      toast.error("Erreur lors de la suppression");
+      toast.error(t('bulk.deleteError'));
     }
   };
 
@@ -452,7 +452,7 @@ const Taches = () => {
         dateFin: null,
         hideCompleted: false,
       })}>
-        Réinitialiser les filtres
+        {t('filters.resetFilters')}
       </Button>
     )
   );
@@ -505,12 +505,12 @@ const Taches = () => {
                 <TooltipTrigger asChild>
                   <TabsTrigger value="my-tasks" className="text-xs sm:text-sm px-2 sm:px-3 py-2 min-w-fit">
                     <span className="hidden sm:inline">{t('tabs.myTasks')}</span>
-                    <span className="sm:hidden">Tâches</span>
+                    <span className="sm:hidden">{t('tabs.tasks')}</span>
                     <span className="ml-1">({filteredTasks.length})</span>
                   </TabsTrigger>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="max-w-xs">
-                  <p>Vos tâches personnelles qui vous sont assignées directement.</p>
+                  <p>{t('tabs.tooltips.myTasks')}</p>
                 </TooltipContent>
               </Tooltip>
 
@@ -518,12 +518,12 @@ const Taches = () => {
                 <TooltipTrigger asChild>
                   <TabsTrigger value="boomerangs-sent" className="text-xs sm:text-sm px-2 sm:px-3 py-2 min-w-fit">
                     🪃 <span className="hidden sm:inline">{t('tabs.boomerangsSent')}</span>
-                    <span className="sm:hidden">Envoyés</span>
+                    <span className="sm:hidden">{t('tabs.sent')}</span>
                     <span className="ml-1">({filteredBoomerangsSent.length})</span>
                   </TabsTrigger>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="max-w-xs">
-                  <p>Tâches que vous avez temporairement déléguées à un collègue et qui vous reviendront automatiquement.</p>
+                  <p>{t('tabs.tooltips.boomerangsSent')}</p>
                 </TooltipContent>
               </Tooltip>
 
@@ -531,20 +531,20 @@ const Taches = () => {
                 <TooltipTrigger asChild>
                   <TabsTrigger value="boomerangs-received" className="text-xs sm:text-sm px-2 sm:px-3 py-2 min-w-fit">
                     🪃 <span className="hidden sm:inline">{t('tabs.boomerangsReceived')}</span>
-                    <span className="sm:hidden">Reçus</span>
+                    <span className="sm:hidden">{t('tabs.received')}</span>
                     <span className="ml-1">({filteredBoomerangsReceived.length})</span>
                   </TabsTrigger>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="max-w-xs">
-                  <p>Tâches qu'un collègue vous a temporairement déléguées.</p>
+                  <p>{t('tabs.tooltips.boomerangsReceived')}</p>
                 </TooltipContent>
               </Tooltip>
 
               <Tooltip>
                 <TooltipTrigger asChild>
                   <TabsTrigger value="assigned-tracking" className="text-xs sm:text-sm px-2 sm:px-3 py-2 min-w-fit">
-                    📋 <span className="hidden sm:inline">Validations</span>
-                    <span className="sm:hidden">Valid.</span>
+                    📋 <span className="hidden sm:inline">{t('tabs.assignedTracking')}</span>
+                    <span className="sm:hidden">{t('tabs.valid')}</span>
                     {filteredAssignedPending.length > 0 && (
                       <span className="ml-1 bg-amber-500 text-white rounded-full px-1.5 text-xs">
                         {filteredAssignedPending.length}
@@ -553,7 +553,7 @@ const Taches = () => {
                   </TabsTrigger>
                 </TooltipTrigger>
                 <TooltipContent side="bottom" className="max-w-xs">
-                  <p><strong>Validations en attente :</strong> Tâches que vous avez créées et assignées à d'autres, nécessitant votre validation (clôture ou changement de date).</p>
+                  <p>{t('tabs.tooltips.validations')}</p>
                 </TooltipContent>
               </Tooltip>
 
@@ -561,13 +561,13 @@ const Taches = () => {
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <TabsTrigger value="all-assigned" className="text-xs sm:text-sm px-2 sm:px-3 py-2 min-w-fit">
-                      📤 <span className="hidden sm:inline">Tâches déléguées</span>
-                      <span className="sm:hidden">Déléguées</span>
+                      📤 <span className="hidden sm:inline">{t('tabs.delegatedTasks')}</span>
+                      <span className="sm:hidden">{t('tabs.delegated')}</span>
                       <span className="ml-1">({filteredAllAssigned.length})</span>
                     </TabsTrigger>
                   </TooltipTrigger>
                   <TooltipContent side="bottom" className="max-w-xs">
-                    <p><strong>Gestion des tâches déléguées :</strong> Toutes les tâches que vous avez créées et assignées à d'autres employés. Permet de gérer en lot (réassigner, supprimer, modifier les dates).</p>
+                    <p>{t('tabs.tooltips.delegatedTasks')}</p>
                   </TooltipContent>
                 </Tooltip>
               )}
@@ -607,11 +607,11 @@ const Taches = () => {
 
           <TabsContent value="boomerangs-sent" className="space-y-4 mt-6">
             {loading ? (
-              <p className="text-center text-muted-foreground">Chargement...</p>
+              <p className="text-center text-muted-foreground">{t('common:loading')}</p>
             ) : filteredBoomerangsSent.length === 0 ? (
               <div className="text-center space-y-2">
                 <p className="text-muted-foreground">
-                  {boomerangsSent.length === 0 ? "Aucun boomerang envoyé" : "Aucun boomerang ne correspond à vos critères"}
+                  {boomerangsSent.length === 0 ? t('boomerang.noBoomerangsSent') : t('boomerang.noMatchingBoomerangs')}
                 </p>
                 {renderResetButton(boomerangsSent.length > 0)}
               </div>
@@ -638,11 +638,11 @@ const Taches = () => {
 
           <TabsContent value="boomerangs-received" className="space-y-4 mt-6">
             {loading ? (
-              <p className="text-center text-muted-foreground">Chargement...</p>
+              <p className="text-center text-muted-foreground">{t('common:loading')}</p>
             ) : filteredBoomerangsReceived.length === 0 ? (
               <div className="text-center space-y-2">
                 <p className="text-muted-foreground">
-                  {boomerangsReceived.length === 0 ? "Aucun boomerang reçu" : "Aucun boomerang ne correspond à vos critères"}
+                  {boomerangsReceived.length === 0 ? t('boomerang.noBoomerangsReceived') : t('boomerang.noMatchingBoomerangs')}
                 </p>
                 {renderResetButton(boomerangsReceived.length > 0)}
               </div>
@@ -669,13 +669,13 @@ const Taches = () => {
 
           <TabsContent value="assigned-tracking" className="space-y-4 mt-6">
             {loading ? (
-              <p className="text-center text-muted-foreground">Chargement...</p>
+              <p className="text-center text-muted-foreground">{t('common:loading')}</p>
             ) : filteredAssignedPending.length === 0 ? (
               <div className="text-center space-y-2">
                 <p className="text-muted-foreground">
                   {assignedPendingValidation.length === 0 
-                    ? "Aucune tâche en attente de validation" 
-                    : "Aucune tâche ne correspond à vos critères"}
+                    ? t('validation.noValidationPending') 
+                    : t('delegated.noMatchingTasks')}
                 </p>
                 {renderResetButton(assignedPendingValidation.length > 0)}
               </div>
@@ -701,25 +701,25 @@ const Taches = () => {
                   <ArrowUpDown className="h-4 w-4 text-muted-foreground shrink-0" />
                   <Select value={assignedSortBy} onValueChange={(v: any) => setAssignedSortBy(v)}>
                     <SelectTrigger className="w-full sm:w-[140px] h-9">
-                      <SelectValue placeholder="Trier par" />
+                      <SelectValue placeholder={t('sorting.sortBy')} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="date">Date d'échéance</SelectItem>
-                      <SelectItem value="assignee">Assigné</SelectItem>
-                      <SelectItem value="priority">Priorité</SelectItem>
-                      <SelectItem value="status">Statut</SelectItem>
+                      <SelectItem value="date">{t('sorting.dueDate')}</SelectItem>
+                      <SelectItem value="assignee">{t('sorting.assignee')}</SelectItem>
+                      <SelectItem value="priority">{t('sorting.priority')}</SelectItem>
+                      <SelectItem value="status">{t('sorting.status')}</SelectItem>
                     </SelectContent>
                   </Select>
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <Label className="text-sm text-muted-foreground whitespace-nowrap hidden sm:inline">Filtrer :</Label>
+                  <Label className="text-sm text-muted-foreground whitespace-nowrap hidden sm:inline">{t('sorting.filter')}</Label>
                   <Select value={assignedFilterEmployee} onValueChange={setAssignedFilterEmployee}>
                     <SelectTrigger className="w-full sm:w-[180px] h-9">
-                      <SelectValue placeholder="Tous les employés" />
+                      <SelectValue placeholder={t('sorting.allEmployees')} />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">Tous les employés</SelectItem>
+                      <SelectItem value="all">{t('sorting.allEmployees')}</SelectItem>
                       {employees.map(emp => (
                         <SelectItem key={emp.id} value={emp.id}>
                           {emp.prenom} {emp.nom}
@@ -734,33 +734,33 @@ const Taches = () => {
               {selectedTasks.length > 0 && (
                 <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-2 p-3 bg-muted rounded-lg">
                   <span className="text-sm font-medium text-center sm:text-left">
-                    {selectedTasks.length} tâche(s) sélectionnée(s)
+                    {t('bulk.selected', { count: selectedTasks.length })}
                   </span>
                   <div className="flex flex-wrap gap-2 sm:ml-auto">
                     <Button size="sm" variant="outline" onClick={() => setShowReassignDialog(true)} className="flex-1 sm:flex-none h-9">
                       <UserPlus className="h-4 w-4 mr-1" />
-                      <span className="hidden sm:inline">Réassigner</span>
+                      <span className="hidden sm:inline">{t('bulk.reassign')}</span>
                     </Button>
                     <Button size="sm" variant="outline" onClick={() => setShowChangeDateDialog(true)} className="flex-1 sm:flex-none h-9">
                       <Calendar className="h-4 w-4 mr-1" />
-                      <span className="hidden sm:inline">Date</span>
+                      <span className="hidden sm:inline">{t('bulk.changeDate')}</span>
                     </Button>
                     <Button size="sm" variant="destructive" onClick={() => setShowDeleteConfirm(true)} className="flex-1 sm:flex-none h-9">
                       <Trash2 className="h-4 w-4 mr-1" />
-                      <span className="hidden sm:inline">Supprimer</span>
+                      <span className="hidden sm:inline">{t('bulk.delete')}</span>
                     </Button>
                   </div>
                 </div>
               )}
 
               {loading ? (
-                <p className="text-center text-muted-foreground">Chargement...</p>
+                <p className="text-center text-muted-foreground">{t('common:loading')}</p>
               ) : sortedAllAssigned.length === 0 ? (
                 <div className="text-center space-y-2">
                   <p className="text-muted-foreground">
                     {allAssignedTasks.length === 0 
-                      ? "Aucune tâche assignée à d'autres employés" 
-                      : "Aucune tâche ne correspond à vos critères"}
+                      ? t('delegated.noTasks') 
+                      : t('delegated.noMatchingTasks')}
                   </p>
                   {renderResetButton(allAssignedTasks.length > 0)}
                 </div>
@@ -773,7 +773,7 @@ const Taches = () => {
                       onCheckedChange={toggleSelectAll}
                     />
                     <Label htmlFor="select-all" className="text-sm cursor-pointer">
-                      Tout sélectionner ({sortedAllAssigned.length})
+                      {t('delegated.selectAll')} ({sortedAllAssigned.length})
                     </Label>
                   </div>
 
@@ -815,13 +815,13 @@ const Taches = () => {
       <Dialog open={showReassignDialog} onOpenChange={setShowReassignDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Réassigner {selectedTasks.length} tâche(s)</DialogTitle>
+            <DialogTitle>{t('bulk.reassignTitle', { count: selectedTasks.length })}</DialogTitle>
             <DialogDescription>
-              Sélectionnez le nouvel employé à qui assigner ces tâches.
+              {t('bulk.reassignDesc')}
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
-            <Label>Nouvel assigné</Label>
+            <Label>{t('bulk.newAssignee')}</Label>
             <Combobox
               value={newAssignee}
               onValueChange={setNewAssignee}
@@ -829,16 +829,16 @@ const Taches = () => {
                 value: emp.id,
                 label: `${emp.prenom} ${emp.nom}`
               }))}
-              placeholder="Sélectionner un employé"
-              searchPlaceholder="Rechercher..."
+              placeholder={t('bulk.selectEmployee')}
+              searchPlaceholder={t('bulk.searchEmployee')}
             />
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowReassignDialog(false)}>
-              Annuler
+              {t('bulk.cancel')}
             </Button>
             <Button onClick={handleBulkReassign} disabled={!newAssignee}>
-              Réassigner
+              {t('bulk.reassign')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -848,13 +848,13 @@ const Taches = () => {
       <Dialog open={showChangeDateDialog} onOpenChange={setShowChangeDateDialog}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Changer la date de {selectedTasks.length} tâche(s)</DialogTitle>
+            <DialogTitle>{t('bulk.changeDateTitle', { count: selectedTasks.length })}</DialogTitle>
             <DialogDescription>
-              Sélectionnez la nouvelle date d'échéance.
+              {t('bulk.changeDateDesc')}
             </DialogDescription>
           </DialogHeader>
           <div className="py-4">
-            <Label>Nouvelle date d'échéance</Label>
+            <Label>{t('bulk.newDueDate')}</Label>
             <Input
               type="date"
               value={newDate}
@@ -863,10 +863,10 @@ const Taches = () => {
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowChangeDateDialog(false)}>
-              Annuler
+              {t('bulk.cancel')}
             </Button>
             <Button onClick={handleBulkChangeDate} disabled={!newDate}>
-              Modifier
+              {t('bulk.modify')}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -876,15 +876,15 @@ const Taches = () => {
       <AlertDialog open={showDeleteConfirm} onOpenChange={setShowDeleteConfirm}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Supprimer {selectedTasks.length} tâche(s) ?</AlertDialogTitle>
+            <AlertDialogTitle>{t('bulk.deleteTitle', { count: selectedTasks.length })}</AlertDialogTitle>
             <AlertDialogDescription>
-              Cette action est irréversible. Les tâches seront marquées comme annulées.
+              {t('bulk.deleteDesc')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogCancel>{t('bulk.cancel')}</AlertDialogCancel>
             <AlertDialogAction onClick={handleBulkDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Supprimer
+              {t('bulk.delete')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
