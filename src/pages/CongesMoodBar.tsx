@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useTranslation } from "react-i18next";
 import { useAuth } from "@/contexts/AuthContext";
 import { useUserRole } from "@/hooks/useUserRole";
 import { useEmployee } from "@/contexts/EmployeeContext";
@@ -94,6 +95,7 @@ const groupByPeriod = <T extends { id: string; employee_id: string; date: string
 
 const CongesMoodBar = () => {
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation("rh");
   const { user } = useAuth();
   const { isAdmin, isManager, loading: roleLoading } = useUserRole();
   const { employee } = useEmployee();
@@ -103,6 +105,7 @@ const CongesMoodBar = () => {
   const [loading, setLoading] = useState(true);
 
   const isAdminOrManager = isAdmin || isManager;
+  const dateLocale = i18n.language === 'fr' ? 'fr-FR' : 'en-US';
 
   useEffect(() => {
     if (!user) {
@@ -197,7 +200,7 @@ const CongesMoodBar = () => {
       setMoodEntries(moods || []);
     } catch (error) {
       console.error("Error fetching data:", error);
-      toast.error("Erreur lors du chargement des données");
+      toast.error(t("errorLoadingData"));
     } finally {
       setLoading(false);
     }
@@ -213,7 +216,7 @@ const CongesMoodBar = () => {
         .single();
 
       if (fetchError || !originalRequest) {
-        toast.error("Erreur lors de la récupération de la demande");
+        toast.error(t("leaveRequests.validationError"));
         return;
       }
 
@@ -242,7 +245,7 @@ const CongesMoodBar = () => {
       const { error: updateError } = await updateQuery;
 
       if (updateError) {
-        toast.error("Erreur lors de la validation");
+        toast.error(t("leaveRequests.validationError"));
         return;
       }
 
@@ -250,29 +253,31 @@ const CongesMoodBar = () => {
       if (!approved && originalRequest.employee_id) {
         await supabase.from("notifications").insert({
           employee_id: originalRequest.employee_id,
-          titre: "Demande de congés refusée",
-          message: `Votre demande de congés "${originalRequest.detail}" a été refusée.`,
+          titre: i18n.language === 'fr' ? "Demande de congés refusée" : "Leave request rejected",
+          message: i18n.language === 'fr' 
+            ? `Votre demande de congés "${originalRequest.detail}" a été refusée.`
+            : `Your leave request "${originalRequest.detail}" has been rejected.`,
           type: "leave_rejected",
           statut: "actif"
         });
       }
 
-      toast.success(approved ? "Demande approuvée" : "Demande refusée");
+      toast.success(approved ? t("leaveRequests.approved") : t("leaveRequests.rejected"));
       fetchData();
     } catch (error) {
       console.error("Error validating leave:", error);
-      toast.error("Erreur lors de la validation");
+      toast.error(t("leaveRequests.validationError"));
     }
   };
 
   const getAbsenceTypeLabel = (type: string) => {
     switch (type) {
       case "demande_conges":
-        return "Congés";
+        return t("absenceTypes.demande_conges");
       case "arret_maladie":
-        return "Arrêt maladie";
+        return t("absenceTypes.arret_maladie");
       case "injustifie":
-        return "Injustifié";
+        return t("absenceTypes.injustifie");
       default:
         return type;
     }
@@ -292,7 +297,7 @@ const CongesMoodBar = () => {
   if (loading || roleLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
-        <p className="text-muted-foreground">Chargement...</p>
+        <p className="text-muted-foreground">{t("loading")}</p>
       </div>
     );
   }
@@ -304,7 +309,7 @@ const CongesMoodBar = () => {
           <Button variant="ghost" size="icon" className="h-8 w-8 sm:h-10 sm:w-10" onClick={() => navigate("/")}>
             <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
           </Button>
-          <h1 className="text-xl sm:text-3xl font-bold truncate">Ressources Humaines</h1>
+          <h1 className="text-xl sm:text-3xl font-bold truncate">{t("title")}</h1>
           <ModuleHelpButton moduleId="rh" />
         </div>
 
@@ -313,43 +318,43 @@ const CongesMoodBar = () => {
             {isAdminOrManager ? (
               <>
                 <TabsTrigger value="leave-requests" className="text-xs sm:text-sm">
-                  <span className="hidden sm:inline">Demandes</span>
-                  <span className="sm:hidden">Dem.</span>
+                  <span className="hidden sm:inline">{t("tabs.leaveRequests")}</span>
+                  <span className="sm:hidden">{t("tabs.leaveRequests").slice(0, 4)}.</span>
                   {" "}({groupByPeriod(leaveRequests).length})
                 </TabsTrigger>
-                <TabsTrigger value="absences" className="text-xs sm:text-sm">Absences</TabsTrigger>
+                <TabsTrigger value="absences" className="text-xs sm:text-sm">{t("tabs.absences")}</TabsTrigger>
                 <TabsTrigger value="mood" className="text-xs sm:text-sm">
-                  Mood {lowMoodAlerts.length > 0 && `(${lowMoodAlerts.length})`}
+                  {t("tabs.mood")} {lowMoodAlerts.length > 0 && `(${lowMoodAlerts.length})`}
                 </TabsTrigger>
                 <TabsTrigger value="leave-config" className="text-xs sm:text-sm">
-                  <span className="hidden sm:inline">Config. congés</span>
+                  <span className="hidden sm:inline">{t("tabs.leaveConfig")}</span>
                   <span className="sm:hidden">Config.</span>
                 </TabsTrigger>
               </>
             ) : (
               <>
                 <TabsTrigger value="my-requests" className="text-xs sm:text-sm">
-                  <span className="hidden sm:inline">Mes demandes</span>
-                  <span className="sm:hidden">Demandes</span>
+                  <span className="hidden sm:inline">{t("tabs.myRequests")}</span>
+                  <span className="sm:hidden">{t("tabs.leaveRequests")}</span>
                   {" "}({groupByPeriod(leaveRequests).length})
                 </TabsTrigger>
                 <TabsTrigger value="my-absences" className="text-xs sm:text-sm">
-                  <span className="hidden sm:inline">Mes absences</span>
-                  <span className="sm:hidden">Absences</span>
+                  <span className="hidden sm:inline">{t("tabs.myAbsences")}</span>
+                  <span className="sm:hidden">{t("tabs.absences")}</span>
                 </TabsTrigger>
                 <TabsTrigger value="my-mood" className="text-xs sm:text-sm">
-                  <span className="hidden sm:inline">Mon humeur</span>
-                  <span className="sm:hidden">Humeur</span>
+                  <span className="hidden sm:inline">{t("tabs.myMood")}</span>
+                  <span className="sm:hidden">{t("mood.need")}</span>
                 </TabsTrigger>
               </>
             )}
             <TabsTrigger value="trombinoscope" className="text-xs sm:text-sm">
-              <span className="hidden sm:inline">Trombinoscope</span>
-              <span className="sm:hidden">Équipe</span>
+              <span className="hidden sm:inline">{t("tabs.trombinoscope")}</span>
+              <span className="sm:hidden">{t("tabs.team")}</span>
             </TabsTrigger>
             <TabsTrigger value="payslips" className="text-xs sm:text-sm">
-              <span className="hidden sm:inline">Fiches de paie</span>
-              <span className="sm:hidden">Paie</span>
+              <span className="hidden sm:inline">{t("tabs.payslips")}</span>
+              <span className="sm:hidden">{t("tabs.pay")}</span>
             </TabsTrigger>
           </TabsList>
 
@@ -358,7 +363,7 @@ const CongesMoodBar = () => {
             <TabsContent value="leave-requests" className="space-y-3 sm:space-y-4 mt-4 sm:mt-6">
               {groupByPeriod(leaveRequests).length === 0 ? (
                 <p className="text-center text-muted-foreground py-8 text-sm sm:text-base">
-                  Aucune demande en attente
+                  {t("leaveRequests.noPending")}
                 </p>
               ) : (
                 groupByPeriod(leaveRequests).map((request) => (
@@ -374,15 +379,15 @@ const CongesMoodBar = () => {
                     <CardContent className="space-y-3 sm:space-y-4 p-3 sm:p-6 pt-0">
                       <div className="grid gap-1 sm:gap-2 text-xs sm:text-sm">
                         <div>
-                          <strong>Période :</strong>{" "}
+                          <strong>{t("leaveRequests.period")} :</strong>{" "}
                           {request.dateRange.start === request.dateRange.end
-                            ? new Date(request.dateRange.start).toLocaleDateString("fr-FR")
-                            : `${new Date(request.dateRange.start).toLocaleDateString("fr-FR")} - ${new Date(request.dateRange.end).toLocaleDateString("fr-FR")}`}
-                          {request.daysCount > 1 && ` (${request.daysCount} jours)`}
+                            ? new Date(request.dateRange.start).toLocaleDateString(dateLocale)
+                            : `${new Date(request.dateRange.start).toLocaleDateString(dateLocale)} - ${new Date(request.dateRange.end).toLocaleDateString(dateLocale)}`}
+                          {request.daysCount > 1 && ` (${request.daysCount} ${t("leaveRequests.days")})`}
                         </div>
                         {request.detail && (
                           <div className="line-clamp-2">
-                            <strong>Détails :</strong> {request.detail}
+                            <strong>{t("leaveRequests.details")} :</strong> {request.detail}
                           </div>
                         )}
                       </div>
@@ -401,7 +406,7 @@ const CongesMoodBar = () => {
                           className="flex-1 h-9 text-sm"
                         >
                           <Check className="h-4 w-4 mr-2" />
-                          Approuver
+                          {t("leaveRequests.approve")}
                         </Button>
                         <Button
                           variant="destructive"
@@ -409,7 +414,7 @@ const CongesMoodBar = () => {
                           className="flex-1 h-9 text-sm"
                         >
                           <X className="h-4 w-4 mr-2" />
-                          Refuser
+                          {t("leaveRequests.reject")}
                         </Button>
                       </div>
                     </CardContent>
@@ -434,7 +439,7 @@ const CongesMoodBar = () => {
               </div>
               {groupByPeriod(leaveRequests).length === 0 ? (
                 <p className="text-center text-muted-foreground py-8 text-sm sm:text-base">
-                  Aucune demande de congés. Créez votre première demande !
+                  {t("leaveRequests.noLeaveRequest")}
                 </p>
               ) : (
                 groupByPeriod(leaveRequests).map((request) => (
@@ -444,9 +449,9 @@ const CongesMoodBar = () => {
                         <div className="flex-1 min-w-0">
                           <div className="font-medium text-sm sm:text-base">
                             {request.dateRange.start === request.dateRange.end
-                              ? new Date(request.dateRange.start).toLocaleDateString("fr-FR")
-                              : `${new Date(request.dateRange.start).toLocaleDateString("fr-FR")} - ${new Date(request.dateRange.end).toLocaleDateString("fr-FR")}`}
-                            {request.daysCount > 1 && ` (${request.daysCount} jours)`}
+                              ? new Date(request.dateRange.start).toLocaleDateString(dateLocale)
+                              : `${new Date(request.dateRange.start).toLocaleDateString(dateLocale)} - ${new Date(request.dateRange.end).toLocaleDateString(dateLocale)}`}
+                            {request.daysCount > 1 && ` (${request.daysCount} ${t("leaveRequests.days")})`}
                           </div>
                           {request.detail && (
                             <div className="text-xs sm:text-sm text-muted-foreground mt-1 line-clamp-1">{request.detail}</div>
@@ -462,8 +467,8 @@ const CongesMoodBar = () => {
                           }
                           className="w-fit text-xs"
                         >
-                          {request.statut_validation === "en_attente" ? "En attente" : 
-                           request.statut_validation === "valide" ? "Approuvée" : "Refusée"}
+                          {request.statut_validation === "en_attente" ? t("leaveRequests.pending") : 
+                           request.statut_validation === "valide" ? t("leaveRequests.approved_status") : t("leaveRequests.rejected_status")}
                         </Badge>
                       </div>
                     </CardContent>
@@ -487,8 +492,8 @@ const CongesMoodBar = () => {
                           </div>
                           <div className="text-xs sm:text-sm text-muted-foreground">
                             {absence.dateRange.start === absence.dateRange.end
-                              ? new Date(absence.dateRange.start).toLocaleDateString("fr-FR")
-                              : `${new Date(absence.dateRange.start).toLocaleDateString("fr-FR")} - ${new Date(absence.dateRange.end).toLocaleDateString("fr-FR")}`}
+                              ? new Date(absence.dateRange.start).toLocaleDateString(dateLocale)
+                              : `${new Date(absence.dateRange.start).toLocaleDateString(dateLocale)} - ${new Date(absence.dateRange.end).toLocaleDateString(dateLocale)}`}
                             {absence.daysCount > 1 && ` (${absence.daysCount}j)`}
                             {" - "}
                             {getAbsenceTypeLabel(absence.type_absence)}
@@ -498,12 +503,8 @@ const CongesMoodBar = () => {
                           )}
                           {absence.statut_validation === "valide" && absence.date_validation && (
                             <div className="text-[10px] sm:text-xs text-muted-foreground mt-1 sm:mt-2">
-                              Validé par {absence.validator?.email || "N/A"} le{" "}
-                              {new Date(absence.date_validation).toLocaleString("fr-FR", {
-                                day: "2-digit",
-                                month: "2-digit",
-                                year: "numeric",
-                              })}
+                              {t("leaveRequests.validatedBy")} {absence.validator?.email || "N/A"} {t("leaveRequests.on")}{" "}
+                              {new Date(absence.date_validation).toLocaleDateString(dateLocale)}
                             </div>
                           )}
                         </div>
@@ -528,7 +529,7 @@ const CongesMoodBar = () => {
                               onClick={() => handleLeaveValidation(absence.id, false, true)}
                             >
                               <X className="h-3 w-3 sm:mr-1" />
-                              <span className="hidden sm:inline">Révoquer</span>
+                              <span className="hidden sm:inline">{t("leaveRequests.revoke")}</span>
                             </Button>
                           )}
                           {absence.statut_validation === "refuse" && (
@@ -539,7 +540,7 @@ const CongesMoodBar = () => {
                               onClick={() => handleLeaveValidation(absence.id, true, true)}
                             >
                               <Check className="h-3 w-3 sm:mr-1" />
-                              <span className="hidden sm:inline">Approuver</span>
+                              <span className="hidden sm:inline">{t("leaveRequests.approve")}</span>
                             </Button>
                           )}
                         </div>
@@ -556,7 +557,7 @@ const CongesMoodBar = () => {
             <TabsContent value="my-absences" className="space-y-3 sm:space-y-4 mt-4 sm:mt-6">
               {allAbsences.length === 0 ? (
                 <p className="text-center text-muted-foreground py-8 text-sm sm:text-base">
-                  Aucune absence enregistrée
+                  {t("leaveRequests.noAbsences")}
                 </p>
               ) : (
                 <div className="grid gap-2">
@@ -567,8 +568,8 @@ const CongesMoodBar = () => {
                           <div className="flex-1 min-w-0">
                             <div className="font-medium text-sm sm:text-base">
                               {absence.dateRange.start === absence.dateRange.end
-                                ? new Date(absence.dateRange.start).toLocaleDateString("fr-FR")
-                                : `${new Date(absence.dateRange.start).toLocaleDateString("fr-FR")} - ${new Date(absence.dateRange.end).toLocaleDateString("fr-FR")}`}
+                                ? new Date(absence.dateRange.start).toLocaleDateString(dateLocale)
+                                : `${new Date(absence.dateRange.start).toLocaleDateString(dateLocale)} - ${new Date(absence.dateRange.end).toLocaleDateString(dateLocale)}`}
                               {absence.daysCount > 1 && ` (${absence.daysCount}j)`}
                               {" - "}
                               {getAbsenceTypeLabel(absence.type_absence)}
@@ -587,8 +588,8 @@ const CongesMoodBar = () => {
                             }
                             className="w-fit text-xs"
                           >
-                            {absence.statut_validation === "valide" ? "Validée" : 
-                             absence.statut_validation === "refuse" ? "Refusée" : "En attente"}
+                            {absence.statut_validation === "valide" ? t("leaveRequests.validated") : 
+                             absence.statut_validation === "refuse" ? t("leaveRequests.refused") : t("leaveRequests.pending")}
                           </Badge>
                         </div>
                       </CardContent>
@@ -607,7 +608,7 @@ const CongesMoodBar = () => {
                   <CardHeader className="p-3 sm:p-6 pb-2 sm:pb-4">
                     <CardTitle className="flex items-center gap-2 text-destructive text-sm sm:text-base">
                       <AlertCircle className="h-4 w-4 sm:h-5 sm:w-5" />
-                      Alertes Mood Bas
+                      {t("mood.lowMoodAlerts")}
                     </CardTitle>
                   </CardHeader>
                   <CardContent className="space-y-2 p-3 sm:p-6 pt-0">
@@ -618,7 +619,7 @@ const CongesMoodBar = () => {
                         </div>
                         <div className="text-[10px] sm:text-sm text-muted-foreground">
                           {getMoodEmoji(entry.mood_emoji)} {entry.mood_label} -{" "}
-                          {new Date(entry.date).toLocaleDateString("fr-FR")}
+                          {new Date(entry.date).toLocaleDateString(dateLocale)}
                         </div>
                       </div>
                     ))}
@@ -628,12 +629,12 @@ const CongesMoodBar = () => {
 
               <Card>
                 <CardHeader className="p-3 sm:p-6 pb-2 sm:pb-4">
-                  <CardTitle className="text-sm sm:text-base">Historique Mood</CardTitle>
+                  <CardTitle className="text-sm sm:text-base">{t("mood.moodHistory")}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2 p-3 sm:p-6 pt-0">
                   {moodEntries.length === 0 ? (
                     <p className="text-center text-muted-foreground py-4 text-sm">
-                      Aucun enregistrement mood
+                      {t("mood.noMoodRecords")}
                     </p>
                   ) : (
                     moodEntries.map((entry) => (
@@ -644,7 +645,7 @@ const CongesMoodBar = () => {
                               {entry.employees?.prenom} {entry.employees?.nom}
                             </div>
                             <div className="text-[10px] sm:text-sm text-muted-foreground">
-                              {new Date(entry.date).toLocaleDateString("fr-FR")}
+                              {new Date(entry.date).toLocaleDateString(dateLocale)}
                             </div>
                           </div>
                           <div className="text-xl sm:text-2xl shrink-0">
@@ -653,7 +654,7 @@ const CongesMoodBar = () => {
                         </div>
                         {entry.need_type && (
                           <div className="text-[10px] sm:text-sm text-muted-foreground mt-1 sm:mt-2">
-                            Besoin : {entry.need_type}
+                            {t("mood.need")} : {entry.need_type}
                           </div>
                         )}
                       </div>
@@ -676,19 +677,19 @@ const CongesMoodBar = () => {
             <TabsContent value="my-mood" className="space-y-3 sm:space-y-4 mt-4 sm:mt-6">
               <Card>
                 <CardHeader className="p-3 sm:p-6 pb-2 sm:pb-4">
-                  <CardTitle className="text-sm sm:text-base">Mon historique Mood</CardTitle>
+                  <CardTitle className="text-sm sm:text-base">{t("mood.myMoodHistory")}</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-2 p-3 sm:p-6 pt-0">
                   {moodEntries.length === 0 ? (
                     <p className="text-center text-muted-foreground py-4 text-sm">
-                      Aucun enregistrement mood
+                      {t("mood.noMoodRecords")}
                     </p>
                   ) : (
                     moodEntries.map((entry) => (
                       <div key={entry.id} className="border rounded-lg p-2 sm:p-3">
                         <div className="flex items-center justify-between gap-2">
                           <div className="text-xs sm:text-sm text-muted-foreground">
-                            {new Date(entry.date).toLocaleDateString("fr-FR")}
+                            {new Date(entry.date).toLocaleDateString(dateLocale)}
                           </div>
                           <div className="flex items-center gap-2">
                             <span className="text-xl sm:text-2xl">{getMoodEmoji(entry.mood_emoji)}</span>
@@ -697,7 +698,7 @@ const CongesMoodBar = () => {
                         </div>
                         {entry.need_type && (
                           <div className="text-[10px] sm:text-xs text-muted-foreground mt-1 sm:mt-2">
-                            Besoin : {entry.need_type}
+                            {t("mood.need")} : {entry.need_type}
                           </div>
                         )}
                       </div>
@@ -715,17 +716,17 @@ const CongesMoodBar = () => {
           <TabsContent value="payslips" className="space-y-3 sm:space-y-4 mt-4 sm:mt-6">
             <Card>
               <CardHeader className="p-3 sm:p-6 pb-2 sm:pb-4">
-                <CardTitle className="text-sm sm:text-base">Accès aux fiches de paie</CardTitle>
+                <CardTitle className="text-sm sm:text-base">{t("payslips.title")}</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3 sm:space-y-4 p-3 sm:p-6 pt-0">
                 <p className="text-muted-foreground text-xs sm:text-sm">
-                  Consultez vos fiches de paie sur la plateforme Silae.
+                  {t("payslips.description")}
                 </p>
                 <Button 
                   onClick={() => window.open("https://my.silae.fr/sign-in", "_blank")}
                   className="w-full"
                 >
-                  Accéder à Silae
+                  {t("payslips.accessSilae")}
                 </Button>
               </CardContent>
             </Card>

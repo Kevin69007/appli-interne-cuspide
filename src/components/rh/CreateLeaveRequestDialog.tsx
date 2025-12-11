@@ -17,7 +17,7 @@ import { toast } from "sonner";
 import { Plus, CalendarIcon, Info } from "lucide-react";
 import { format, differenceInBusinessDays, addDays, eachDayOfInterval, isSunday } from "date-fns";
 import { v4 as uuidv4 } from "uuid";
-import { fr } from "date-fns/locale";
+import { fr, enUS } from "date-fns/locale";
 import { DateRange } from "react-day-picker";
 import { cn } from "@/lib/utils";
 import { fetchLeaveConfig, LeaveConfig } from "@/lib/leaveBalanceUtils";
@@ -28,12 +28,14 @@ interface CreateLeaveRequestDialogProps {
 }
 
 export const CreateLeaveRequestDialog = ({ employeeId, onSuccess }: CreateLeaveRequestDialogProps) => {
-  const { t } = useTranslation("common");
+  const { t, i18n } = useTranslation("rh");
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [dateRange, setDateRange] = useState<DateRange | undefined>();
   const [motif, setMotif] = useState("");
   const [leaveConfig, setLeaveConfig] = useState<LeaveConfig | null>(null);
+
+  const dateLocale = i18n.language === 'fr' ? fr : enUS;
 
   useEffect(() => {
     const loadConfig = async () => {
@@ -60,7 +62,7 @@ export const CreateLeaveRequestDialog = ({ employeeId, onSuccess }: CreateLeaveR
 
   const handleSubmit = async () => {
     if (!dateRange?.from) {
-      toast.error("Veuillez sélectionner au moins une date");
+      toast.error(t("createLeaveRequest.selectDateError"));
       return;
     }
 
@@ -74,7 +76,7 @@ export const CreateLeaveRequestDialog = ({ employeeId, onSuccess }: CreateLeaveR
       const durationMinutes = workDays * 8 * 60;
 
       const detail = dateRange.to 
-        ? `Du ${format(startDate, "dd/MM/yyyy")} au ${format(endDate, "dd/MM/yyyy")}${motif ? ` - ${motif}` : ""}`
+        ? `${t("createLeaveRequest.from")} ${format(startDate, "dd/MM/yyyy")} ${t("createLeaveRequest.to")} ${format(endDate, "dd/MM/yyyy")}${motif ? ` - ${motif}` : ""}`
         : `${format(startDate, "dd/MM/yyyy")}${motif ? ` - ${motif}` : ""}`;
 
       // Generate a unique group ID to link all entries of this request
@@ -100,46 +102,48 @@ export const CreateLeaveRequestDialog = ({ employeeId, onSuccess }: CreateLeaveR
 
       if (error) throw error;
 
-      toast.success("Demande de congés envoyée");
+      toast.success(t("createLeaveRequest.requestSent"));
       setOpen(false);
       setDateRange(undefined);
       setMotif("");
       onSuccess?.();
     } catch (error) {
       console.error("Error creating leave request:", error);
-      toast.error("Erreur lors de la création de la demande");
+      toast.error(t("createLeaveRequest.errorCreating"));
     } finally {
       setLoading(false);
     }
   };
 
-  const dayTypeLabel = dayType === 'ouvre' ? 'ouvrés' : 'ouvrables';
-  const dayTypeDesc = dayType === 'ouvre' ? '(lun-ven)' : '(lun-sam)';
+  const dayTypeLabel = dayType === 'ouvre' ? t("leaveBalance.workingDays") : t("leaveBalance.businessDays");
+  const dayTypeDesc = dayType === 'ouvre' 
+    ? (i18n.language === 'fr' ? '(lun-ven)' : '(Mon-Fri)') 
+    : (i18n.language === 'fr' ? '(lun-sam)' : '(Mon-Sat)');
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button className="text-xs sm:text-sm">
           <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
-          <span className="hidden sm:inline">Nouvelle demande</span>
-          <span className="sm:hidden">Demande</span>
+          <span className="hidden sm:inline">{t("createLeaveRequest.newRequest")}</span>
+          <span className="sm:hidden">{t("createLeaveRequest.request")}</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="sm:max-w-[425px] max-sm:p-4">
         <DialogHeader>
-          <DialogTitle className="text-lg sm:text-xl">Demande de congés</DialogTitle>
+          <DialogTitle className="text-lg sm:text-xl">{t("createLeaveRequest.title")}</DialogTitle>
         </DialogHeader>
         
         <div className="space-y-3 sm:space-y-4 py-3 sm:py-4">
           <div className="flex items-center gap-2 p-2 bg-muted/50 rounded text-xs sm:text-sm text-muted-foreground">
             <Info className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
             <span>
-              Calcul en jours {dayTypeLabel} {dayTypeDesc}
+              {t("createLeaveRequest.calculationInfo")} {dayTypeLabel} {dayTypeDesc}
             </span>
           </div>
 
           <div className="space-y-1.5 sm:space-y-2">
-            <Label className="text-sm">Dates *</Label>
+            <Label className="text-sm">{t("createLeaveRequest.dates")} *</Label>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
@@ -153,14 +157,14 @@ export const CreateLeaveRequestDialog = ({ employeeId, onSuccess }: CreateLeaveR
                   {dateRange?.from ? (
                     dateRange.to ? (
                       <>
-                        {format(dateRange.from, "dd MMM yyyy", { locale: fr })} -{" "}
-                        {format(dateRange.to, "dd MMM yyyy", { locale: fr })}
+                        {format(dateRange.from, "dd MMM yyyy", { locale: dateLocale })} -{" "}
+                        {format(dateRange.to, "dd MMM yyyy", { locale: dateLocale })}
                       </>
                     ) : (
-                      format(dateRange.from, "dd MMM yyyy", { locale: fr })
+                      format(dateRange.from, "dd MMM yyyy", { locale: dateLocale })
                     )
                   ) : (
-                    "Sélectionner les dates"
+                    t("createLeaveRequest.selectDates")
                   )}
                 </Button>
               </PopoverTrigger>
@@ -170,7 +174,7 @@ export const CreateLeaveRequestDialog = ({ employeeId, onSuccess }: CreateLeaveR
                   selected={dateRange}
                   onSelect={setDateRange}
                   numberOfMonths={1}
-                  locale={fr}
+                  locale={dateLocale}
                   disabled={(date) => date < new Date()}
                   className="max-sm:scale-90 max-sm:origin-top-left"
                 />
@@ -185,10 +189,10 @@ export const CreateLeaveRequestDialog = ({ employeeId, onSuccess }: CreateLeaveR
                   
                   return (
                     <p className="font-medium text-foreground">
-                      {days} jour(s) {dayTypeLabel}
+                      {days} {t("createLeaveRequest.day")} {dayTypeLabel}
                       {dateRange.to && (
                         <span className="text-muted-foreground font-normal ml-1 text-[10px] sm:text-xs">
-                          (du {format(startDate, "dd/MM")} au {format(endDate, "dd/MM")} inclus)
+                          ({t("createLeaveRequest.from")} {format(startDate, "dd/MM")} {t("createLeaveRequest.to")} {format(endDate, "dd/MM")} {t("createLeaveRequest.inclusive")})
                         </span>
                       )}
                     </p>
@@ -199,10 +203,10 @@ export const CreateLeaveRequestDialog = ({ employeeId, onSuccess }: CreateLeaveR
           </div>
 
           <div className="space-y-1.5 sm:space-y-2">
-            <Label htmlFor="motif" className="text-sm">Motif (optionnel)</Label>
+            <Label htmlFor="motif" className="text-sm">{t("createLeaveRequest.motif")}</Label>
             <Textarea
               id="motif"
-              placeholder="Ex: Vacances d'été, événement familial..."
+              placeholder={t("createLeaveRequest.motifPlaceholder")}
               value={motif}
               onChange={(e) => setMotif(e.target.value)}
               rows={2}
@@ -213,10 +217,10 @@ export const CreateLeaveRequestDialog = ({ employeeId, onSuccess }: CreateLeaveR
 
         <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
           <Button variant="outline" onClick={() => setOpen(false)} className="w-full sm:w-auto">
-            Annuler
+            {t("createLeaveRequest.cancel")}
           </Button>
           <Button onClick={handleSubmit} disabled={loading || !dateRange?.from} className="w-full sm:w-auto">
-            {loading ? "Envoi..." : "Envoyer la demande"}
+            {loading ? t("createLeaveRequest.sending") : t("createLeaveRequest.submit")}
           </Button>
         </div>
       </DialogContent>

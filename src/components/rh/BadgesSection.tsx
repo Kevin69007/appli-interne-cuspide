@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { Award, Trophy, Sparkles, Info } from "lucide-react";
 import { Card } from "@/components/ui/card";
@@ -15,6 +16,7 @@ interface BadgesSectionProps {
 }
 
 export function BadgesSection({ employeeId }: BadgesSectionProps) {
+  const { t } = useTranslation("rh");
   const currentMonth = new Date().getMonth() + 1;
   const currentYear = new Date().getFullYear();
   
@@ -37,7 +39,7 @@ export function BadgesSection({ employeeId }: BadgesSectionProps) {
         <div className="flex items-center justify-center gap-2">
           <Trophy className="w-8 h-8 text-primary" />
           <h2 className="text-2xl font-bold">
-            Mes Badges ({totalUnlocked}/{badges.length})
+            {t("badges.myBadges")} ({totalUnlocked}/{badges.length})
           </h2>
         </div>
 
@@ -47,13 +49,13 @@ export function BadgesSection({ employeeId }: BadgesSectionProps) {
             <div className="flex items-center gap-2">
               <span className="text-3xl">{levelInfo.current.emoji}</span>
               <div>
-                <p className="text-sm text-muted-foreground">Niveau actuel</p>
+                <p className="text-sm text-muted-foreground">{t("badges.currentLevel")}</p>
                 <p className="text-xl font-bold">{levelInfo.current.name}</p>
               </div>
             </div>
             {levelInfo.next && (
               <div className="text-right">
-                <p className="text-sm text-muted-foreground">Prochain niveau</p>
+                <p className="text-sm text-muted-foreground">{t("badges.nextLevel")}</p>
                 <p className="text-lg font-semibold flex items-center gap-1">
                   {levelInfo.next.emoji} {levelInfo.next.name}
                 </p>
@@ -65,10 +67,10 @@ export function BadgesSection({ employeeId }: BadgesSectionProps) {
             <div className="space-y-2">
               <div className="flex justify-between text-sm">
                 <span className="text-muted-foreground">
-                  Progression vers le niveau suivant
+                  {t("badges.progressToNext")}
                 </span>
                 <span className="font-medium">
-                  {levelInfo.remaining} badge{levelInfo.remaining > 1 ? "s" : ""} restant{levelInfo.remaining > 1 ? "s" : ""}
+                  {levelInfo.remaining} {t("badges.remainingBadges")}
                 </span>
               </div>
               <Progress value={levelInfo.progress} className="h-2" />
@@ -78,7 +80,7 @@ export function BadgesSection({ employeeId }: BadgesSectionProps) {
           {!levelInfo.next && (
             <div className="flex items-center justify-center gap-2 text-primary">
               <Sparkles className="w-5 h-5" />
-              <p className="font-medium">Niveau maximum atteint ! 🎉</p>
+              <p className="font-medium">{t("badges.maxLevel")} 🎉</p>
             </div>
           )}
         </Card>
@@ -87,10 +89,9 @@ export function BadgesSection({ employeeId }: BadgesSectionProps) {
         <Alert>
           <Info className="h-4 w-4" />
           <AlertDescription>
-            <strong>Système de badges mensuels</strong>
+            <strong>{t("badges.monthlySystem")}</strong>
             <br />
-            Chaque mois, accomplissez les objectifs pour débloquer des badges. 
-            Plus vous obtenez un badge dans l'année, plus il évolue : 🥉 Bronze → 🥈 Argent → 🥇 Or → 💎 Platine.
+            {t("badges.monthlySystemDesc")}
           </AlertDescription>
         </Alert>
       </div>
@@ -100,15 +101,15 @@ export function BadgesSection({ employeeId }: BadgesSectionProps) {
         <TabsList className="grid w-full grid-cols-4 lg:grid-cols-8">
           <TabsTrigger value="all">
             <Award className="w-4 h-4 mr-1" />
-            Tous
+            {t("badges.categories.all")}
           </TabsTrigger>
-          <TabsTrigger value="tasks">🎯 Tâches</TabsTrigger>
-          <TabsTrigger value="projects">📊 Projets</TabsTrigger>
-          <TabsTrigger value="ideas">💡 Idées</TabsTrigger>
-          <TabsTrigger value="mood">😊 Humeur</TabsTrigger>
-          <TabsTrigger value="game">🎮 Jeu</TabsTrigger>
-          <TabsTrigger value="objectives">🏆 Objectifs</TabsTrigger>
-          <TabsTrigger value="training">🎓 Formation</TabsTrigger>
+          <TabsTrigger value="tasks">🎯 {t("badges.categories.tasks")}</TabsTrigger>
+          <TabsTrigger value="projects">📊 {t("badges.categories.projects")}</TabsTrigger>
+          <TabsTrigger value="ideas">💡 {t("badges.categories.ideas")}</TabsTrigger>
+          <TabsTrigger value="mood">😊 {t("badges.categories.mood")}</TabsTrigger>
+          <TabsTrigger value="game">🎮 {t("badges.categories.game")}</TabsTrigger>
+          <TabsTrigger value="objectives">🏆 {t("badges.categories.objectives")}</TabsTrigger>
+          <TabsTrigger value="training">🎓 {t("badges.categories.training")}</TabsTrigger>
         </TabsList>
 
         <TabsContent value="all" className="mt-6">

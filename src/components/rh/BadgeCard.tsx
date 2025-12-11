@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { motion } from "framer-motion";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -12,6 +13,7 @@ interface BadgeCardProps {
 }
 
 export function BadgeCard({ badgeProgress, size = "medium" }: BadgeCardProps) {
+  const { t } = useTranslation("rh");
   const { badge, currentMonthUnlocked, progress, annualCount } = badgeProgress;
   const Icon = badge.icon;
   const tier = getBadgeTierFromCount(annualCount);
@@ -40,6 +42,13 @@ export function BadgeCard({ badgeProgress, size = "medium" }: BadgeCardProps) {
   // Utiliser la couleur du tier si le badge a été obtenu au moins une fois
   const displayColor = annualCount > 0 ? tier.color : badge.color;
   const isUnlocked = annualCount > 0;
+
+  const getProgressLabel = () => {
+    if (annualCount < 3) return `${t("badges.towardsSilver")} ${3 - annualCount} ${t("badges.remaining")}`;
+    if (annualCount >= 3 && annualCount < 6) return `${t("badges.towardsGold")} ${6 - annualCount} ${t("badges.remaining")}`;
+    if (annualCount >= 6 && annualCount < 9) return `${t("badges.towardsPlatinum")} ${9 - annualCount} ${t("badges.remaining")}`;
+    return t("badges.platinumReached");
+  };
 
   return (
     <motion.div
@@ -76,7 +85,7 @@ export function BadgeCard({ badgeProgress, size = "medium" }: BadgeCardProps) {
         {currentMonthUnlocked && (
           <div className="absolute top-2 left-2">
             <Badge variant="default" className={`${sizes[size].badge} bg-green-500`}>
-              ✓ Ce mois
+              ✓ {t("badges.thisMonth")}
             </Badge>
           </div>
         )}
@@ -122,7 +131,7 @@ export function BadgeCard({ badgeProgress, size = "medium" }: BadgeCardProps) {
         {!currentMonthUnlocked && (
           <div className="space-y-1">
             <div className="flex items-center justify-between text-[10px] text-muted-foreground mb-1">
-              <span>Progression ce mois</span>
+              <span>{t("badges.progressThisMonth")}</span>
               <span className="flex items-center gap-1">
                 <TrendingUp className="w-3 h-3" />
                 {progress}%
@@ -136,10 +145,7 @@ export function BadgeCard({ badgeProgress, size = "medium" }: BadgeCardProps) {
         {isUnlocked && (
           <div className="mt-2 text-center">
             <p className="text-[10px] text-muted-foreground flex items-center justify-center gap-1">
-              {annualCount < 3 && `Vers 🥈: ${3 - annualCount} restant(s)`}
-              {annualCount >= 3 && annualCount < 6 && `Vers 🥇: ${6 - annualCount} restant(s)`}
-              {annualCount >= 6 && annualCount < 9 && `Vers 💎: ${9 - annualCount} restant(s)`}
-              {annualCount >= 9 && `💎 Platine atteint!`}
+              {getProgressLabel()}
             </p>
           </div>
         )}
