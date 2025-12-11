@@ -108,107 +108,135 @@ const Index = () => {
     return (
       <div className="min-h-screen">
         <AnimatedBackground />
+        {/* Header mobile-optimized */}
         <header className="glass border-b border-border/50 sticky top-0 z-50 backdrop-blur-xl">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 py-3 sm:py-4 flex items-center justify-between">
-            <div className="flex items-center gap-2 sm:gap-3">
-              <img 
-                src={tuttiLogo} 
-                alt="Tutti" 
-                className="w-8 h-8 sm:w-10 sm:h-10 object-contain shrink-0 animate-pulse-glow"
-              />
-              <h1 className="text-lg sm:text-2xl font-display font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent">
-                {t('appName')}
-              </h1>
-            </div>
-            <div className="flex items-center gap-2 sm:gap-4">
-              {/* Barre de recherche avec dropdown autocomplete */}
-              <div className="relative hidden sm:block" ref={searchRef}>
-                <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
-                <Input
-                  placeholder="Rechercher..."
-                  value={searchQuery}
-                  onChange={(e) => {
-                    setSearchQuery(e.target.value);
-                    setShowSearchDropdown(e.target.value.trim().length > 0);
-                  }}
-                  onFocus={() => searchQuery.trim() && setShowSearchDropdown(true)}
-                  className="pl-8 w-40 lg:w-56 h-9 glass border-border/50 text-sm"
+          <div className="max-w-7xl mx-auto px-3 sm:px-6 py-2 sm:py-4">
+            {/* Mobile: Two-row layout */}
+            <div className="flex items-center justify-between">
+              {/* Logo and title */}
+              <div className="flex items-center gap-2">
+                <img 
+                  src={tuttiLogo} 
+                  alt="Tutti" 
+                  className="w-8 h-8 sm:w-10 sm:h-10 object-contain shrink-0"
                 />
-                {/* Dropdown des résultats */}
-                {showSearchDropdown && searchQuery.trim() && (
-                  <div className="absolute top-full left-0 w-64 lg:w-80 mt-1 bg-background border border-border rounded-lg shadow-lg z-50 max-h-80 overflow-y-auto">
-                    {filteredModules.length === 0 ? (
-                      <div className="p-3 text-sm text-muted-foreground text-center">
-                        Aucun module trouvé
-                      </div>
-                    ) : (
-                      filteredModules.map((module) => (
-                        <div
-                          key={module.id}
-                          onClick={() => {
-                            if (module.is_external) {
-                              window.open(module.path, '_blank', 'noopener,noreferrer');
-                            } else {
-                              navigate(module.path);
-                            }
-                            setSearchQuery("");
-                            setShowSearchDropdown(false);
-                          }}
-                          className="flex items-center gap-3 p-3 hover:bg-accent/50 cursor-pointer transition-colors border-b border-border/30 last:border-b-0"
-                        >
-                          <span className="text-xl">{module.icon}</span>
-                          <span className="text-sm font-medium">{module.module_name}</span>
+                <h1 className="text-base sm:text-2xl font-display font-bold bg-gradient-to-r from-primary to-accent bg-clip-text text-transparent truncate max-w-[120px] sm:max-w-none">
+                  {t('appName')}
+                </h1>
+              </div>
+              
+              {/* Right side icons */}
+              <div className="flex items-center gap-1.5 sm:gap-3">
+                {/* Desktop search */}
+                <div className="relative hidden md:block" ref={searchRef}>
+                  <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
+                  <Input
+                    placeholder="Rechercher..."
+                    value={searchQuery}
+                    onChange={(e) => {
+                      setSearchQuery(e.target.value);
+                      setShowSearchDropdown(e.target.value.trim().length > 0);
+                    }}
+                    onFocus={() => searchQuery.trim() && setShowSearchDropdown(true)}
+                    className="pl-8 w-40 lg:w-56 h-9 glass border-border/50 text-sm"
+                  />
+                  {showSearchDropdown && searchQuery.trim() && (
+                    <div className="absolute top-full left-0 w-64 lg:w-80 mt-1 bg-background border border-border rounded-lg shadow-lg z-50 max-h-80 overflow-y-auto">
+                      {filteredModules.length === 0 ? (
+                        <div className="p-3 text-sm text-muted-foreground text-center">
+                          Aucun module trouvé
                         </div>
-                      ))
-                    )}
-                  </div>
+                      ) : (
+                        filteredModules.map((module) => (
+                          <div
+                            key={module.id}
+                            onClick={() => {
+                              if (module.is_external) {
+                                window.open(module.path, '_blank', 'noopener,noreferrer');
+                              } else {
+                                navigate(module.path);
+                              }
+                              setSearchQuery("");
+                              setShowSearchDropdown(false);
+                            }}
+                            className="flex items-center gap-3 p-3 hover:bg-accent/50 cursor-pointer transition-colors border-b border-border/30 last:border-b-0"
+                          >
+                            <span className="text-xl">{module.icon}</span>
+                            <span className="text-sm font-medium">{module.module_name}</span>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  )}
+                </div>
+                
+                {/* Email - desktop only */}
+                <span className="hidden xl:inline-block text-sm text-muted-foreground truncate max-w-[150px]">
+                  {user.email}
+                </span>
+                
+                {/* Essential mobile icons */}
+                <NotificationBell />
+                
+                {employee && (
+                  <EmployeeAvatar
+                    photoUrl={employee.photo_url}
+                    nom={employee.nom}
+                    prenom={employee.prenom}
+                    size="sm"
+                    className="sm:hidden"
+                  />
                 )}
+                {employee && (
+                  <EmployeeAvatar
+                    photoUrl={employee.photo_url}
+                    nom={employee.nom}
+                    prenom={employee.prenom}
+                    size="md"
+                    className="hidden sm:flex"
+                  />
+                )}
+                
+                <ThemeToggle />
+                
+                <div className="hidden sm:block">
+                  <LanguageSwitcher />
+                </div>
+                
+                {/* Logout button */}
+                <button
+                  onClick={() => navigate("/auth")}
+                  className="icon-btn p-2 sm:px-4 sm:py-2 text-xs sm:text-sm border border-border rounded-lg hover:bg-accent/10 transition-colors shrink-0 flex items-center justify-center"
+                >
+                  <span className="hidden sm:inline">{t('logout')}</span>
+                  <span className="sm:hidden text-base">↗</span>
+                </button>
               </div>
-              <span className="hidden lg:inline-block text-sm text-muted-foreground truncate max-w-[150px]">{user.email}</span>
-              <NotificationBell />
-              {employee && (
-                <EmployeeAvatar
-                  photoUrl={employee.photo_url}
-                  nom={employee.nom}
-                  prenom={employee.prenom}
-                  size="md"
-                />
-              )}
-              <ThemeToggle />
-              <div className="hidden sm:block">
-                <LanguageSwitcher />
-              </div>
-              <button
-                onClick={() => navigate("/auth")}
-                className="px-3 py-2 sm:px-4 text-xs sm:text-sm border border-border rounded-lg hover:bg-accent/10 transition-colors shrink-0"
-              >
-                <span className="hidden sm:inline">{t('logout')}</span>
-                <span className="sm:hidden">↗</span>
-              </button>
             </div>
           </div>
         </header>
 
-        <main className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-12">
-          <div className="text-center mb-8 sm:mb-12 animate-fade-in-up">
-            <h2 className="text-2xl sm:text-4xl font-display font-bold mb-3 sm:mb-4 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
+        <main className="max-w-7xl mx-auto px-3 sm:px-6 py-4 sm:py-12">
+          {/* Welcome section - compact on mobile */}
+          <div className="text-center mb-6 sm:mb-12 animate-fade-in-up">
+            <h2 className="text-xl sm:text-4xl font-display font-bold mb-2 sm:mb-4 bg-gradient-to-r from-primary via-accent to-primary bg-clip-text text-transparent">
               {t('welcome')}
             </h2>
-            <p className="text-muted-foreground text-base sm:text-lg font-sans">
+            <p className="text-muted-foreground text-sm sm:text-lg font-sans">
               {t('tagline')}
             </p>
           </div>
 
           {/* MoodBar - Au-dessus des widgets, disparaît après le vote */}
           {!hasVotedMood && (
-            <div className="max-w-3xl mx-auto mb-8 sm:mb-12">
+            <div className="max-w-3xl mx-auto mb-6 sm:mb-12">
               <MoodBarWidget onVoted={setHasVotedMood} />
             </div>
           )}
 
           {/* Time Declaration Widget for remote employees */}
           {employee?.is_remote && (
-            <div className="max-w-md mx-auto mb-8 sm:mb-12">
+            <div className="max-w-md mx-auto mb-6 sm:mb-12">
               <TimeDeclarationWidget />
             </div>
           )}
@@ -218,12 +246,12 @@ const Index = () => {
             const visibleCount = 1 + (hasTasks ? 1 : 0) + (hasPriorityTasks ? 1 : 0) + (hasInfos ? 1 : 0);
             const gridClasses = 
               visibleCount === 1 ? "flex justify-center" :
-              visibleCount === 2 ? "grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 max-w-2xl mx-auto" :
-              visibleCount === 3 ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 max-w-4xl mx-auto" :
-              "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6";
+              visibleCount === 2 ? "grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-6 max-w-2xl mx-auto" :
+              visibleCount === 3 ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 max-w-4xl mx-auto" :
+              "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6";
             
             return (
-              <div className={`${gridClasses} mb-8 sm:mb-12`}>
+              <div className={`${gridClasses} mb-6 sm:mb-12`}>
                 <div className={visibleCount === 1 ? "max-w-sm w-full" : ""}>
                   <AgendaWidget />
                 </div>
@@ -234,8 +262,8 @@ const Index = () => {
             );
           })()}
 
-          {/* Barre de recherche mobile avec dropdown */}
-          <div className="relative max-w-md mx-auto mb-6 sm:hidden">
+          {/* Barre de recherche mobile avec dropdown - visible only on mobile */}
+          <div className="relative max-w-md mx-auto mb-4 md:hidden">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
             <Input
               placeholder="Rechercher un module..."
@@ -245,9 +273,8 @@ const Index = () => {
                 setShowSearchDropdown(e.target.value.trim().length > 0);
               }}
               onFocus={() => searchQuery.trim() && setShowSearchDropdown(true)}
-              className="pl-10 glass border-border/50"
+              className="pl-10 h-11 glass border-border/50 text-base"
             />
-            {/* Dropdown mobile */}
             {showSearchDropdown && searchQuery.trim() && (
               <div className="absolute top-full left-0 w-full mt-1 bg-background border border-border rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto">
                 {filteredModules.length === 0 ? (
@@ -267,7 +294,7 @@ const Index = () => {
                         setSearchQuery("");
                         setShowSearchDropdown(false);
                       }}
-                      className="flex items-center gap-3 p-3 hover:bg-accent/50 cursor-pointer transition-colors border-b border-border/30 last:border-b-0"
+                      className="flex items-center gap-3 p-3 min-h-[48px] hover:bg-accent/50 cursor-pointer transition-colors border-b border-border/30 last:border-b-0 active:bg-accent/70"
                     >
                       <span className="text-xl">{module.icon}</span>
                       <span className="text-sm font-medium">{module.module_name}</span>
@@ -278,13 +305,13 @@ const Index = () => {
             )}
           </div>
 
-          {/* Modules de navigation - toujours visibles */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+          {/* Modules de navigation - 2 columns on mobile, 3 on desktop */}
+          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6">
             {modulesLoading ? (
               <>
                 {[1, 2, 3, 4, 5, 6].map((i) => (
-                  <div key={i} className="glass p-4 sm:p-6 rounded-xl animate-pulse">
-                    <div className="w-12 h-12 bg-muted/50 rounded-lg mb-4" />
+                  <div key={i} className="glass p-3 sm:p-6 rounded-xl animate-pulse">
+                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-muted/50 rounded-lg mb-3 sm:mb-4" />
                     <div className="h-4 bg-muted/50 rounded w-3/4" />
                   </div>
                 ))}
@@ -304,12 +331,12 @@ const Index = () => {
                       navigate(module.path);
                     }
                   }}
-                  className="group glass-hover p-4 sm:p-6 rounded-xl cursor-pointer hover-3d animate-fade-in"
+                  className="group glass-hover p-3 sm:p-6 rounded-xl cursor-pointer hover-3d animate-fade-in active:scale-95 transition-transform"
                 >
-                  <div className="text-3xl sm:text-4xl mb-3 sm:mb-4 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
+                  <div className="text-2xl sm:text-4xl mb-2 sm:mb-4 transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
                     {module.icon}
                   </div>
-                  <h3 className="text-base sm:text-lg font-display font-semibold group-hover:text-primary transition-colors line-clamp-2">
+                  <h3 className="text-sm sm:text-lg font-display font-semibold group-hover:text-primary transition-colors line-clamp-2">
                     {module.module_name}
                   </h3>
                 </div>

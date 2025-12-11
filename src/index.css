@@ -62,6 +62,12 @@
 
     /* Navigation heights */
     --nav-height: 4.5rem;
+    --nav-height-mobile: 3.5rem;
+    
+    /* Mobile spacing */
+    --spacing-mobile: 0.75rem;
+    --spacing-tablet: 1rem;
+    --spacing-desktop: 1.5rem;
   }
 
   .dark {
@@ -119,6 +125,7 @@
     scroll-behavior: smooth;
     height: 100%;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    -webkit-tap-highlight-color: transparent;
   }
 
   body {
@@ -126,6 +133,7 @@
     height: 100vh;
     position: relative;
     font-family: 'Inter', system-ui, -apple-system, sans-serif;
+    overflow-x: hidden;
   }
   
   /* Glassmorphism utility classes */
@@ -286,7 +294,7 @@
   .content-wrapper {
     max-width: 96rem; /* 6xl */
     margin: 0 auto;
-    padding: 0 2rem;
+    padding: 0 var(--spacing-desktop);
     position: relative;
   }
 
@@ -320,16 +328,33 @@
 
   /* Mobile-optimized spacing */
   @media (max-width: 640px) {
+    :root {
+      --nav-height: var(--nav-height-mobile);
+    }
+    
     .content-wrapper {
-      padding: 0 1rem;
+      padding: 0 var(--spacing-mobile);
+    }
+  }
+  
+  @media (min-width: 641px) and (max-width: 1024px) {
+    .content-wrapper {
+      padding: 0 var(--spacing-tablet);
     }
   }
 
   /* Touch-friendly minimum sizes on mobile */
   @media (max-width: 640px) {
-    button, a, [role="button"] {
+    button:not(.no-touch-target), 
+    a:not(.no-touch-target), 
+    [role="button"]:not(.no-touch-target) {
       min-height: 44px;
-      min-width: 44px;
+    }
+    
+    /* Smaller icon buttons exception */
+    .icon-btn {
+      min-height: 36px;
+      min-width: 36px;
     }
   }
 
@@ -337,7 +362,92 @@
   @supports (padding: env(safe-area-inset-bottom)) {
     body {
       padding-bottom: env(safe-area-inset-bottom);
+      padding-left: env(safe-area-inset-left);
+      padding-right: env(safe-area-inset-right);
     }
+  }
+  
+  /* Scrollable tabs container */
+  .tabs-scroll-container {
+    display: flex;
+    overflow-x: auto;
+    scroll-behavior: smooth;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    gap: 0.25rem;
+  }
+  
+  .tabs-scroll-container::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* Scroll fade indicators */
+  .tabs-scroll-wrapper {
+    position: relative;
+  }
+  
+  .tabs-scroll-wrapper::before,
+  .tabs-scroll-wrapper::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    width: 24px;
+    pointer-events: none;
+    z-index: 1;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+  
+  .tabs-scroll-wrapper::before {
+    left: 0;
+    background: linear-gradient(to right, hsl(var(--background)), transparent);
+  }
+  
+  .tabs-scroll-wrapper::after {
+    right: 0;
+    background: linear-gradient(to left, hsl(var(--background)), transparent);
+  }
+  
+  .tabs-scroll-wrapper.scroll-left::before {
+    opacity: 1;
+  }
+  
+  .tabs-scroll-wrapper.scroll-right::after {
+    opacity: 1;
+  }
+  
+  /* Mobile card optimizations */
+  @media (max-width: 640px) {
+    .mobile-card {
+      padding: var(--spacing-mobile);
+    }
+    
+    .mobile-card-compact {
+      padding: 0.5rem;
+    }
+  }
+  
+  /* Mobile text sizing */
+  .text-mobile-sm {
+    @apply text-xs sm:text-sm;
+  }
+  
+  .text-mobile-base {
+    @apply text-sm sm:text-base;
+  }
+  
+  .text-mobile-lg {
+    @apply text-base sm:text-lg;
+  }
+  
+  .text-mobile-xl {
+    @apply text-lg sm:text-xl;
+  }
+  
+  .text-mobile-2xl {
+    @apply text-xl sm:text-2xl;
   }
 }
 
