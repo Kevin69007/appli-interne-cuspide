@@ -474,17 +474,17 @@ const Taches = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background p-2 sm:p-4">
+    <div className="min-h-screen bg-background p-2 sm:p-4 pb-20 sm:pb-4">
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center justify-between mb-4 sm:mb-6 gap-2">
           <div className="flex items-center gap-2 sm:gap-4 min-w-0">
-            <Button variant="ghost" size="icon" onClick={() => navigate("/")} className="shrink-0">
+            <Button variant="ghost" size="icon" onClick={() => navigate("/")} className="shrink-0 h-9 w-9 sm:h-10 sm:w-10">
               <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
             </Button>
-            <h1 className="text-xl sm:text-3xl font-bold font-display truncate">{t('title')}</h1>
+            <h1 className="text-lg sm:text-3xl font-bold font-display truncate">{t('title')}</h1>
             <ModuleHelpButton moduleId="tasks" />
           </div>
-          <Button onClick={() => setShowCreateDialog(true)} size="sm" className="shrink-0">
+          <Button onClick={() => setShowCreateDialog(true)} size="sm" className="shrink-0 h-9 sm:h-10">
             <Plus className="h-4 w-4 sm:mr-2" />
             <span className="hidden sm:inline">{t('createTask')}</span>
           </Button>
@@ -499,11 +499,11 @@ const Taches = () => {
         />
 
         <Tabs defaultValue="my-tasks" className="w-full">
-          <TabsList className={`grid w-full h-auto ${(isAdmin || isManager) ? 'grid-cols-5' : 'grid-cols-4'}`}>
+          <TabsList scrollable className="w-full h-auto p-1">
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <TabsTrigger value="my-tasks" className="text-xs sm:text-sm px-1 sm:px-2 py-2">
+                  <TabsTrigger value="my-tasks" className="text-xs sm:text-sm px-2 sm:px-3 py-2 min-w-fit">
                     <span className="hidden sm:inline">{t('tabs.myTasks')}</span>
                     <span className="sm:hidden">Tâches</span>
                     <span className="ml-1">({filteredTasks.length})</span>
@@ -516,7 +516,7 @@ const Taches = () => {
 
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <TabsTrigger value="boomerangs-sent" className="text-xs sm:text-sm px-1 sm:px-2 py-2">
+                  <TabsTrigger value="boomerangs-sent" className="text-xs sm:text-sm px-2 sm:px-3 py-2 min-w-fit">
                     🪃 <span className="hidden sm:inline">{t('tabs.boomerangsSent')}</span>
                     <span className="sm:hidden">Envoyés</span>
                     <span className="ml-1">({filteredBoomerangsSent.length})</span>
@@ -529,7 +529,7 @@ const Taches = () => {
 
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <TabsTrigger value="boomerangs-received" className="text-xs sm:text-sm px-1 sm:px-2 py-2">
+                  <TabsTrigger value="boomerangs-received" className="text-xs sm:text-sm px-2 sm:px-3 py-2 min-w-fit">
                     🪃 <span className="hidden sm:inline">{t('tabs.boomerangsReceived')}</span>
                     <span className="sm:hidden">Reçus</span>
                     <span className="ml-1">({filteredBoomerangsReceived.length})</span>
@@ -542,7 +542,7 @@ const Taches = () => {
 
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <TabsTrigger value="assigned-tracking" className="text-xs sm:text-sm px-1 sm:px-2 py-2">
+                  <TabsTrigger value="assigned-tracking" className="text-xs sm:text-sm px-2 sm:px-3 py-2 min-w-fit">
                     📋 <span className="hidden sm:inline">Validations</span>
                     <span className="sm:hidden">Valid.</span>
                     {filteredAssignedPending.length > 0 && (
@@ -560,7 +560,7 @@ const Taches = () => {
               {(isAdmin || isManager) && (
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <TabsTrigger value="all-assigned" className="text-xs sm:text-sm px-1 sm:px-2 py-2">
+                    <TabsTrigger value="all-assigned" className="text-xs sm:text-sm px-2 sm:px-3 py-2 min-w-fit">
                       📤 <span className="hidden sm:inline">Tâches déléguées</span>
                       <span className="sm:hidden">Déléguées</span>
                       <span className="ml-1">({filteredAllAssigned.length})</span>
@@ -694,13 +694,13 @@ const Taches = () => {
           </TabsContent>
 
           {(isAdmin || isManager) && (
-            <TabsContent value="all-assigned" className="space-y-4 mt-6">
+            <TabsContent value="all-assigned" className="space-y-4 mt-4 sm:mt-6">
               {/* Filters and sorting */}
-              <div className="flex flex-wrap items-center gap-3 p-3 bg-muted/50 rounded-lg">
+              <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-2 sm:gap-3 p-3 bg-muted/50 rounded-lg">
                 <div className="flex items-center gap-2">
-                  <ArrowUpDown className="h-4 w-4 text-muted-foreground" />
+                  <ArrowUpDown className="h-4 w-4 text-muted-foreground shrink-0" />
                   <Select value={assignedSortBy} onValueChange={(v: any) => setAssignedSortBy(v)}>
-                    <SelectTrigger className="w-[140px] h-8">
+                    <SelectTrigger className="w-full sm:w-[140px] h-9">
                       <SelectValue placeholder="Trier par" />
                     </SelectTrigger>
                     <SelectContent>
@@ -713,9 +713,9 @@ const Taches = () => {
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <Label className="text-sm text-muted-foreground whitespace-nowrap">Filtrer par employé :</Label>
+                  <Label className="text-sm text-muted-foreground whitespace-nowrap hidden sm:inline">Filtrer :</Label>
                   <Select value={assignedFilterEmployee} onValueChange={setAssignedFilterEmployee}>
-                    <SelectTrigger className="w-[180px] h-8">
+                    <SelectTrigger className="w-full sm:w-[180px] h-9">
                       <SelectValue placeholder="Tous les employés" />
                     </SelectTrigger>
                     <SelectContent>
@@ -732,22 +732,22 @@ const Taches = () => {
 
               {/* Bulk actions bar */}
               {selectedTasks.length > 0 && (
-                <div className="flex flex-wrap items-center gap-2 p-3 bg-muted rounded-lg">
-                  <span className="text-sm font-medium">
+                <div className="flex flex-col sm:flex-row sm:flex-wrap items-stretch sm:items-center gap-2 p-3 bg-muted rounded-lg">
+                  <span className="text-sm font-medium text-center sm:text-left">
                     {selectedTasks.length} tâche(s) sélectionnée(s)
                   </span>
-                  <div className="flex gap-2 ml-auto">
-                    <Button size="sm" variant="outline" onClick={() => setShowReassignDialog(true)}>
+                  <div className="flex flex-wrap gap-2 sm:ml-auto">
+                    <Button size="sm" variant="outline" onClick={() => setShowReassignDialog(true)} className="flex-1 sm:flex-none h-9">
                       <UserPlus className="h-4 w-4 mr-1" />
-                      Réassigner
+                      <span className="hidden sm:inline">Réassigner</span>
                     </Button>
-                    <Button size="sm" variant="outline" onClick={() => setShowChangeDateDialog(true)}>
+                    <Button size="sm" variant="outline" onClick={() => setShowChangeDateDialog(true)} className="flex-1 sm:flex-none h-9">
                       <Calendar className="h-4 w-4 mr-1" />
-                      Changer date
+                      <span className="hidden sm:inline">Date</span>
                     </Button>
-                    <Button size="sm" variant="destructive" onClick={() => setShowDeleteConfirm(true)}>
+                    <Button size="sm" variant="destructive" onClick={() => setShowDeleteConfirm(true)} className="flex-1 sm:flex-none h-9">
                       <Trash2 className="h-4 w-4 mr-1" />
-                      Supprimer
+                      <span className="hidden sm:inline">Supprimer</span>
                     </Button>
                   </div>
                 </div>

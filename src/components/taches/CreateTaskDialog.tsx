@@ -207,45 +207,47 @@ export const CreateTaskDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>Créer une nouvelle tâche</DialogTitle>
+      <DialogContent className="w-full max-w-2xl max-h-[100dvh] sm:max-h-[90vh] overflow-y-auto p-4 sm:p-6">
+        <DialogHeader className="pb-2">
+          <DialogTitle className="text-lg sm:text-xl">Créer une nouvelle tâche</DialogTitle>
           <DialogDescription className="sr-only">
             Formulaire de création d'une nouvelle tâche avec titre, description, assignation, échéance et options
           </DialogDescription>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4">
           <div>
-            <Label htmlFor="titre">Titre *</Label>
+            <Label htmlFor="titre" className="text-sm">Titre *</Label>
             <Input
               id="titre"
               value={formData.titre}
               onChange={(e) => setFormData({ ...formData, titre: e.target.value })}
               placeholder="Titre de la tâche"
               required
+              className="h-10 sm:h-9"
             />
           </div>
 
           <div>
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description" className="text-sm">Description</Label>
             <Textarea
               id="description"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
               placeholder="Description détaillée"
-              rows={3}
+              rows={2}
+              className="min-h-[60px] sm:min-h-[80px]"
             />
           </div>
 
           {isMaintenance && (
-            <>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <div>
-                <Label htmlFor="maintenance_type">Type d'entretien *</Label>
+                <Label htmlFor="maintenance_type" className="text-sm">Type d'entretien *</Label>
                 <Select
                   value={formData.maintenance_type}
                   onValueChange={(v: any) => setFormData({ ...formData, maintenance_type: v })}
                 >
-                  <SelectTrigger>
+                  <SelectTrigger className="h-10 sm:h-9">
                     <SelectValue placeholder="Sélectionner un type" />
                   </SelectTrigger>
                   <SelectContent>
@@ -256,7 +258,7 @@ export const CreateTaskDialog = ({
               </div>
 
               <div>
-                <Label htmlFor="machine_piece">
+                <Label htmlFor="machine_piece" className="text-sm">
                   {formData.maintenance_type === "machine" ? "Nom de la machine" : "Nom de la pièce/local"} *
                 </Label>
                 <Input
@@ -265,17 +267,18 @@ export const CreateTaskDialog = ({
                   onChange={(e) => setFormData({ ...formData, machine_piece: e.target.value })}
                   placeholder={formData.maintenance_type === "machine" ? "Ex: Four de cuisson" : "Ex: Salle de finition"}
                   required={isMaintenance}
+                  className="h-10 sm:h-9"
                 />
               </div>
-            </>
+            </div>
           )}
 
           {canAssignOthers && (
             <div>
-              <Label htmlFor="assigned_to">
+              <Label htmlFor="assigned_to" className="text-sm">
                 Assigner à *
                 <span className="text-xs text-muted-foreground ml-2">
-                  (sélection multiple possible)
+                  (sélection multiple)
                 </span>
               </Label>
               <MultiSelectCombobox
@@ -298,43 +301,44 @@ export const CreateTaskDialog = ({
             </div>
           )}
 
-          <div>
-            <Label htmlFor="date_echeance">Date d'échéance *</Label>
-            <Input
-              id="date_echeance"
-              type="date"
-              value={formData.date_echeance}
-              onChange={(e) => setFormData({ ...formData, date_echeance: e.target.value })}
-              required
-            />
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            <div>
+              <Label htmlFor="date_echeance" className="text-sm">Date d'échéance *</Label>
+              <Input
+                id="date_echeance"
+                type="date"
+                value={formData.date_echeance}
+                onChange={(e) => setFormData({ ...formData, date_echeance: e.target.value })}
+                required
+                className="h-10 sm:h-9"
+              />
+            </div>
+
+            <div>
+              <Label htmlFor="priorite" className="text-sm">
+                Priorité
+                {formData.is_priority && (
+                  <span className="text-xs text-orange-500 ml-1">(Auto: Haute)</span>
+                )}
+              </Label>
+              <Select
+                value={formData.priorite}
+                onValueChange={(v: any) => setFormData({ ...formData, priorite: v })}
+                disabled={formData.is_priority}
+              >
+                <SelectTrigger className="h-10 sm:h-9">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="basse">Basse</SelectItem>
+                  <SelectItem value="normale">Normale</SelectItem>
+                  <SelectItem value="haute">Haute</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
 
-          <div>
-            <Label htmlFor="priorite">
-              Priorité
-              {formData.is_priority && (
-                <span className="text-xs text-orange-500 ml-2">
-                  (Automatiquement "Haute" pour les tâches prioritaires)
-                </span>
-              )}
-            </Label>
-            <Select
-              value={formData.priorite}
-              onValueChange={(v: any) => setFormData({ ...formData, priorite: v })}
-              disabled={formData.is_priority}
-            >
-              <SelectTrigger>
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="basse">Basse</SelectItem>
-                <SelectItem value="normale">Normale</SelectItem>
-                <SelectItem value="haute">Haute</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 py-1">
             <Checkbox
               id="is_priority"
               checked={formData.is_priority}
@@ -342,7 +346,7 @@ export const CreateTaskDialog = ({
                 setFormData({ ...formData, is_priority: checked as boolean })
               }
             />
-            <Label htmlFor="is_priority" className="font-medium cursor-pointer">
+            <Label htmlFor="is_priority" className="font-medium cursor-pointer text-sm">
               Tâche prioritaire
               <p className="text-xs text-muted-foreground font-normal">
                 Un suivi quotidien sera demandé
@@ -357,12 +361,12 @@ export const CreateTaskDialog = ({
 
           {/* Validation de la clôture */}
           <div className="space-y-3 p-3 bg-muted/50 rounded-lg">
-            <Label className="font-medium">Validation de la clôture</Label>
+            <Label className="font-medium text-sm">Validation de la clôture</Label>
             <Select
               value={formData.validation_mode}
               onValueChange={(v: "creator" | "none" | "other") => setFormData({ ...formData, validation_mode: v })}
             >
-              <SelectTrigger>
+              <SelectTrigger className="h-10 sm:h-9">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -394,11 +398,20 @@ export const CreateTaskDialog = ({
             )}
           </div>
 
-          <div className="flex justify-end gap-2 pt-4">
-            <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+          <div className="flex flex-col-reverse sm:flex-row justify-end gap-2 pt-4 sticky bottom-0 bg-background pb-1">
+            <Button 
+              type="button" 
+              variant="outline" 
+              onClick={() => onOpenChange(false)}
+              className="h-10 sm:h-9"
+            >
               Annuler
             </Button>
-            <Button type="submit" disabled={loading || !formData.titre || !formData.date_echeance}>
+            <Button 
+              type="submit" 
+              disabled={loading || !formData.titre || !formData.date_echeance}
+              className="h-10 sm:h-9"
+            >
               {loading ? "Création..." : "Créer"}
             </Button>
           </div>
