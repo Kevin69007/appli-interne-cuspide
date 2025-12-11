@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Calendar as CalendarIcon, X } from "lucide-react";
 import { format } from "date-fns";
-import { fr } from "date-fns/locale";
+import { fr, enUS } from "date-fns/locale";
 import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import {
@@ -19,6 +19,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { cn } from "@/lib/utils";
+import { useTranslation } from "react-i18next";
 
 export interface ProjectFilters {
   responsableId: string | null;
@@ -42,6 +43,9 @@ export const ProjectFilters = ({
   totalProjects,
   filteredCount,
 }: ProjectFiltersProps) => {
+  const { t, i18n } = useTranslation(['projects', 'common']);
+  const dateLocale = i18n.language === 'fr' ? fr : enUS;
+  
   const activeFiltersCount =
     (filters.responsableId ? 1 : 0) +
     (filters.statut.length > 0 ? 1 : 0) +
@@ -63,7 +67,7 @@ export const ProjectFilters = ({
           {/* Filtre par responsable */}
           <div>
             <label className="text-xs sm:text-sm font-medium mb-1.5 sm:mb-2 block">
-              👤 Responsable
+              👤 {t('responsable')}
             </label>
             <Select
               value={filters.responsableId || "tous"}
@@ -75,10 +79,10 @@ export const ProjectFilters = ({
               }
             >
               <SelectTrigger className="h-9 sm:h-10 text-xs sm:text-sm">
-                <SelectValue placeholder="Tous les responsables" />
+                <SelectValue placeholder={t('allResponsables')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="tous">Tous les responsables</SelectItem>
+                <SelectItem value="tous">{t('allResponsables')}</SelectItem>
                 {responsables.map((resp) => (
                   <SelectItem key={resp.id} value={resp.id}>
                     {resp.prenom} {resp.nom}
@@ -91,7 +95,7 @@ export const ProjectFilters = ({
           {/* Filtre par statut */}
           <div>
             <label className="text-xs sm:text-sm font-medium mb-1.5 sm:mb-2 block">
-              📊 Statut
+              📊 {t('filters.status')}
             </label>
             <MultiSelect
               selectedValues={filters.statut}
@@ -99,19 +103,19 @@ export const ProjectFilters = ({
                 onFiltersChange({ ...filters, statut: values })
               }
               options={[
-                { value: "en_cours", label: "🟢 En cours" },
-                { value: "a_venir", label: "🔵 À venir" },
-                { value: "en_pause", label: "🟠 En pause" },
-                { value: "termine", label: "✅ Terminé" },
+                { value: "en_cours", label: `🟢 ${t('statuses.inProgress')}` },
+                { value: "a_venir", label: `🔵 ${t('statuses.upcoming')}` },
+                { value: "en_pause", label: `🟠 ${t('statuses.onHold')}` },
+                { value: "termine", label: `✅ ${t('statuses.completed')}` },
               ]}
-              placeholder="Tous les statuts"
+              placeholder={t('filters.allStatuses')}
             />
           </div>
 
           {/* Tri */}
           <div>
             <label className="text-xs sm:text-sm font-medium mb-1.5 sm:mb-2 block">
-              ↕️ Trier par
+              ↕️ {t('filters.sortBy')}
             </label>
             <Select
               value={`${filters.sortBy || "default"}_${filters.sortOrder}`}
@@ -127,15 +131,15 @@ export const ProjectFilters = ({
               }}
             >
               <SelectTrigger className="h-9 sm:h-10 text-xs sm:text-sm">
-                <SelectValue placeholder="Par défaut" />
+                <SelectValue placeholder={t('filters.default')} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="default_desc">Par défaut</SelectItem>
-                <SelectItem value="date_echeance_asc">📅 Échéance (proche)</SelectItem>
-                <SelectItem value="date_echeance_desc">📅 Échéance (loin)</SelectItem>
-                <SelectItem value="created_at_desc">🕐 Plus récent</SelectItem>
-                <SelectItem value="created_at_asc">🕐 Plus ancien</SelectItem>
-                <SelectItem value="priorite_desc">⭐ Prioritaires</SelectItem>
+                <SelectItem value="default_desc">{t('filters.default')}</SelectItem>
+                <SelectItem value="date_echeance_asc">📅 {t('filters.dueDateClose')}</SelectItem>
+                <SelectItem value="date_echeance_desc">📅 {t('filters.dueDateFar')}</SelectItem>
+                <SelectItem value="created_at_desc">🕐 {t('filters.mostRecent')}</SelectItem>
+                <SelectItem value="created_at_asc">🕐 {t('filters.oldest')}</SelectItem>
+                <SelectItem value="priorite_desc">⭐ {t('filters.priorities')}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -147,11 +151,11 @@ export const ProjectFilters = ({
         <div className="flex items-center gap-2">
           {activeFiltersCount > 0 && (
             <Badge variant="secondary" className="animate-fade-in text-xs">
-              🔍 {activeFiltersCount} filtre{activeFiltersCount > 1 ? "s" : ""}
+              🔍 {activeFiltersCount} {activeFiltersCount > 1 ? t('filters.activeFiltersPlural') : t('filters.activeFilters')}
             </Badge>
           )}
           <span className="text-xs sm:text-sm text-muted-foreground">
-            {filteredCount} / {totalProjects} projet{totalProjects > 1 ? "s" : ""}
+            {filteredCount} / {totalProjects} {totalProjects > 1 ? t('title').toLowerCase() : t('title').toLowerCase().slice(0, -1)}
           </span>
         </div>
 
@@ -163,7 +167,7 @@ export const ProjectFilters = ({
             className="gap-1.5 h-7 sm:h-8 text-xs sm:text-sm"
           >
             <X className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-            Réinitialiser
+            {t('filters.reset')}
           </Button>
         )}
       </div>

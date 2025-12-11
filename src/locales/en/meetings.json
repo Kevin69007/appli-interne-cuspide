@@ -1,6 +1,8 @@
 {
   "title": "Meetings",
+  "description": "Manage your meetings with automatic transcription",
   "createMeeting": "Create meeting",
+  "newMeeting": "New meeting",
   "editMeeting": "Edit meeting",
   "deleteMeeting": "Delete meeting",
   "meetingTitle": "Meeting title",
@@ -14,8 +16,71 @@
   "decisions": "Decisions",
   "recording": "Recording",
   "transcription": "Transcription",
-  "noMeetings": "No meetings found",
+  "noMeetings": "No meetings recorded",
   "meetingCreated": "Meeting created successfully",
   "meetingUpdated": "Meeting updated successfully",
-  "meetingDeleted": "Meeting deleted successfully"
+  "meetingDeleted": "Meeting deleted successfully",
+  "permissions": "Permissions",
+  "loading": "Loading...",
+  "error": "Error",
+  "errorLoading": "Unable to load meetings",
+  "tabs": {
+    "active": "Active meetings",
+    "archived": "Archives"
+  },
+  "create": {
+    "title": "Create a new meeting",
+    "projects": "Projects",
+    "selectProjects": "Select projects",
+    "searchProject": "Search a project...",
+    "noProjectFound": "No project found.",
+    "selectParticipants": "Select participants",
+    "searchEmployee": "Search an employee...",
+    "noEmployeeFound": "No employee found.",
+    "noProjectsAvailable": "No projects available. Create projects first.",
+    "noEmployeesAvailable": "No employees available.",
+    "selectAtLeastOneProject": "Please select at least one project",
+    "selectAtLeastOneParticipant": "Please select at least one participant",
+    "titleRequired": "Title is required",
+    "dateRequired": "Date is required",
+    "transcriptionPending": "Transcription will be available in a few minutes",
+    "savedSuccess": "Meeting saved successfully",
+    "errorCreating": "Error creating meeting",
+    "unknownError": "Unknown error - check console"
+  },
+  "upload": {
+    "title": "Import a file",
+    "description": "Upload an audio file"
+  },
+  "live": {
+    "title": "Record live",
+    "description": "Start a live recording with temporal marking of discussed projects and tasks.",
+    "start": "Start recording"
+  },
+  "card": {
+    "minutes": "minutes",
+    "participant": "participant",
+    "participants": "participants",
+    "audioAvailable": "Audio available",
+    "transcribed": "Transcribed",
+    "archivedOn": "Archived on"
+  },
+  "archive": {
+    "title": "Archive this meeting?",
+    "description": "The meeting will be archived and permanently deleted in 30 days. You can recover it before that date.",
+    "success": "Meeting archived",
+    "successDescription": "The meeting will be permanently deleted in 30 days",
+    "error": "Unable to delete the meeting"
+  },
+  "restore": {
+    "title": "Restore this meeting?",
+    "description": "The meeting will be restored to active meetings.",
+    "success": "Meeting restored",
+    "successDescription": "The meeting has been restored successfully",
+    "error": "Unable to restore the meeting"
+  },
+  "cancel": "Cancel",
+  "delete": "Delete",
+  "restore": "Restore",
+  "creating": "Creating..."
 }

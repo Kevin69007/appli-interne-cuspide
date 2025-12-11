@@ -5,11 +5,12 @@ import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import { Calendar, AlertCircle, Pencil } from "lucide-react";
 import { format } from "date-fns";
-import { fr } from "date-fns/locale";
+import { fr, enUS } from "date-fns/locale";
 import { useNavigate } from "react-router-dom";
 import { useUserRole } from "@/hooks/useUserRole";
 import { EditProjectDialog } from "./EditProjectDialog";
 import { EmployeeAvatar } from "@/components/ui/employee-avatar";
+import { useTranslation } from "react-i18next";
 
 interface ProjectCardProps {
   project: {
@@ -28,42 +29,44 @@ interface ProjectCardProps {
   canEdit: boolean;
 }
 
-const getStatutColor = (statut: string) => {
-  switch (statut) {
-    case "en_cours":
-      return "bg-blue-500/10 text-blue-600 border-blue-200";
-    case "a_venir":
-      return "bg-yellow-500/10 text-yellow-600 border-yellow-200";
-    case "termine":
-      return "bg-green-500/10 text-green-600 border-green-200";
-    case "en_pause":
-      return "bg-gray-500/10 text-gray-600 border-gray-200";
-    default:
-      return "";
-  }
-};
-
-const getStatutLabel = (statut: string) => {
-  switch (statut) {
-    case "en_cours":
-      return "En cours";
-    case "a_venir":
-      return "À venir";
-    case "termine":
-      return "Terminé";
-    case "en_pause":
-      return "En pause";
-    default:
-      return statut;
-  }
-};
-
 export const ProjectCard = memo(({ project, onUpdate, currentEmployeeId, canEdit }: ProjectCardProps) => {
   const navigate = useNavigate();
+  const { t, i18n } = useTranslation(['projects', 'common']);
+  const dateLocale = i18n.language === 'fr' ? fr : enUS;
   const [showEditDialog, setShowEditDialog] = useState(false);
 
+  const getStatutColor = (statut: string) => {
+    switch (statut) {
+      case "en_cours":
+        return "bg-blue-500/10 text-blue-600 border-blue-200";
+      case "a_venir":
+        return "bg-yellow-500/10 text-yellow-600 border-yellow-200";
+      case "termine":
+        return "bg-green-500/10 text-green-600 border-green-200";
+      case "en_pause":
+        return "bg-gray-500/10 text-gray-600 border-gray-200";
+      default:
+        return "";
+    }
+  };
+
+  const getStatutLabel = (statut: string) => {
+    switch (statut) {
+      case "en_cours":
+        return t('statuses.inProgress');
+      case "a_venir":
+        return t('statuses.upcoming');
+      case "termine":
+        return t('statuses.completed');
+      case "en_pause":
+        return t('statuses.onHold');
+      default:
+        return statut;
+    }
+  };
+
   const statutColor = useMemo(() => getStatutColor(project.statut), [project.statut]);
-  const statutLabel = useMemo(() => getStatutLabel(project.statut), [project.statut]);
+  const statutLabel = useMemo(() => getStatutLabel(project.statut), [project.statut, i18n.language]);
 
   return (
     <>
@@ -99,14 +102,14 @@ export const ProjectCard = memo(({ project, onUpdate, currentEmployeeId, canEdit
           {project.is_priority && (
             <Badge variant="destructive" className="shrink-0">
               <AlertCircle className="h-3 w-3 mr-1" />
-              Prioritaire
+              {t('priority')}
             </Badge>
           )}
         </div>
 
         <div className="space-y-2">
           <div className="flex items-center justify-between text-sm">
-            <span className="text-muted-foreground">Progression</span>
+            <span className="text-muted-foreground">{t('progression')}</span>
             <span className="font-medium">{Math.round(project.progression)}%</span>
           </div>
           <Progress value={project.progression} className="h-2" />
@@ -120,7 +123,7 @@ export const ProjectCard = memo(({ project, onUpdate, currentEmployeeId, canEdit
             <Badge variant="outline" className="gap-1">
               <Calendar className="h-3 w-3" />
               {format(new Date(project.date_echeance), "dd MMM yyyy", {
-                locale: fr,
+                locale: dateLocale,
               })}
             </Badge>
           )}

@@ -1,6 +1,8 @@
 {
   "title": "Réunions",
+  "description": "Gérez vos réunions avec transcription automatique",
   "createMeeting": "Créer une réunion",
+  "newMeeting": "Nouvelle réunion",
   "editMeeting": "Modifier la réunion",
   "deleteMeeting": "Supprimer la réunion",
   "meetingTitle": "Titre de la réunion",
@@ -14,8 +16,71 @@
   "decisions": "Décisions",
   "recording": "Enregistrement",
   "transcription": "Transcription",
-  "noMeetings": "Aucune réunion trouvée",
+  "noMeetings": "Aucune réunion enregistrée",
   "meetingCreated": "Réunion créée avec succès",
   "meetingUpdated": "Réunion mise à jour avec succès",
-  "meetingDeleted": "Réunion supprimée avec succès"
+  "meetingDeleted": "Réunion supprimée avec succès",
+  "permissions": "Permissions",
+  "loading": "Chargement...",
+  "error": "Erreur",
+  "errorLoading": "Impossible de charger les réunions",
+  "tabs": {
+    "active": "Réunions actives",
+    "archived": "Archives"
+  },
+  "create": {
+    "title": "Créer une nouvelle réunion",
+    "projects": "Projets",
+    "selectProjects": "Sélectionner des projets",
+    "searchProject": "Rechercher un projet...",
+    "noProjectFound": "Aucun projet trouvé.",
+    "selectParticipants": "Sélectionner les participants",
+    "searchEmployee": "Rechercher un employé...",
+    "noEmployeeFound": "Aucun employé trouvé.",
+    "noProjectsAvailable": "Aucun projet disponible. Créez d'abord des projets.",
+    "noEmployeesAvailable": "Aucun employé disponible.",
+    "selectAtLeastOneProject": "Veuillez sélectionner au moins un projet",
+    "selectAtLeastOneParticipant": "Veuillez sélectionner au moins un participant",
+    "titleRequired": "Le titre est obligatoire",
+    "dateRequired": "La date est obligatoire",
+    "transcriptionPending": "La transcription sera disponible dans quelques minutes",
+    "savedSuccess": "Réunion enregistrée avec succès",
+    "errorCreating": "Erreur lors de la création",
+    "unknownError": "Erreur inconnue - vérifiez la console"
+  },
+  "upload": {
+    "title": "Importer un fichier",
+    "description": "Téléchargez un fichier audio"
+  },
+  "live": {
+    "title": "Enregistrer en direct",
+    "description": "Lancez un enregistrement en direct avec marquage temporel des projets et tâches abordés.",
+    "start": "Démarrer l'enregistrement"
+  },
+  "card": {
+    "minutes": "minutes",
+    "participant": "participant",
+    "participants": "participants",
+    "audioAvailable": "Audio disponible",
+    "transcribed": "Transcrite",
+    "archivedOn": "Archivée le"
+  },
+  "archive": {
+    "title": "Supprimer cette réunion ?",
+    "description": "La réunion sera archivée et supprimée définitivement dans 30 jours. Vous pourrez la récupérer avant cette date.",
+    "success": "Réunion archivée",
+    "successDescription": "La réunion sera supprimée définitivement dans 30 jours",
+    "error": "Impossible de supprimer la réunion"
+  },
+  "restore": {
+    "title": "Restaurer cette réunion ?",
+    "description": "La réunion sera restaurée dans les réunions actives.",
+    "success": "Réunion restaurée",
+    "successDescription": "La réunion a été restaurée avec succès",
+    "error": "Impossible de restaurer la réunion"
+  },
+  "cancel": "Annuler",
+  "delete": "Supprimer",
+  "restore": "Restaurer",
+  "creating": "Création..."
 }

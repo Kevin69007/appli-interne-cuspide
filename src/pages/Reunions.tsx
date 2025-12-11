@@ -11,6 +11,7 @@ import { CreateMeetingDialog } from "@/components/reunions/CreateMeetingDialog";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Badge } from "@/components/ui/badge";
 import { ModuleHelpButton } from "@/components/communication/ModuleHelpButton";
+import { useTranslation } from "react-i18next";
 
 interface Meeting {
   id: string;
@@ -35,6 +36,7 @@ const Reunions = () => {
   const { user } = useAuth();
   const { isAdmin } = useUserRole();
   const { toast } = useToast();
+  const { t } = useTranslation(['meetings', 'common']);
   const [meetings, setMeetings] = useState<Meeting[]>([]);
   const [archivedMeetings, setArchivedMeetings] = useState<Meeting[]>([]);
   const [loading, setLoading] = useState(true);
@@ -77,8 +79,8 @@ const Reunions = () => {
     } catch (error) {
       console.error("Error fetching meetings:", error);
       toast({
-        title: "Erreur",
-        description: "Impossible de charger les réunions",
+        title: t('error'),
+        description: t('errorLoading'),
         variant: "destructive",
       });
     } finally {
@@ -90,15 +92,15 @@ const Reunions = () => {
     setCreateDialogOpen(false);
     fetchMeetings();
     toast({
-      title: "Réunion créée",
-      description: "La réunion a été créée avec succès",
+      title: t('meetingCreated'),
+      description: t('meetingCreated'),
     });
   };
 
   if (loading) {
     return (
       <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="animate-pulse text-lg">Chargement...</div>
+        <div className="animate-pulse text-lg">{t('loading')}</div>
       </div>
     );
   }
@@ -114,11 +116,11 @@ const Reunions = () => {
             </Button>
             <div>
               <div className="flex items-center gap-2">
-                <h1 className="text-3xl font-bold">Réunions</h1>
+                <h1 className="text-3xl font-bold">{t('title')}</h1>
                 <ModuleHelpButton moduleId="meetings" />
               </div>
               <p className="text-muted-foreground">
-                Gérez vos réunions avec transcription automatique
+                {t('description')}
               </p>
             </div>
           </div>
@@ -126,13 +128,13 @@ const Reunions = () => {
             {isAdmin && (
               <Button variant="outline" onClick={() => navigate("/reunions/admin")}>
                 <Settings className="w-4 h-4 mr-2" />
-                Permissions
+                {t('permissions')}
               </Button>
             )}
             {isAdmin && (
               <Button onClick={() => setCreateDialogOpen(true)}>
                 <Plus className="w-4 h-4 mr-2" />
-                Nouvelle réunion
+                {t('newMeeting')}
               </Button>
             )}
           </div>
@@ -142,11 +144,11 @@ const Reunions = () => {
         <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
           <TabsList className="mb-6">
             <TabsTrigger value="active" className="flex items-center gap-2">
-              Réunions actives
+              {t('tabs.active')}
               <Badge variant="secondary">{meetings.length}</Badge>
             </TabsTrigger>
             <TabsTrigger value="archived" className="flex items-center gap-2">
-              Archives
+              {t('tabs.archived')}
               <Badge variant="secondary">{archivedMeetings.length}</Badge>
             </TabsTrigger>
           </TabsList>

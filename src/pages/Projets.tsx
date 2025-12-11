@@ -13,6 +13,7 @@ import { SortableProjectCard } from "@/components/projects/SortableProjectCard";
 import { ProjectFilters, type ProjectFilters as ProjectFiltersType } from "@/components/projects/ProjectFilters";
 import { ModuleHelpButton } from "@/components/communication/ModuleHelpButton";
 import { toast } from "sonner";
+import { useTranslation } from "react-i18next";
 import {
   DndContext,
   closestCenter,
@@ -56,6 +57,7 @@ const Projets = () => {
   const { user } = useAuth();
   const { isAdmin, isManager } = useUserRole();
   const { employee } = useEmployee();
+  const { t } = useTranslation(['projects', 'common']);
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [localOrder, setLocalOrder] = useState<string[]>([]);
   const [filters, setFilters] = useState<ProjectFiltersType>({
@@ -210,8 +212,8 @@ const Projets = () => {
         supabase.from("projects").update({ sort_order: index }).eq("id", project.id)
       ));
     } catch (error) {
-      console.error("Erreur lors de la sauvegarde de l'ordre:", error);
-      toast.error("Erreur lors de la sauvegarde de l'ordre");
+      console.error("Error saving order:", error);
+      toast.error(t('errorSavingOrder'));
       refetchProjects();
     }
   };
@@ -245,7 +247,7 @@ const Projets = () => {
     if (projectList.length === 0) {
       return (
         <p className="text-center text-muted-foreground py-6 sm:py-8 text-sm sm:text-base">
-          Aucun projet dans cette catégorie
+          {t('noProjects')}
         </p>
       );
     }
@@ -286,15 +288,15 @@ const Projets = () => {
             </Button>
             <div className="flex items-center gap-2 sm:gap-3">
               <Briefcase className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
-              <h1 className="text-xl sm:text-3xl font-bold">Projets</h1>
+              <h1 className="text-xl sm:text-3xl font-bold">{t('title')}</h1>
               <ModuleHelpButton moduleId="projects" />
             </div>
           </div>
           {isAdminOrManager && (
             <Button onClick={() => setShowCreateDialog(true)} className="w-full sm:w-auto text-sm">
               <Plus className="h-4 w-4 mr-1.5 sm:mr-2" />
-              <span className="sm:hidden">Nouveau</span>
-              <span className="hidden sm:inline">Nouveau projet</span>
+              <span className="sm:hidden">{t('new')}</span>
+              <span className="hidden sm:inline">{t('newProject')}</span>
             </Button>
           )}
         </div>
