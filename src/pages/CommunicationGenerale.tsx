@@ -18,6 +18,7 @@ import { IdeasList } from "@/components/ideas/IdeasList";
 import { CreateSurveyDialog } from "@/components/surveys/CreateSurveyDialog";
 import { SurveysList } from "@/components/surveys/SurveysList";
 import { EmployeeSurveysList } from "@/components/surveys/EmployeeSurveysList";
+import { useTranslation } from "react-i18next";
 
 export interface Communication {
   id: string;
@@ -39,6 +40,7 @@ const CommunicationGenerale = () => {
   const navigate = useNavigate();
   const { user } = useAuth();
   const { isAdmin, isManager, loading: roleLoading } = useUserRole();
+  const { t } = useTranslation(['communication', 'common']);
   const [communications, setCommunications] = useState<Communication[]>([]);
   const [videos, setVideos] = useState<VideoCommunication[]>([]);
   const [loading, setLoading] = useState(true);
@@ -82,7 +84,7 @@ const CommunicationGenerale = () => {
 
       setCommunications(data || []);
     } catch (error) {
-      console.error("Erreur:", error);
+      console.error("Error:", error);
     } finally {
       setLoading(false);
     }
@@ -97,7 +99,7 @@ const CommunicationGenerale = () => {
 
       setVideos(data || []);
     } catch (error) {
-      console.error("Erreur:", error);
+      console.error("Error:", error);
     }
   };
 
@@ -116,9 +118,9 @@ const CommunicationGenerale = () => {
               <ChevronLeft className="h-5 w-5" />
             </Button>
             <div>
-              <h1 className="text-2xl font-bold">Communication Générale</h1>
+              <h1 className="text-2xl font-bold">{t('title')}</h1>
               <p className="text-sm text-muted-foreground">
-                Communications, Enquêtes et Idées
+                {t('subtitle')}
               </p>
             </div>
           </div>
@@ -128,25 +130,25 @@ const CommunicationGenerale = () => {
       <main className="container mx-auto px-4 py-8">
         <Tabs defaultValue="communications" className="w-full">
           <TabsList className={`grid w-full ${isAdmin ? "grid-cols-5" : "grid-cols-4"}`}>
-            <TabsTrigger value="communications">Communications</TabsTrigger>
-            <TabsTrigger value="videos">Vidéos</TabsTrigger>
-            <TabsTrigger value="surveys">Enquêtes</TabsTrigger>
-            <TabsTrigger value="ideas">Idées</TabsTrigger>
-            {isAdmin && <TabsTrigger value="tutorials">Tutoriels</TabsTrigger>}
+            <TabsTrigger value="communications">{t('tabs.communications')}</TabsTrigger>
+            <TabsTrigger value="videos">{t('tabs.videos')}</TabsTrigger>
+            <TabsTrigger value="surveys">{t('tabs.surveys')}</TabsTrigger>
+            <TabsTrigger value="ideas">{t('tabs.ideas')}</TabsTrigger>
+            {isAdmin && <TabsTrigger value="tutorials">{t('tabs.tutorials')}</TabsTrigger>}
           </TabsList>
 
           <TabsContent value="communications" className="space-y-4 mt-6">
             {(isAdmin || isManager) && (
               <div className="flex justify-end">
                 <Button onClick={() => setDialogOpen(true)}>
-                  Nouvelle communication
+                  {t('newCommunication')}
                 </Button>
               </div>
             )}
             
             {loading ? (
               <div className="text-center py-12">
-                <p className="text-muted-foreground">Chargement...</p>
+                <p className="text-muted-foreground">{t('loading')}</p>
               </div>
             ) : (
               <CommunicationsList 
@@ -166,14 +168,14 @@ const CommunicationGenerale = () => {
             {(isAdmin || isManager) && (
               <div className="flex justify-end">
                 <Button onClick={() => setVideoDialogOpen(true)}>
-                  Nouvelle vidéo
+                  {t('newVideo')}
                 </Button>
               </div>
             )}
             
             {loading ? (
               <div className="text-center py-12">
-                <p className="text-muted-foreground">Chargement...</p>
+                <p className="text-muted-foreground">{t('loading')}</p>
               </div>
             ) : (
               <VideosList 
@@ -213,7 +215,7 @@ const CommunicationGenerale = () => {
             <TabsContent value="tutorials" className="space-y-4 mt-6">
               <div className="flex justify-end">
                 <Button onClick={() => setTutorialDialogOpen(true)}>
-                  Nouveau tutoriel
+                  {t('newTutorial')}
                 </Button>
               </div>
               <TutorialsList key={tutorialRefreshKey} />

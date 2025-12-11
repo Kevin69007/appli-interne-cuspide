@@ -1,8 +1,12 @@
 {
-  "title": "Commandes & Stock",
+  "title": "Gestion Stocks & Commandes",
+  "subtitle": "Commandes, stock et fournisseurs centralisés",
   "orders": "Commandes",
   "stock": "Stock",
+  "suppliers": "Fournisseurs",
+  "configuration": "Configuration",
   "createOrder": "Créer une commande",
+  "newOrder": "Nouvelle commande",
   "editOrder": "Modifier la commande",
   "deleteOrder": "Supprimer la commande",
   "orderNumber": "Numéro de commande",
@@ -12,5 +16,15 @@
   "status": "Statut",
   "items": "Articles",
   "totalAmount": "Montant total",
-  "noOrders": "Aucune commande trouvée"
+  "noOrders": "Aucune commande trouvée",
+  "noStock": "Aucun article en stock",
+  "noSuppliers": "Aucun fournisseur trouvé",
+  "createSupplier": "Créer un fournisseur",
+  "editSupplier": "Modifier le fournisseur",
+  "deleteSupplier": "Supprimer le fournisseur",
+  "supplierName": "Nom du fournisseur",
+  "contact": "Contact",
+  "phone": "Téléphone",
+  "email": "Email",
+  "address": "Adresse"
 }

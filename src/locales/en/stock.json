@@ -1,8 +1,12 @@
 {
-  "title": "Orders & Stock",
+  "title": "Stock & Orders Management",
+  "subtitle": "Orders, stock and suppliers centralized",
   "orders": "Orders",
   "stock": "Stock",
+  "suppliers": "Suppliers",
+  "configuration": "Configuration",
   "createOrder": "Create order",
+  "newOrder": "New order",
   "editOrder": "Edit order",
   "deleteOrder": "Delete order",
   "orderNumber": "Order number",
@@ -12,5 +16,15 @@
   "status": "Status",
   "items": "Items",
   "totalAmount": "Total amount",
-  "noOrders": "No orders found"
+  "noOrders": "No orders found",
+  "noStock": "No stock items found",
+  "noSuppliers": "No suppliers found",
+  "createSupplier": "Create supplier",
+  "editSupplier": "Edit supplier",
+  "deleteSupplier": "Delete supplier",
+  "supplierName": "Supplier name",
+  "contact": "Contact",
+  "phone": "Phone",
+  "email": "Email",
+  "address": "Address"
 }

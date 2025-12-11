@@ -12,23 +12,25 @@ import { DashboardObjectifs } from "@/components/suivi-direction/DashboardObject
 import { ManagerTeamDashboard } from "@/components/suivi-direction/ManagerTeamDashboard";
 import { ModuleVisibilityConfig } from "@/components/admin/ModuleVisibilityConfig";
 import { ModuleHelpButton } from "@/components/communication/ModuleHelpButton";
+import { useTranslation } from "react-i18next";
 
 const SuiviDirection = () => {
   const navigate = useNavigate();
   const { isAdmin, isManager, loading } = useUserRole();
+  const { t } = useTranslation(['direction', 'common']);
 
   useEffect(() => {
     if (!loading && !isAdmin && !isManager) {
-      toast.error("Accès refusé - Réservé aux managers et administrateurs");
+      toast.error(t('accessDenied'));
       navigate("/");
     }
-  }, [isAdmin, isManager, loading, navigate]);
+  }, [isAdmin, isManager, loading, navigate, t]);
 
   if (loading || (!isAdmin && !isManager)) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <div className="text-center">
-          <p className="text-muted-foreground">Chargement...</p>
+          <p className="text-muted-foreground">{t('loading')}</p>
         </div>
       </div>
     );
@@ -41,21 +43,21 @@ const SuiviDirection = () => {
           <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
             <ChevronLeft className="h-5 w-5" />
           </Button>
-          <h1 className="text-3xl font-bold">Suivi Direction</h1>
+          <h1 className="text-3xl font-bold">{t('title')}</h1>
           <ModuleHelpButton moduleId="direction" />
         </div>
 
         <Tabs defaultValue={isManager && !isAdmin ? "mes-equipes" : "dashboard"} className="w-full">
           <TabsList className={`grid w-full ${isAdmin ? "grid-cols-6" : isManager && !isAdmin ? "grid-cols-5" : "grid-cols-4"}`}>
             {isManager && !isAdmin && (
-              <TabsTrigger value="mes-equipes">Mes Équipes</TabsTrigger>
+              <TabsTrigger value="mes-equipes">{t('tabs.myTeams')}</TabsTrigger>
             )}
-            <TabsTrigger value="dashboard">Dashboard</TabsTrigger>
-            <TabsTrigger value="pointage">Info Pointage</TabsTrigger>
-            <TabsTrigger value="entretiens">Entretiens Locaux et Machines</TabsTrigger>
-            <TabsTrigger value="audit">Journal d'audit</TabsTrigger>
+            <TabsTrigger value="dashboard">{t('tabs.dashboard')}</TabsTrigger>
+            <TabsTrigger value="pointage">{t('tabs.timeTracking')}</TabsTrigger>
+            <TabsTrigger value="entretiens">{t('tabs.maintenance')}</TabsTrigger>
+            <TabsTrigger value="audit">{t('tabs.audit')}</TabsTrigger>
             {isAdmin && (
-              <TabsTrigger value="modules">Modules</TabsTrigger>
+              <TabsTrigger value="modules">{t('tabs.modules')}</TabsTrigger>
             )}
           </TabsList>
 
