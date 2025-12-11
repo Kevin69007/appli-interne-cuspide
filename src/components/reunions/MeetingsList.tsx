@@ -1,4 +1,5 @@
 import { MeetingCard } from "./MeetingCard";
+import { useTranslation } from "react-i18next";
 
 interface Meeting {
   id: string;
@@ -25,10 +26,12 @@ interface MeetingsListProps {
 }
 
 export const MeetingsList = ({ meetings, onMeetingClick, onRefresh, isArchived = false }: MeetingsListProps) => {
+  const { t } = useTranslation('meetings');
+
   if (meetings.length === 0) {
     return (
       <div className="text-center py-12 bg-card rounded-lg border border-border">
-        <p className="text-muted-foreground">Aucune réunion enregistrée</p>
+        <p className="text-muted-foreground">{t('noMeetings')}</p>
       </div>
     );
   }

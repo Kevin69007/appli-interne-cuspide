@@ -1,13 +1,14 @@
 import { Card } from "@/components/ui/card";
 import { Calendar, Clock, Users, FileAudio, Pencil, Trash2, RotateCcw } from "lucide-react";
 import { format } from "date-fns";
-import { fr } from "date-fns/locale";
+import { fr, enUS } from "date-fns/locale";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
 import { useUserRole } from "@/hooks/useUserRole";
+import { useTranslation } from "react-i18next";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -47,6 +48,8 @@ interface MeetingCardProps {
 export const MeetingCard = ({ meeting, onClick, onDeleted, onEdited, isArchived = false }: MeetingCardProps) => {
   const { toast } = useToast();
   const { isAdmin } = useUserRole();
+  const { t, i18n } = useTranslation('meetings');
+  const dateLocale = i18n.language === 'fr' ? fr : enUS;
   const [participantCount, setParticipantCount] = useState(0);
   const [canEdit, setCanEdit] = useState(false);
   const [showDeleteDialog, setShowDeleteDialog] = useState(false);
@@ -99,16 +102,16 @@ export const MeetingCard = ({ meeting, onClick, onDeleted, onEdited, isArchived 
       if (error) throw error;
 
       toast({
-        title: "Réunion archivée",
-        description: "La réunion sera supprimée définitivement dans 30 jours",
+        title: t('archive.success'),
+        description: t('archive.successDescription'),
       });
 
       onDeleted?.();
     } catch (error: any) {
       console.error("Error deleting meeting:", error);
       toast({
-        title: "Erreur",
-        description: "Impossible de supprimer la réunion",
+        title: t('error'),
+        description: t('archive.error'),
         variant: "destructive",
       });
     } finally {
@@ -131,16 +134,16 @@ export const MeetingCard = ({ meeting, onClick, onDeleted, onEdited, isArchived 
       if (error) throw error;
 
       toast({
-        title: "Réunion restaurée",
-        description: "La réunion a été restaurée avec succès",
+        title: t('restore.success'),
+        description: t('restore.successDescription'),
       });
 
       onDeleted?.();
     } catch (error: any) {
       console.error("Error restoring meeting:", error);
       toast({
-        title: "Erreur",
-        description: "Impossible de restaurer la réunion",
+        title: t('error'),
+        description: t('restore.error'),
         variant: "destructive",
       });
     } finally {
@@ -220,39 +223,39 @@ export const MeetingCard = ({ meeting, onClick, onDeleted, onEdited, isArchived 
             <div className="flex items-center gap-2">
               <Calendar className="w-4 h-4" />
               <span>
-                {format(new Date(meeting.date_reunion), "dd MMMM yyyy", { locale: fr })}
+                {format(new Date(meeting.date_reunion), "dd MMMM yyyy", { locale: dateLocale })}
               </span>
             </div>
             
             {meeting.duree_minutes && (
               <div className="flex items-center gap-2">
                 <Clock className="w-4 h-4" />
-                <span>{meeting.duree_minutes} minutes</span>
+                <span>{meeting.duree_minutes} {t('card.minutes')}</span>
               </div>
             )}
             
             <div className="flex items-center gap-2">
               <Users className="w-4 h-4" />
-              <span>{participantCount} participant(s)</span>
+              <span>{participantCount} {participantCount > 1 ? t('card.participants') : t('card.participant')}</span>
             </div>
 
             {(meeting.audio_url || meeting.fichier_audio_url) && (
               <div className="flex items-center gap-2">
                 <FileAudio className="w-4 h-4" />
-                <span>Audio disponible</span>
+                <span>{t('card.audioAvailable')}</span>
               </div>
             )}
           </div>
 
           {meeting.transcription && (
             <Badge className="bg-green-500/10 text-green-500 border-green-500/20">
-              ✓ Transcrite
+              ✓ {t('card.transcribed')}
             </Badge>
           )}
 
           {isArchived && meeting.deleted_at && (
             <Badge variant="destructive" className="text-xs">
-              Archivée le {format(new Date(meeting.deleted_at), "dd/MM/yyyy", { locale: fr })}
+              {t('card.archivedOn')} {format(new Date(meeting.deleted_at), "dd/MM/yyyy", { locale: dateLocale })}
             </Badge>
           )}
         </div>
@@ -261,15 +264,15 @@ export const MeetingCard = ({ meeting, onClick, onDeleted, onEdited, isArchived 
       <AlertDialog open={showRestoreDialog} onOpenChange={setShowRestoreDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Restaurer cette réunion ?</AlertDialogTitle>
+            <AlertDialogTitle>{t('restore.title')}</AlertDialogTitle>
             <AlertDialogDescription>
-              La réunion sera restaurée dans les réunions actives.
+              {t('restore.description')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
             <AlertDialogAction onClick={handleRestore}>
-              Restaurer
+              {t('restore')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
@@ -278,16 +281,15 @@ export const MeetingCard = ({ meeting, onClick, onDeleted, onEdited, isArchived 
       <AlertDialog open={showDeleteDialog} onOpenChange={setShowDeleteDialog}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Supprimer cette réunion ?</AlertDialogTitle>
+            <AlertDialogTitle>{t('archive.title')}</AlertDialogTitle>
             <AlertDialogDescription>
-              La réunion sera archivée et supprimée définitivement dans 30 jours.
-              Vous pourrez la récupérer avant cette date.
+              {t('archive.description')}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
             <AlertDialogAction onClick={handleDelete} className="bg-destructive hover:bg-destructive/90">
-              Supprimer
+              {t('delete')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

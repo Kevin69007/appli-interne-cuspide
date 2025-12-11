@@ -8,6 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { Checkbox } from "@/components/ui/checkbox";
+import { useTranslation } from "react-i18next";
 
 interface CreateProjectDialogProps {
   open: boolean;
@@ -22,6 +23,7 @@ export const CreateProjectDialog = ({
   currentEmployeeId,
   onProjectCreated,
 }: CreateProjectDialogProps) => {
+  const { t } = useTranslation(['projects', 'common']);
   const [loading, setLoading] = useState(false);
   const [employees, setEmployees] = useState<any[]>([]);
   const [formData, setFormData] = useState({
@@ -49,7 +51,7 @@ export const CreateProjectDialog = ({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!currentEmployeeId) {
-      toast.error("Vous devez être associé à un employé");
+      toast.error(t('mustBeEmployee'));
       return;
     }
 
@@ -66,7 +68,7 @@ export const CreateProjectDialog = ({
 
       if (error) throw error;
 
-      toast.success("Projet créé avec succès");
+      toast.success(t('projectCreated'));
       onProjectCreated();
       onOpenChange(false);
       setFormData({
@@ -78,7 +80,7 @@ export const CreateProjectDialog = ({
       });
     } catch (error) {
       console.error("Error creating project:", error);
-      toast.error("Erreur lors de la création du projet");
+      toast.error(t('errorCreating'));
     } finally {
       setLoading(false);
     }
@@ -88,11 +90,11 @@ export const CreateProjectDialog = ({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-2xl max-sm:p-4">
         <DialogHeader>
-          <DialogTitle className="text-lg sm:text-xl">Créer un nouveau projet</DialogTitle>
+          <DialogTitle className="text-lg sm:text-xl">{t('createProject')}</DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
           <div>
-            <Label htmlFor="titre" className="text-sm">Titre du projet *</Label>
+            <Label htmlFor="titre" className="text-sm">{t('projectTitle')} *</Label>
             <Input
               id="titre"
               value={formData.titre}
@@ -103,7 +105,7 @@ export const CreateProjectDialog = ({
           </div>
 
           <div>
-            <Label htmlFor="description" className="text-sm">Description</Label>
+            <Label htmlFor="description" className="text-sm">{t('projectDescription')}</Label>
             <Textarea
               id="description"
               value={formData.description}
@@ -115,7 +117,7 @@ export const CreateProjectDialog = ({
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div>
-              <Label htmlFor="responsable" className="text-sm">Responsable *</Label>
+              <Label htmlFor="responsable" className="text-sm">{t('responsable')} *</Label>
               <Select
                 value={formData.responsable_id}
                 onValueChange={(value) =>
@@ -124,7 +126,7 @@ export const CreateProjectDialog = ({
                 required
               >
                 <SelectTrigger className="mt-1">
-                  <SelectValue placeholder="Sélectionner un responsable" />
+                  <SelectValue placeholder={t('selectResponsable')} />
                 </SelectTrigger>
                 <SelectContent>
                   {employees.map((emp) => (
@@ -137,7 +139,7 @@ export const CreateProjectDialog = ({
             </div>
 
             <div>
-              <Label htmlFor="statut" className="text-sm">Statut</Label>
+              <Label htmlFor="statut" className="text-sm">{t('status')}</Label>
               <Select
                 value={formData.statut}
                 onValueChange={(value) => setFormData({ ...formData, statut: value })}
@@ -146,10 +148,10 @@ export const CreateProjectDialog = ({
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="a_venir">À venir</SelectItem>
-                  <SelectItem value="en_cours">En cours</SelectItem>
-                  <SelectItem value="en_pause">En pause</SelectItem>
-                  <SelectItem value="termine">Terminé</SelectItem>
+                  <SelectItem value="a_venir">{t('statuses.upcoming')}</SelectItem>
+                  <SelectItem value="en_cours">{t('statuses.inProgress')}</SelectItem>
+                  <SelectItem value="en_pause">{t('statuses.onHold')}</SelectItem>
+                  <SelectItem value="termine">{t('statuses.completed')}</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -164,7 +166,7 @@ export const CreateProjectDialog = ({
               }
             />
             <Label htmlFor="priority" className="cursor-pointer text-sm">
-              Marquer comme projet prioritaire
+              {t('markAsPriority')}
             </Label>
           </div>
 
@@ -176,10 +178,10 @@ export const CreateProjectDialog = ({
               disabled={loading}
               className="w-full sm:w-auto"
             >
-              Annuler
+              {t('cancel')}
             </Button>
             <Button type="submit" disabled={loading} className="w-full sm:w-auto">
-              {loading ? "Création..." : "Créer le projet"}
+              {loading ? t('creating') : t('createProject')}
             </Button>
           </div>
         </form>
