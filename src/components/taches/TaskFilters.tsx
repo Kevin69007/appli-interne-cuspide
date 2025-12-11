@@ -14,7 +14,7 @@ import {
   Calendar as CalendarCheck, CheckCircle2, AlertCircle, Filter, ChevronDown, ChevronUp 
 } from "lucide-react";
 import { format, startOfWeek, endOfWeek, subDays, startOfToday } from "date-fns";
-import { fr } from "date-fns/locale";
+import { fr, enUS } from "date-fns/locale";
 import { DateRange } from "react-day-picker";
 import { cn } from "@/lib/utils";
 
@@ -35,21 +35,23 @@ interface TaskFiltersProps {
   };
 }
 
-const statusOptions = [
-  { value: "en_cours", label: "🟢 En cours" },
-  { value: "terminee", label: "✅ Terminées" },
-  { value: "a_venir", label: "🔵 À venir" },
-  { value: "en_attente_validation", label: "⏳ En attente validation" },
-];
-
-const priorityOptions = [
-  { value: "haute", label: "🔴 Haute" },
-  { value: "normale", label: "🔵 Normale" },
-  { value: "basse", label: "🟢 Basse" },
-];
-
 export const TaskFilters = ({ onFilterChange, taskCount }: TaskFiltersProps) => {
-  const { t } = useTranslation('tasks');
+  const { t, i18n } = useTranslation('tasks');
+  const dateLocale = i18n.language === 'fr' ? fr : enUS;
+
+  const statusOptions = [
+    { value: "en_cours", label: `🟢 ${t('filters.statusOptions.inProgress')}` },
+    { value: "terminee", label: `✅ ${t('filters.statusOptions.completed')}` },
+    { value: "a_venir", label: `🔵 ${t('filters.statusOptions.upcoming')}` },
+    { value: "en_attente_validation", label: `⏳ ${t('filters.statusOptions.awaitingValidation')}` },
+  ];
+
+  const priorityOptions = [
+    { value: "haute", label: `🔴 ${t('filters.priorityOptions.high')}` },
+    { value: "normale", label: `🔵 ${t('filters.priorityOptions.normal')}` },
+    { value: "basse", label: `🟢 ${t('filters.priorityOptions.low')}` },
+  ];
+
   // Filtres en cours de configuration (pas encore appliqués)
   const [pendingFilters, setPendingFilters] = useState<TaskFilters>({
     searchTerm: "",
@@ -113,7 +115,7 @@ export const TaskFilters = ({ onFilterChange, taskCount }: TaskFiltersProps) => 
           statut: ["en_cours"],
           priorite: ["haute"],
           dateDebut: null,
-          dateFin: endOfWeek(today, { locale: fr }),
+          dateFin: endOfWeek(today, { locale: dateLocale }),
           hideCompleted: true,
         };
         break;
@@ -142,8 +144,8 @@ export const TaskFilters = ({ onFilterChange, taskCount }: TaskFiltersProps) => 
           searchTerm: "",
           statut: [],
           priorite: [],
-          dateDebut: startOfWeek(today, { locale: fr }),
-          dateFin: endOfWeek(today, { locale: fr }),
+          dateDebut: startOfWeek(today, { locale: dateLocale }),
+          dateFin: endOfWeek(today, { locale: dateLocale }),
           hideCompleted: false,
         };
         break;
@@ -206,7 +208,7 @@ export const TaskFilters = ({ onFilterChange, taskCount }: TaskFiltersProps) => 
         >
           <div className="flex items-center gap-2">
             <Filter className="h-4 w-4" />
-            <span className="font-medium text-sm">Filtres</span>
+            <span className="font-medium text-sm">{t('filters.title')}</span>
             {activeFilterCount > 0 && (
               <Badge variant="secondary" className="text-xs">
                 {activeFilterCount}
@@ -239,7 +241,7 @@ export const TaskFilters = ({ onFilterChange, taskCount }: TaskFiltersProps) => 
           className="text-xs shrink-0 h-8"
         >
           <Flame className="h-3 w-3 mr-1" />
-          <span>Urgentes</span>
+          <span>{t('filters.presets.urgent')}</span>
         </Button>
         <Button
           variant="outline"
@@ -248,7 +250,7 @@ export const TaskFilters = ({ onFilterChange, taskCount }: TaskFiltersProps) => 
           className="text-xs shrink-0 h-8"
         >
           <Clock className="h-3 w-3 mr-1" />
-          <span>Retard</span>
+          <span>{t('filters.presets.overdue')}</span>
         </Button>
         <Button
           variant="outline"
@@ -257,7 +259,7 @@ export const TaskFilters = ({ onFilterChange, taskCount }: TaskFiltersProps) => 
           className="text-xs shrink-0 h-8"
         >
           <Target className="h-3 w-3 mr-1" />
-          <span>Aujourd'hui</span>
+          <span>{t('filters.presets.today')}</span>
         </Button>
         <Button
           variant="outline"
@@ -266,7 +268,7 @@ export const TaskFilters = ({ onFilterChange, taskCount }: TaskFiltersProps) => 
           className="text-xs shrink-0 h-8"
         >
           <CalendarCheck className="h-3 w-3 mr-1" />
-          <span>Semaine</span>
+          <span>{t('filters.presets.week')}</span>
         </Button>
         <Button
           variant="outline"
@@ -275,7 +277,7 @@ export const TaskFilters = ({ onFilterChange, taskCount }: TaskFiltersProps) => 
           className="text-xs shrink-0 h-8"
         >
           <CheckCircle2 className="h-3 w-3 mr-1" />
-          <span>Terminées</span>
+          <span>{t('filters.presets.recentlyCompleted')}</span>
         </Button>
       </div>
 
@@ -286,12 +288,12 @@ export const TaskFilters = ({ onFilterChange, taskCount }: TaskFiltersProps) => 
       )}>
         {/* Search - Full width on mobile */}
         <div className="space-y-2">
-          <Label htmlFor="search" className="text-xs">Recherche</Label>
+          <Label htmlFor="search" className="text-xs">{t('filters.search')}</Label>
           <div className="relative">
             <Search className="absolute left-2 top-2.5 h-4 w-4 text-muted-foreground" />
             <Input
               id="search"
-              placeholder="Titre ou description..."
+              placeholder={t('filters.searchPlaceholder')}
               value={pendingFilters.searchTerm}
               onChange={(e) => updatePendingFilter("searchTerm", e.target.value)}
               onKeyDown={handleSearchKeyDown}
@@ -304,31 +306,31 @@ export const TaskFilters = ({ onFilterChange, taskCount }: TaskFiltersProps) => 
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
           {/* Status - MultiSelect */}
           <div className="space-y-2">
-            <Label className="text-xs">Statut</Label>
+            <Label className="text-xs">{t('filters.status')}</Label>
             <MultiSelect
               selectedValues={pendingFilters.statut}
               onSelectedValuesChange={(values) => updatePendingFilter("statut", values)}
               options={statusOptions}
-              placeholder="Tous les statuts"
-              searchPlaceholder="Rechercher un statut..."
+              placeholder={t('filters.allStatuses')}
+              searchPlaceholder={t('filters.search') + '...'}
             />
           </div>
 
           {/* Priority - MultiSelect */}
           <div className="space-y-2">
-            <Label className="text-xs">Priorité</Label>
+            <Label className="text-xs">{t('filters.priority')}</Label>
             <MultiSelect
               selectedValues={pendingFilters.priorite}
               onSelectedValuesChange={(values) => updatePendingFilter("priorite", values)}
               options={priorityOptions}
-              placeholder="Toutes priorités"
-              searchPlaceholder="Rechercher une priorité..."
+              placeholder={t('filters.allPriorities')}
+              searchPlaceholder={t('filters.search') + '...'}
             />
           </div>
 
           {/* Date Range */}
           <div className="space-y-2 sm:col-span-2 lg:col-span-1">
-            <Label className="text-xs">Date d'échéance</Label>
+            <Label className="text-xs">{t('filters.dueDate')}</Label>
             <Popover open={showDatePicker} onOpenChange={setShowDatePicker}>
               <PopoverTrigger asChild>
                 <Button variant="outline" className="w-full justify-start text-left font-normal h-10">
@@ -343,7 +345,7 @@ export const TaskFilters = ({ onFilterChange, taskCount }: TaskFiltersProps) => 
                         format(pendingFilters.dateDebut, "dd/MM/yyyy")
                       )
                     ) : (
-                      <span className="text-muted-foreground">Toutes les dates</span>
+                      <span className="text-muted-foreground">{t('filters.allDates')}</span>
                     )}
                   </span>
                 </Button>
@@ -354,7 +356,7 @@ export const TaskFilters = ({ onFilterChange, taskCount }: TaskFiltersProps) => 
                     mode="range"
                     selected={dateRange}
                     onSelect={handleDateRangeSelect}
-                    locale={fr}
+                    locale={dateLocale}
                     numberOfMonths={1}
                     className={cn("pointer-events-auto")}
                   />
@@ -368,10 +370,10 @@ export const TaskFilters = ({ onFilterChange, taskCount }: TaskFiltersProps) => 
                       }}
                       className="flex-1"
                     >
-                      Effacer
+                      {t('filters.clear')}
                     </Button>
                     <Button size="sm" onClick={() => setShowDatePicker(false)} className="flex-1">
-                      OK
+                      {t('filters.ok')}
                     </Button>
                   </div>
                 </div>
@@ -391,7 +393,7 @@ export const TaskFilters = ({ onFilterChange, taskCount }: TaskFiltersProps) => 
             htmlFor="hideCompleted"
             className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 cursor-pointer"
           >
-            Masquer les tâches terminées
+            {t('filters.hideCompleted')}
           </label>
         </div>
 
@@ -400,7 +402,7 @@ export const TaskFilters = ({ onFilterChange, taskCount }: TaskFiltersProps) => 
           <div className="flex items-center gap-2 p-2 sm:p-3 bg-orange-500/10 border border-orange-500/20 rounded-lg">
             <AlertCircle className="h-4 w-4 text-orange-500 flex-shrink-0" />
             <span className="text-xs sm:text-sm text-orange-600 dark:text-orange-400">
-              Cliquez sur <strong>Rechercher</strong> pour appliquer
+              {t('filters.clickToApply')}
             </span>
           </div>
         )}
@@ -410,11 +412,11 @@ export const TaskFilters = ({ onFilterChange, taskCount }: TaskFiltersProps) => 
           <div className="flex items-center gap-2 justify-center sm:justify-start">
             {activeFilterCount > 0 && (
               <Badge variant="secondary" className="text-xs">
-                🔍 {activeFilterCount} filtre{activeFilterCount > 1 ? "s" : ""}
+                🔍 {activeFilterCount} {activeFilterCount > 1 ? t('filters.activeFiltersPlural') : t('filters.activeFilters')}
               </Badge>
             )}
             <span className="text-xs text-muted-foreground hidden sm:inline">
-              {taskCount.filtered} / {taskCount.total} tâche{taskCount.total > 1 ? "s" : ""}
+              {taskCount.filtered} / {taskCount.total} {taskCount.total > 1 ? t('filters.taskCountPlural') : t('filters.taskCount')}
             </span>
           </div>
           <div className="flex gap-2">
@@ -426,7 +428,7 @@ export const TaskFilters = ({ onFilterChange, taskCount }: TaskFiltersProps) => 
               className="gap-1 flex-1 sm:flex-none h-10 sm:h-8"
             >
               <Search className="h-4 w-4 sm:h-3 sm:w-3" />
-              Rechercher
+              {t('filters.applyFilters')}
             </Button>
             {activeFilterCount > 0 && (
               <Button 
@@ -436,7 +438,7 @@ export const TaskFilters = ({ onFilterChange, taskCount }: TaskFiltersProps) => 
                 className="gap-1 flex-1 sm:flex-none h-10 sm:h-8"
               >
                 <X className="h-4 w-4 sm:h-3 sm:w-3" />
-                Reset
+                {t('filters.reset')}
               </Button>
             )}
           </div>
