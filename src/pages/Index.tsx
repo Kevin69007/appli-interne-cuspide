@@ -10,6 +10,7 @@ import { InfosImportantesWidget } from "@/components/employe/InfosImportantesWid
 import { TachesPrioritairesWidget } from "@/components/employe/TachesPrioritairesWidget";
 import { MoodBarWidget } from "@/components/employe/MoodBarWidget";
 import { TimeDeclarationWidget } from "@/components/employe/TimeDeclarationWidget";
+import { ThreeShapeLMSWidget } from "@/components/employe/ThreeShapeLMSWidget";
 import { LanguageSwitcher } from "@/components/LanguageSwitcher";
 import { ThemeToggle } from "@/components/ThemeToggle";
 import { AnimatedBackground } from "@/components/AnimatedBackground";
@@ -240,6 +241,11 @@ const Index = () => {
               <TimeDeclarationWidget />
             </div>
           )}
+
+          {/* 3Shape LMS Widget */}
+          <div className="max-w-xs mx-auto mb-6 sm:mb-12">
+            <ThreeShapeLMSWidget />
+          </div>
 
           {/* Widgets rapides - Layout adaptatif centré selon le nombre */}
           {(() => {
