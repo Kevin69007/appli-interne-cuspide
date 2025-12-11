@@ -1,7 +1,17 @@
 {
   "title": "Suivi Direction",
+  "loading": "Chargement...",
+  "accessDenied": "Accès refusé - Réservé aux managers et administrateurs",
   "kpi": "KPI",
   "dashboard": "Tableau de bord",
   "analytics": "Analyses",
-  "reports": "Rapports"
+  "reports": "Rapports",
+  "tabs": {
+    "myTeams": "Mes Équipes",
+    "dashboard": "Dashboard",
+    "timeTracking": "Info Pointage",
+    "maintenance": "Entretiens Locaux et Machines",
+    "audit": "Journal d'audit",
+    "modules": "Modules"
+  }
 }

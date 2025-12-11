@@ -1,6 +1,8 @@
 {
   "title": "Communication Générale",
+  "subtitle": "Communications, Enquêtes et Idées",
   "createCommunication": "Créer une communication",
+  "newCommunication": "Nouvelle communication",
   "editCommunication": "Modifier la communication",
   "deleteCommunication": "Supprimer la communication",
   "communicationTitle": "Titre",
@@ -9,8 +11,17 @@
   "publishDate": "Date de publication",
   "expirationDate": "Date d'expiration",
   "noCommunications": "Aucune communication trouvée",
+  "loading": "Chargement...",
+  "tabs": {
+    "communications": "Communications",
+    "videos": "Vidéos",
+    "surveys": "Enquêtes",
+    "ideas": "Idées",
+    "tutorials": "Tutoriels"
+  },
   "videos": "Vidéos",
   "newVideo": "Nouvelle vidéo",
+  "newTutorial": "Nouveau tutoriel",
   "tutorial": "Tutoriel",
   "helpButton": "Besoin d'aide ?",
   "videoPlayer": "Lecteur vidéo",

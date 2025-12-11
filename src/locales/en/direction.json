@@ -1,7 +1,17 @@
 {
   "title": "Management Tracking",
+  "loading": "Loading...",
+  "accessDenied": "Access denied - Reserved for managers and administrators",
   "kpi": "KPI",
   "dashboard": "Dashboard",
   "analytics": "Analytics",
-  "reports": "Reports"
+  "reports": "Reports",
+  "tabs": {
+    "myTeams": "My Teams",
+    "dashboard": "Dashboard",
+    "timeTracking": "Time Tracking Info",
+    "maintenance": "Premises & Machines Maintenance",
+    "audit": "Audit Log",
+    "modules": "Modules"
+  }
 }

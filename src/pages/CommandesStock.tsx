@@ -7,9 +7,11 @@ import { StockView } from "@/components/stock/StockView";
 import { SuppliersList } from "@/components/stock/SuppliersList";
 import { StockConfig } from "@/components/stock/StockConfig";
 import { ModuleHelpButton } from "@/components/communication/ModuleHelpButton";
+import { useTranslation } from "react-i18next";
 
 const CommandesStock = () => {
   const navigate = useNavigate();
+  const { t } = useTranslation(['stock', 'common']);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
@@ -29,11 +31,11 @@ const CommandesStock = () => {
               </div>
               <div>
                 <div className="flex items-center gap-2">
-                  <h1 className="text-2xl font-bold">Gestion Stocks & Commandes</h1>
+                  <h1 className="text-2xl font-bold">{t('title')}</h1>
                   <ModuleHelpButton moduleId="stock" />
                 </div>
                 <p className="text-sm text-muted-foreground">
-                  Commandes, stock et fournisseurs centralisés
+                  {t('subtitle')}
                 </p>
               </div>
             </div>
@@ -46,19 +48,19 @@ const CommandesStock = () => {
           <TabsList className="grid w-full grid-cols-4 lg:w-auto lg:inline-grid">
             <TabsTrigger value="orders" className="gap-2">
               <ShoppingCart className="h-4 w-4" />
-              Commandes
+              {t('orders')}
             </TabsTrigger>
             <TabsTrigger value="stock" className="gap-2">
               <Package className="h-4 w-4" />
-              Stock
+              {t('stock')}
             </TabsTrigger>
             <TabsTrigger value="suppliers" className="gap-2">
               <Truck className="h-4 w-4" />
-              Fournisseurs
+              {t('suppliers')}
             </TabsTrigger>
             <TabsTrigger value="config" className="gap-2">
               <Settings className="h-4 w-4" />
-              Configuration
+              {t('configuration')}
             </TabsTrigger>
           </TabsList>
 
