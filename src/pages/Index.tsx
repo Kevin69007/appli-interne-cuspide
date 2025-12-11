@@ -19,7 +19,9 @@ import { useModuleVisibility } from "@/hooks/useModuleVisibility";
 import { NotificationBell } from "@/components/notifications/NotificationBell";
 import { EmployeeAvatar } from "@/components/ui/employee-avatar";
 import { Input } from "@/components/ui/input";
-import { Search } from "lucide-react";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { QuickTaskFAB } from "@/components/employe/QuickTaskFAB";
+import { Search, LogOut } from "lucide-react";
 import tuttiLogo from "@/assets/tutti-logo.png";
 
 // Normalise le texte en supprimant les accents
@@ -181,22 +183,34 @@ const Index = () => {
                 <NotificationBell />
                 
                 {employee && (
-                  <EmployeeAvatar
-                    photoUrl={employee.photo_url}
-                    nom={employee.nom}
-                    prenom={employee.prenom}
-                    size="sm"
-                    className="sm:hidden"
-                  />
-                )}
-                {employee && (
-                  <EmployeeAvatar
-                    photoUrl={employee.photo_url}
-                    nom={employee.nom}
-                    prenom={employee.prenom}
-                    size="md"
-                    className="hidden sm:flex"
-                  />
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <button
+                          onClick={() => navigate("/conges-mood-bar?tab=trombinoscope")}
+                          className="cursor-pointer hover:ring-2 hover:ring-primary/50 rounded-full transition-all"
+                        >
+                          <EmployeeAvatar
+                            photoUrl={employee.photo_url}
+                            nom={employee.nom}
+                            prenom={employee.prenom}
+                            size="sm"
+                            className="sm:hidden"
+                          />
+                          <EmployeeAvatar
+                            photoUrl={employee.photo_url}
+                            nom={employee.nom}
+                            prenom={employee.prenom}
+                            size="md"
+                            className="hidden sm:flex"
+                          />
+                        </button>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>{t('viewProfile')}</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
                 )}
                 
                 <ThemeToggle />
@@ -211,7 +225,7 @@ const Index = () => {
                   className="icon-btn p-2 sm:px-4 sm:py-2 text-xs sm:text-sm border border-border rounded-lg hover:bg-accent/10 transition-colors shrink-0 flex items-center justify-center"
                 >
                   <span className="hidden sm:inline">{t('logout')}</span>
-                  <span className="sm:hidden text-base">↗</span>
+                  <LogOut className="sm:hidden h-4 w-4" />
                 </button>
               </div>
             </div>
@@ -351,6 +365,9 @@ const Index = () => {
               ))
             )}
           </div>
+
+          {/* Quick Task FAB */}
+          <QuickTaskFAB />
         </main>
       </div>
     );
