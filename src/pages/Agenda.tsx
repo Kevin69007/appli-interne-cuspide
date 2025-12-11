@@ -32,10 +32,10 @@ const Agenda = () => {
             </Button>
             <div className="flex-1 min-w-0">
               <div className="flex items-center gap-2">
-                <h1 className="text-lg sm:text-2xl font-bold truncate">Mon Agenda</h1>
+                <h1 className="text-lg sm:text-2xl font-bold truncate">{t('myAgenda')}</h1>
                 <ModuleHelpButton moduleId="planning" />
               </div>
-              <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">Planning et événements</p>
+              <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">{t('planningAndEvents')}</p>
             </div>
           </div>
         </div>

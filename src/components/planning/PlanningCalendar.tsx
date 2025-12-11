@@ -284,9 +284,8 @@ export const PlanningCalendar = () => {
     if (deleteMode === 'single') {
       query = query.eq("id", scheduleToDelete.id);
     } else {
-      // Supprimer toute la série
       if (!scheduleToDelete.schedule_group_id) {
-        toast.error("Cet horaire n'appartient à aucune série");
+        toast.error(t('noSeriesFound'));
         return;
       }
       query = query.eq("schedule_group_id", scheduleToDelete.schedule_group_id);
@@ -295,10 +294,10 @@ export const PlanningCalendar = () => {
     const { error } = await query;
 
     if (error) {
-      toast.error("Erreur lors de la suppression");
+      toast.error(t('deleteError'));
       console.error(error);
     } else {
-      toast.success(deleteMode === 'single' ? "Horaire supprimé" : "Série supprimée");
+      toast.success(deleteMode === 'single' ? t('scheduleDeleted') : t('seriesDeleted'));
       fetchSchedules();
     }
     setScheduleToDelete(null);
@@ -330,7 +329,7 @@ export const PlanningCalendar = () => {
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
-              <SelectItem value="all">Toutes les équipes</SelectItem>
+              <SelectItem value="all">{t('allTeams')}</SelectItem>
               {teams.map((team) => (
                 <SelectItem key={team} value={team}>
                   {team}
@@ -344,7 +343,7 @@ export const PlanningCalendar = () => {
         <div className="flex flex-wrap gap-1.5 sm:gap-2">
           <Button variant="outline" size="sm" className="text-xs sm:text-sm h-8 sm:h-10 flex-1 sm:flex-none" onClick={() => navigate('/conges-mood-bar')}>
             <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
-            <span className="hidden sm:inline">Demander un </span>congé
+            {t('requestLeave')}
           </Button>
           {canManage && (
             <>
@@ -357,11 +356,11 @@ export const PlanningCalendar = () => {
                 setShowEventDialog(true);
               }}>
                 <Plus className="h-4 w-4 mr-2" />
-                Événement
+                {t('event')}
               </Button>
               <Button variant="outline" size="sm" className="text-xs sm:text-sm h-8 sm:h-10 hidden md:flex" onClick={() => setShowMaintenanceDialog(true)}>
                 <Plus className="h-4 w-4 mr-2" />
-                Entretien
+                {t('newMaintenanceTask')}
               </Button>
             </>
           )}
@@ -394,7 +393,7 @@ export const PlanningCalendar = () => {
                         : "cursor-default"
                       : "bg-muted/30"
                   } ${isToday ? "ring-2 ring-primary" : ""}`}
-                  title={canManage && date ? "Cliquez pour ajouter un planning, événement ou tâche d'entretien" : ""}
+                  title={canManage && date ? t('clickToAddPlanning') : ""}
                 >
                   {date && (
                     <>
@@ -405,7 +404,7 @@ export const PlanningCalendar = () => {
                           <div
                             key={schedule.id}
                             className="text-[9px] sm:text-xs bg-cyan-500/10 border-l-2 border-cyan-500 rounded px-0.5 sm:px-1 py-0.5 group relative cursor-pointer hover:bg-cyan-500/20"
-                            title={`${schedule.employees.prenom}: ${schedule.heure_debut.slice(0, 5)} - ${schedule.heure_fin.slice(0, 5)}${schedule.originalSchedules.length > 1 ? ` (${schedule.originalSchedules.length} créneaux)` : ''}${canManage ? ' - Cliquer pour voir détails' : ''}`}
+                            title={`${schedule.employees.prenom}: ${schedule.heure_debut.slice(0, 5)} - ${schedule.heure_fin.slice(0, 5)}${schedule.originalSchedules.length > 1 ? ` (${schedule.originalSchedules.length} slots)` : ''}${canManage ? ` - ${t('clickEmployeeDetails')}` : ''}`}
                             onClick={(e) => date && handleEmployeeClick(
                               schedule.employee_id,
                               `${schedule.employees.prenom} ${schedule.employees.nom}`,
@@ -467,8 +466,8 @@ export const PlanningCalendar = () => {
                                   : 'bg-yellow-500/10 border-l-2 border-yellow-500'
                               } ${canClickToValidate ? 'cursor-pointer hover:bg-yellow-500/20 transition-colors' : ''}`}
                               title={canClickToValidate 
-                                ? `${absence.employees.prenom} ${absence.employees.nom}: ${absence.type_absence || absence.detail || 'Absence'} - Cliquez pour valider cette demande`
-                                : `${absence.employees.prenom} ${absence.employees.nom}: ${absence.type_absence || absence.detail || 'Absence'}`
+                                ? `${absence.employees.prenom} ${absence.employees.nom}: ${absence.type_absence || absence.detail || t('absence')} - ${t('clickToValidate')}`
+                                : `${absence.employees.prenom} ${absence.employees.nom}: ${absence.type_absence || absence.detail || t('absence')}`
                               }
                               onClick={(e) => {
                                 if (canClickToValidate) {
@@ -479,7 +478,7 @@ export const PlanningCalendar = () => {
                             >
                               <span className="truncate block">
                                 {absence.employees.prenom}
-                                <span className="hidden sm:inline"> - {absence.type_absence || 'Absence'}</span>
+                                <span className="hidden sm:inline"> - {absence.type_absence || t('absence')}</span>
                               </span>
                             </div>
                           );
@@ -494,23 +493,23 @@ export const PlanningCalendar = () => {
         </div>
       </div>
 
-      {/* Légende */}
+      {/* Legend */}
       <div className="mt-4 pt-4 border-t grid grid-cols-2 md:grid-cols-4 gap-2 text-xs">
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded bg-cyan-500/10 border-l-2 border-cyan-500" />
-          <span>Horaires de travail</span>
+          <span>{t('workSchedules')}</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded bg-purple-500/10 border-l-2 border-purple-500" />
-          <span>Absence validée</span>
+          <span>{t('validatedAbsence')}</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded bg-yellow-500/10 border-l-2 border-yellow-500" />
-          <span>Absence en attente</span>
+          <span>{t('pendingAbsence')}</span>
         </div>
         {canManage && (
           <div className="text-muted-foreground italic">
-            Cliquez sur un employé pour voir ses détails
+            {t('clickEmployeeDetails')}
           </div>
         )}
       </div>
@@ -542,9 +541,9 @@ export const PlanningCalendar = () => {
           <AlertDialog open={showChoiceDialog} onOpenChange={setShowChoiceDialog}>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Que souhaitez-vous ajouter ?</AlertDialogTitle>
+                <AlertDialogTitle>{t('whatToAdd')}</AlertDialogTitle>
                 <AlertDialogDescription>
-                  Choisissez le type d'élément à ajouter pour cette date.
+                  {t('chooseTypeForDate')}
                 </AlertDialogDescription>
               </AlertDialogHeader>
               <div className="flex flex-col gap-2 my-4">
@@ -556,7 +555,7 @@ export const PlanningCalendar = () => {
                   className="w-full"
                 >
                   <Plus className="h-4 w-4 mr-2" />
-                  Ajouter un planning
+                  {t('addPlanning')}
                 </Button>
                 <Button
                   onClick={() => {
@@ -567,7 +566,7 @@ export const PlanningCalendar = () => {
                   variant="outline"
                 >
                   <Plus className="h-4 w-4 mr-2" />
-                  Ajouter un événement
+                  {t('addEvent')}
                 </Button>
                 <Button
                   onClick={() => {
@@ -578,11 +577,11 @@ export const PlanningCalendar = () => {
                   variant="outline"
                 >
                   <Plus className="h-4 w-4 mr-2" />
-                  Nouvelle tâche d'entretien
+                  {t('newMaintenanceTask')}
                 </Button>
               </div>
               <AlertDialogFooter>
-                <AlertDialogCancel>Annuler</AlertDialogCancel>
+                <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
@@ -595,9 +594,9 @@ export const PlanningCalendar = () => {
       }}>
         <AlertDialogContent>
           <AlertDialogHeader>
-            <AlertDialogTitle>Supprimer l'horaire</AlertDialogTitle>
+            <AlertDialogTitle>{t('deleteScheduleTitle')}</AlertDialogTitle>
             <AlertDialogDescription className="space-y-4">
-              <p>Comment souhaitez-vous supprimer cet horaire ?</p>
+              <p>{t('howDeleteSchedule')}</p>
               
               <div className="space-y-2">
                 <div className="flex items-center space-x-2">
@@ -609,7 +608,7 @@ export const PlanningCalendar = () => {
                     className="cursor-pointer"
                   />
                   <label htmlFor="delete-single" className="cursor-pointer text-sm">
-                    Uniquement cet horaire ({scheduleToDelete && new Date(scheduleToDelete.date).toLocaleDateString('fr-FR')})
+                    {t('onlyThisSchedule')} ({scheduleToDelete && new Date(scheduleToDelete.date).toLocaleDateString()})
                   </label>
                 </div>
                 
@@ -623,7 +622,7 @@ export const PlanningCalendar = () => {
                       className="cursor-pointer"
                     />
                     <label htmlFor="delete-series" className="cursor-pointer text-sm">
-                      Toute la série d'horaires récurrents
+                      {t('entireRecurringSeries')}
                     </label>
                   </div>
                 )}
@@ -631,9 +630,9 @@ export const PlanningCalendar = () => {
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
-            <AlertDialogCancel>Annuler</AlertDialogCancel>
+            <AlertDialogCancel>{t('cancel')}</AlertDialogCancel>
             <AlertDialogAction onClick={handleDeleteSchedule} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">
-              Supprimer
+              {t('deleteSchedule')}
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>
