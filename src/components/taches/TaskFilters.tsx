@@ -9,7 +9,10 @@ import { Calendar } from "@/components/ui/calendar";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { MultiSelect } from "@/components/ui/multi-select";
-import { Search, Calendar as CalendarIcon, X, Flame, Clock, Target, Calendar as CalendarCheck, CheckCircle2, AlertCircle } from "lucide-react";
+import { 
+  Search, Calendar as CalendarIcon, X, Flame, Clock, Target, 
+  Calendar as CalendarCheck, CheckCircle2, AlertCircle, Filter, ChevronDown, ChevronUp 
+} from "lucide-react";
 import { format, startOfWeek, endOfWeek, subDays, startOfToday } from "date-fns";
 import { fr } from "date-fns/locale";
 import { DateRange } from "react-day-picker";
@@ -68,6 +71,7 @@ export const TaskFilters = ({ onFilterChange, taskCount }: TaskFiltersProps) => 
   });
 
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [isExpanded, setIsExpanded] = useState(false);
 
   // Check if filters have been modified but not applied
   const hasUnappliedChanges = JSON.stringify(pendingFilters) !== JSON.stringify(appliedFilters);
@@ -194,58 +198,93 @@ export const TaskFilters = ({ onFilterChange, taskCount }: TaskFiltersProps) => 
 
   return (
     <Card className="p-3 sm:p-4 mb-4 sm:mb-6 bg-accent/50">
-      {/* Quick Filter Presets */}
-      <div className="flex overflow-x-auto gap-2 mb-3 sm:mb-4 pb-2 -mx-3 px-3 sm:mx-0 sm:px-0 sm:flex-wrap scrollbar-thin">
+      {/* Mobile: Collapsible Header */}
+      <div className="md:hidden">
+        <button
+          onClick={() => setIsExpanded(!isExpanded)}
+          className="flex items-center justify-between w-full py-2"
+        >
+          <div className="flex items-center gap-2">
+            <Filter className="h-4 w-4" />
+            <span className="font-medium text-sm">Filtres</span>
+            {activeFilterCount > 0 && (
+              <Badge variant="secondary" className="text-xs">
+                {activeFilterCount}
+              </Badge>
+            )}
+          </div>
+          <div className="flex items-center gap-2">
+            <span className="text-xs text-muted-foreground">
+              {taskCount.filtered}/{taskCount.total}
+            </span>
+            {isExpanded ? (
+              <ChevronUp className="h-4 w-4" />
+            ) : (
+              <ChevronDown className="h-4 w-4" />
+            )}
+          </div>
+        </button>
+      </div>
+
+      {/* Quick Filter Presets - Always visible */}
+      <div className={cn(
+        "flex overflow-x-auto gap-2 pb-2 -mx-3 px-3 sm:mx-0 sm:px-0 sm:flex-wrap scrollbar-thin",
+        isExpanded || "md:flex" ? "flex" : "hidden md:flex",
+        "md:mb-4"
+      )}>
         <Button
           variant="outline"
           size="sm"
           onClick={() => applyPreset("urgent")}
-          className="text-xs shrink-0"
+          className="text-xs shrink-0 h-8"
         >
-          <Flame className="h-3 w-3 sm:mr-1" />
-          <span className="hidden sm:inline">Urgentes</span>
+          <Flame className="h-3 w-3 mr-1" />
+          <span>Urgentes</span>
         </Button>
         <Button
           variant="outline"
           size="sm"
           onClick={() => applyPreset("overdue")}
-          className="text-xs shrink-0"
+          className="text-xs shrink-0 h-8"
         >
-          <Clock className="h-3 w-3 sm:mr-1" />
-          <span className="hidden sm:inline">En retard</span>
+          <Clock className="h-3 w-3 mr-1" />
+          <span>Retard</span>
         </Button>
         <Button
           variant="outline"
           size="sm"
           onClick={() => applyPreset("today")}
-          className="text-xs shrink-0"
+          className="text-xs shrink-0 h-8"
         >
-          <Target className="h-3 w-3 sm:mr-1" />
-          <span className="hidden sm:inline">Aujourd'hui</span>
+          <Target className="h-3 w-3 mr-1" />
+          <span>Aujourd'hui</span>
         </Button>
         <Button
           variant="outline"
           size="sm"
           onClick={() => applyPreset("thisWeek")}
-          className="text-xs shrink-0"
+          className="text-xs shrink-0 h-8"
         >
-          <CalendarCheck className="h-3 w-3 sm:mr-1" />
-          <span className="hidden sm:inline">Semaine</span>
+          <CalendarCheck className="h-3 w-3 mr-1" />
+          <span>Semaine</span>
         </Button>
         <Button
           variant="outline"
           size="sm"
           onClick={() => applyPreset("completed")}
-          className="text-xs shrink-0"
+          className="text-xs shrink-0 h-8"
         >
-          <CheckCircle2 className="h-3 w-3 sm:mr-1" />
-          <span className="hidden sm:inline">Terminées</span>
+          <CheckCircle2 className="h-3 w-3 mr-1" />
+          <span>Terminées</span>
         </Button>
       </div>
 
-      {/* Main Filters */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-3 sm:mb-4">
-        {/* Search */}
+      {/* Main Filters - Collapsible on mobile */}
+      <div className={cn(
+        "space-y-3 md:space-y-4",
+        isExpanded ? "block" : "hidden md:block"
+      )}>
+        {/* Search - Full width on mobile */}
         <div className="space-y-2">
           <Label htmlFor="search" className="text-xs">Recherche</Label>
           <div className="relative">
@@ -256,89 +295,93 @@ export const TaskFilters = ({ onFilterChange, taskCount }: TaskFiltersProps) => 
               value={pendingFilters.searchTerm}
               onChange={(e) => updatePendingFilter("searchTerm", e.target.value)}
               onKeyDown={handleSearchKeyDown}
-              className="pl-8"
+              className="pl-8 h-10"
             />
           </div>
         </div>
 
-        {/* Status - MultiSelect */}
-        <div className="space-y-2">
-          <Label className="text-xs">Statut</Label>
-          <MultiSelect
-            selectedValues={pendingFilters.statut}
-            onSelectedValuesChange={(values) => updatePendingFilter("statut", values)}
-            options={statusOptions}
-            placeholder="Tous les statuts"
-            searchPlaceholder="Rechercher un statut..."
-          />
-        </div>
+        {/* Filters Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+          {/* Status - MultiSelect */}
+          <div className="space-y-2">
+            <Label className="text-xs">Statut</Label>
+            <MultiSelect
+              selectedValues={pendingFilters.statut}
+              onSelectedValuesChange={(values) => updatePendingFilter("statut", values)}
+              options={statusOptions}
+              placeholder="Tous les statuts"
+              searchPlaceholder="Rechercher un statut..."
+            />
+          </div>
 
-        {/* Priority - MultiSelect */}
-        <div className="space-y-2">
-          <Label className="text-xs">Priorité</Label>
-          <MultiSelect
-            selectedValues={pendingFilters.priorite}
-            onSelectedValuesChange={(values) => updatePendingFilter("priorite", values)}
-            options={priorityOptions}
-            placeholder="Toutes priorités"
-            searchPlaceholder="Rechercher une priorité..."
-          />
-        </div>
+          {/* Priority - MultiSelect */}
+          <div className="space-y-2">
+            <Label className="text-xs">Priorité</Label>
+            <MultiSelect
+              selectedValues={pendingFilters.priorite}
+              onSelectedValuesChange={(values) => updatePendingFilter("priorite", values)}
+              options={priorityOptions}
+              placeholder="Toutes priorités"
+              searchPlaceholder="Rechercher une priorité..."
+            />
+          </div>
 
-        {/* Date Range */}
-        <div className="space-y-2">
-          <Label className="text-xs">Date d'échéance</Label>
-          <Popover open={showDatePicker} onOpenChange={setShowDatePicker}>
-            <PopoverTrigger asChild>
-              <Button variant="outline" className="w-full justify-start text-left font-normal">
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {pendingFilters.dateDebut ? (
-                  pendingFilters.dateFin ? (
-                    <>
-                      {format(pendingFilters.dateDebut, "dd/MM/yy")} - {format(pendingFilters.dateFin, "dd/MM/yy")}
-                    </>
-                  ) : (
-                    format(pendingFilters.dateDebut, "dd/MM/yyyy")
-                  )
-                ) : (
-                  <span className="text-muted-foreground">Toutes les dates</span>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <div className="p-3 space-y-3">
-                <Calendar
-                  mode="range"
-                  selected={dateRange}
-                  onSelect={handleDateRangeSelect}
-                  locale={fr}
-                  numberOfMonths={2}
-                  className={cn("pointer-events-auto")}
-                />
-                <div className="flex gap-2 border-t pt-3">
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => {
-                      handleDateRangeSelect(undefined);
-                      setShowDatePicker(false);
-                    }}
-                  >
-                    Effacer
-                  </Button>
-                  <Button size="sm" onClick={() => setShowDatePicker(false)}>
-                    OK
-                  </Button>
+          {/* Date Range */}
+          <div className="space-y-2 sm:col-span-2 lg:col-span-1">
+            <Label className="text-xs">Date d'échéance</Label>
+            <Popover open={showDatePicker} onOpenChange={setShowDatePicker}>
+              <PopoverTrigger asChild>
+                <Button variant="outline" className="w-full justify-start text-left font-normal h-10">
+                  <CalendarIcon className="mr-2 h-4 w-4 shrink-0" />
+                  <span className="truncate">
+                    {pendingFilters.dateDebut ? (
+                      pendingFilters.dateFin ? (
+                        <>
+                          {format(pendingFilters.dateDebut, "dd/MM/yy")} - {format(pendingFilters.dateFin, "dd/MM/yy")}
+                        </>
+                      ) : (
+                        format(pendingFilters.dateDebut, "dd/MM/yyyy")
+                      )
+                    ) : (
+                      <span className="text-muted-foreground">Toutes les dates</span>
+                    )}
+                  </span>
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <div className="p-3 space-y-3">
+                  <Calendar
+                    mode="range"
+                    selected={dateRange}
+                    onSelect={handleDateRangeSelect}
+                    locale={fr}
+                    numberOfMonths={1}
+                    className={cn("pointer-events-auto")}
+                  />
+                  <div className="flex gap-2 border-t pt-3">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        handleDateRangeSelect(undefined);
+                        setShowDatePicker(false);
+                      }}
+                      className="flex-1"
+                    >
+                      Effacer
+                    </Button>
+                    <Button size="sm" onClick={() => setShowDatePicker(false)} className="flex-1">
+                      OK
+                    </Button>
+                  </div>
                 </div>
-              </div>
-            </PopoverContent>
-          </Popover>
+              </PopoverContent>
+            </Popover>
+          </div>
         </div>
-      </div>
 
-      {/* Hide Completed Checkbox */}
-      <div className="mb-4">
-        <div className="flex items-center space-x-2">
+        {/* Hide Completed Checkbox */}
+        <div className="flex items-center space-x-2 py-2">
           <Checkbox
             id="hideCompleted"
             checked={pendingFilters.hideCompleted}
@@ -351,49 +394,52 @@ export const TaskFilters = ({ onFilterChange, taskCount }: TaskFiltersProps) => 
             Masquer les tâches terminées
           </label>
         </div>
-      </div>
 
-      {/* Warning for unapplied changes */}
-      {hasUnappliedChanges && (
-        <div className="flex items-center gap-2 p-3 mb-4 bg-orange-500/10 border border-orange-500/20 rounded-lg">
-          <AlertCircle className="h-4 w-4 text-orange-500 flex-shrink-0" />
-          <span className="text-sm text-orange-600 dark:text-orange-400">
-            Filtres modifiés - Cliquez sur <strong>Rechercher</strong> pour appliquer
-          </span>
-        </div>
-      )}
+        {/* Warning for unapplied changes */}
+        {hasUnappliedChanges && (
+          <div className="flex items-center gap-2 p-2 sm:p-3 bg-orange-500/10 border border-orange-500/20 rounded-lg">
+            <AlertCircle className="h-4 w-4 text-orange-500 flex-shrink-0" />
+            <span className="text-xs sm:text-sm text-orange-600 dark:text-orange-400">
+              Cliquez sur <strong>Rechercher</strong> pour appliquer
+            </span>
+          </div>
+        )}
 
-      {/* Bottom Bar: Active Filters + Reset */}
-      <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between pt-3 border-t gap-3 sm:gap-4">
-        <div className="flex items-center gap-2 flex-wrap">
-          {activeFilterCount > 0 && (
-            <Badge variant="secondary" className="text-xs">
-              🔍 {activeFilterCount} filtre{activeFilterCount > 1 ? "s" : ""}
-            </Badge>
-          )}
-          <span className="text-xs text-muted-foreground">
-            {taskCount.filtered} / {taskCount.total} tâche{taskCount.total > 1 ? "s" : ""}
-          </span>
-        </div>
-        <div className="flex gap-2 w-full sm:w-auto">
-          <Button 
-            variant="default" 
-            size="sm" 
-            onClick={applyFilters}
-            disabled={!hasUnappliedChanges}
-            className="gap-1 flex-1 sm:flex-none"
-          >
-            <Search className="h-3 w-3" />
-            <span className="hidden sm:inline">Rechercher</span>
-            <span className="sm:hidden">OK</span>
-          </Button>
-          {activeFilterCount > 0 && (
-            <Button variant="ghost" size="sm" onClick={resetFilters} className="gap-1 flex-1 sm:flex-none">
-              <X className="h-3 w-3" />
-              <span className="hidden sm:inline">Réinitialiser</span>
-              <span className="sm:hidden">Reset</span>
+        {/* Action Buttons */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between pt-3 border-t gap-3">
+          <div className="flex items-center gap-2 justify-center sm:justify-start">
+            {activeFilterCount > 0 && (
+              <Badge variant="secondary" className="text-xs">
+                🔍 {activeFilterCount} filtre{activeFilterCount > 1 ? "s" : ""}
+              </Badge>
+            )}
+            <span className="text-xs text-muted-foreground hidden sm:inline">
+              {taskCount.filtered} / {taskCount.total} tâche{taskCount.total > 1 ? "s" : ""}
+            </span>
+          </div>
+          <div className="flex gap-2">
+            <Button 
+              variant="default" 
+              size="sm" 
+              onClick={applyFilters}
+              disabled={!hasUnappliedChanges}
+              className="gap-1 flex-1 sm:flex-none h-10 sm:h-8"
+            >
+              <Search className="h-4 w-4 sm:h-3 sm:w-3" />
+              Rechercher
             </Button>
-          )}
+            {activeFilterCount > 0 && (
+              <Button 
+                variant="ghost" 
+                size="sm" 
+                onClick={resetFilters} 
+                className="gap-1 flex-1 sm:flex-none h-10 sm:h-8"
+              >
+                <X className="h-4 w-4 sm:h-3 sm:w-3" />
+                Reset
+              </Button>
+            )}
+          </div>
         </div>
       </div>
     </Card>
