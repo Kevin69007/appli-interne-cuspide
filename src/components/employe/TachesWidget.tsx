@@ -97,50 +97,52 @@ export const TachesWidget = ({ onDataLoaded }: { onDataLoaded?: (hasData: boolea
   return (
     <Card 
       variant="glass"
-      className="p-6 cursor-pointer hover-3d transition-all duration-300 animate-fade-in group"
+      className="p-3 sm:p-6 cursor-pointer hover-3d transition-all duration-300 animate-fade-in group"
       onClick={() => navigate("/taches")}
     >
-      <div className="flex items-center justify-between mb-4">
-        <div className="flex items-center gap-3">
-          <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-            <CheckSquare className="h-5 w-5 text-white" />
+      <div className="flex items-center justify-between mb-3 sm:mb-4">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+            <CheckSquare className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
           </div>
-          <h3 className="text-lg font-display font-semibold">{t('employee.tasks.myTasks')}</h3>
+          <h3 className="text-sm sm:text-lg font-display font-semibold">{t('employee.tasks.myTasks')}</h3>
         </div>
-        <ChevronRight className="h-5 w-5 text-muted-foreground group-hover:translate-x-1 transition-transform" />
+        <ChevronRight className="h-4 w-4 sm:h-5 sm:w-5 text-muted-foreground group-hover:translate-x-1 transition-transform" />
       </div>
 
-      <div className="space-y-2">
+      <div className="space-y-1.5 sm:space-y-2">
         {tasks.map((task, idx) => (
           <div 
             key={task.id} 
-            className="flex items-center gap-2 p-3 rounded-lg glass border border-border/50 hover:border-primary/50 transition-all duration-300 animate-fade-in"
+            className="flex items-center gap-2 p-2 sm:p-3 rounded-lg glass border border-border/50 hover:border-primary/50 transition-all duration-300 animate-fade-in"
             style={{ animationDelay: `${idx * 100}ms` }}
           >
               <Checkbox
                 checked={task.statut === "terminee"}
                 onCheckedChange={() => toggleTaskStatus(task.id, task.statut)}
                 onClick={(e) => e.stopPropagation()}
+                className="h-4 w-4"
               />
-              <div className="flex-1">
-                <p className={`text-sm font-medium ${task.statut === "terminee" ? "line-through text-muted-foreground" : ""}`}>
+              <div className="flex-1 min-w-0">
+                <p className={`text-xs sm:text-sm font-medium truncate ${task.statut === "terminee" ? "line-through text-muted-foreground" : ""}`}>
                   {task.titre}
                 </p>
-                <p className="text-xs text-muted-foreground">
+                <p className="text-[10px] sm:text-xs text-muted-foreground">
                   {format(new Date(task.date_echeance), "dd MMM", { locale: fr })}
                 </p>
               </div>
               {isOverdue(task.date_echeance) && task.statut !== "terminee" && (
-                <Badge variant="destructive" className="ml-2">
-                  <AlertCircle className="h-3 w-3 mr-1" />
-                  {t('employee.tasks.overdue')}
+                <Badge variant="destructive" className="ml-1 sm:ml-2 text-[10px] sm:text-xs px-1 sm:px-2">
+                  <AlertCircle className="h-2.5 w-2.5 sm:h-3 sm:w-3 mr-0.5 sm:mr-1" />
+                  <span className="hidden sm:inline">{t('employee.tasks.overdue')}</span>
+                  <span className="sm:hidden">!</span>
                 </Badge>
               )}
             </div>
           ))}
       </div>
 
-      <p className="text-xs text-muted-foreground mt-4 text-center">
+      <p className="text-[10px] sm:text-xs text-muted-foreground mt-3 sm:mt-4 text-center">
         {t('employee.tasks.clickToViewAll')}
       </p>
     </Card>

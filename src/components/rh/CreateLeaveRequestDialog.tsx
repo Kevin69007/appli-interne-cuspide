@@ -119,36 +119,37 @@ export const CreateLeaveRequestDialog = ({ employeeId, onSuccess }: CreateLeaveR
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
-        <Button>
-          <Plus className="h-4 w-4 mr-2" />
-          Nouvelle demande
+        <Button className="text-xs sm:text-sm">
+          <Plus className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
+          <span className="hidden sm:inline">Nouvelle demande</span>
+          <span className="sm:hidden">Demande</span>
         </Button>
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[425px]">
+      <DialogContent className="sm:max-w-[425px] max-sm:p-4">
         <DialogHeader>
-          <DialogTitle>Demande de congés</DialogTitle>
+          <DialogTitle className="text-lg sm:text-xl">Demande de congés</DialogTitle>
         </DialogHeader>
         
-        <div className="space-y-4 py-4">
-          <div className="flex items-center gap-2 p-2 bg-muted/50 rounded text-sm text-muted-foreground">
-            <Info className="h-4 w-4 flex-shrink-0" />
+        <div className="space-y-3 sm:space-y-4 py-3 sm:py-4">
+          <div className="flex items-center gap-2 p-2 bg-muted/50 rounded text-xs sm:text-sm text-muted-foreground">
+            <Info className="h-3.5 w-3.5 sm:h-4 sm:w-4 flex-shrink-0" />
             <span>
               Calcul en jours {dayTypeLabel} {dayTypeDesc}
             </span>
           </div>
 
-          <div className="space-y-2">
-            <Label>Dates *</Label>
+          <div className="space-y-1.5 sm:space-y-2">
+            <Label className="text-sm">Dates *</Label>
             <Popover>
               <PopoverTrigger asChild>
                 <Button
                   variant="outline"
                   className={cn(
-                    "w-full justify-start text-left font-normal",
+                    "w-full justify-start text-left font-normal text-xs sm:text-sm h-9 sm:h-10",
                     !dateRange && "text-muted-foreground"
                   )}
                 >
-                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  <CalendarIcon className="mr-1.5 sm:mr-2 h-3.5 w-3.5 sm:h-4 sm:w-4" />
                   {dateRange?.from ? (
                     dateRange.to ? (
                       <>
@@ -168,14 +169,15 @@ export const CreateLeaveRequestDialog = ({ employeeId, onSuccess }: CreateLeaveR
                   mode="range"
                   selected={dateRange}
                   onSelect={setDateRange}
-                  numberOfMonths={2}
+                  numberOfMonths={1}
                   locale={fr}
                   disabled={(date) => date < new Date()}
+                  className="max-sm:scale-90 max-sm:origin-top-left"
                 />
               </PopoverContent>
             </Popover>
             {dateRange?.from && (
-              <div className="text-sm text-muted-foreground">
+              <div className="text-xs sm:text-sm text-muted-foreground">
                 {(() => {
                   const startDate = dateRange.from;
                   const endDate = dateRange.to || dateRange.from;
@@ -185,7 +187,7 @@ export const CreateLeaveRequestDialog = ({ employeeId, onSuccess }: CreateLeaveR
                     <p className="font-medium text-foreground">
                       {days} jour(s) {dayTypeLabel}
                       {dateRange.to && (
-                        <span className="text-muted-foreground font-normal ml-1">
+                        <span className="text-muted-foreground font-normal ml-1 text-[10px] sm:text-xs">
                           (du {format(startDate, "dd/MM")} au {format(endDate, "dd/MM")} inclus)
                         </span>
                       )}
@@ -196,23 +198,24 @@ export const CreateLeaveRequestDialog = ({ employeeId, onSuccess }: CreateLeaveR
             )}
           </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="motif">Motif (optionnel)</Label>
+          <div className="space-y-1.5 sm:space-y-2">
+            <Label htmlFor="motif" className="text-sm">Motif (optionnel)</Label>
             <Textarea
               id="motif"
               placeholder="Ex: Vacances d'été, événement familial..."
               value={motif}
               onChange={(e) => setMotif(e.target.value)}
               rows={2}
+              className="text-sm"
             />
           </div>
         </div>
 
-        <div className="flex justify-end gap-2">
-          <Button variant="outline" onClick={() => setOpen(false)}>
+        <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2">
+          <Button variant="outline" onClick={() => setOpen(false)} className="w-full sm:w-auto">
             Annuler
           </Button>
-          <Button onClick={handleSubmit} disabled={loading || !dateRange?.from}>
+          <Button onClick={handleSubmit} disabled={loading || !dateRange?.from} className="w-full sm:w-auto">
             {loading ? "Envoi..." : "Envoyer la demande"}
           </Button>
         </div>

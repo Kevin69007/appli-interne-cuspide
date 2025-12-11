@@ -111,32 +111,32 @@ export const InfosImportantesWidget = ({ onDataLoaded }: { onDataLoaded?: (hasDa
   }
 
   return (
-    <Card variant="glass" className="p-6 animate-fade-in">
-      <div className="flex items-center gap-3 mb-4">
-        <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
-          <Info className="h-5 w-5 text-white" />
+    <Card variant="glass" className="p-3 sm:p-6 animate-fade-in">
+      <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4">
+        <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-gradient-to-br from-primary to-accent flex items-center justify-center">
+          <Info className="h-4 w-4 sm:h-5 sm:w-5 text-white" />
         </div>
-        <h3 className="text-lg font-display font-semibold">{t('employee.importantInfoWidget.title')}</h3>
+        <h3 className="text-sm sm:text-lg font-display font-semibold flex-1 truncate">{t('employee.importantInfoWidget.title')}</h3>
         {communications.length > 0 && (
-          <Badge variant="destructive" className="animate-pulse">{communications.length}</Badge>
+          <Badge variant="destructive" className="animate-pulse text-xs">{communications.length}</Badge>
         )}
       </div>
 
-      <div className="space-y-4">
+      <div className="space-y-2 sm:space-y-4">
         {communications.map((comm, idx) => (
           <div 
             key={comm.id} 
-            className="p-4 glass border border-border/50 rounded-lg space-y-2 hover:border-primary/50 transition-all duration-300 animate-fade-in"
+            className="p-2.5 sm:p-4 glass border border-border/50 rounded-lg space-y-1.5 sm:space-y-2 hover:border-primary/50 transition-all duration-300 animate-fade-in"
             style={{ animationDelay: `${idx * 100}ms` }}
           >
               <div className="flex items-start justify-between gap-2">
-                <h4 className="font-semibold">{comm.titre}</h4>
+                <h4 className="font-semibold text-xs sm:text-base line-clamp-2">{comm.titre}</h4>
                 {comm.require_confirmation && !comm.isRead && (
-                  <Badge variant="outline">{t('employee.importantInfoWidget.toConfirm')}</Badge>
+                  <Badge variant="outline" className="text-[10px] sm:text-xs shrink-0">{t('employee.importantInfoWidget.toConfirm')}</Badge>
                 )}
               </div>
               
-              <p className="text-sm text-muted-foreground whitespace-pre-wrap">
+              <p className="text-[11px] sm:text-sm text-muted-foreground whitespace-pre-wrap line-clamp-3 sm:line-clamp-none">
                 {comm.contenu}
               </p>
 
@@ -144,9 +144,9 @@ export const InfosImportantesWidget = ({ onDataLoaded }: { onDataLoaded?: (hasDa
                 <Button 
                   size="sm" 
                   onClick={() => markAsRead(comm.id)}
-                  className="w-full mt-2"
+                  className="w-full mt-1.5 sm:mt-2 h-8 sm:h-9 text-xs sm:text-sm"
                 >
-                  <CheckCircle2 className="h-4 w-4 mr-2" />
+                  <CheckCircle2 className="h-3.5 w-3.5 sm:h-4 sm:w-4 mr-1.5 sm:mr-2" />
                   {t('employee.importantInfoWidget.markAsRead')}
                 </Button>
               )}

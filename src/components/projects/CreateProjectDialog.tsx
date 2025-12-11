@@ -86,34 +86,36 @@ export const CreateProjectDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-2xl max-sm:p-4">
         <DialogHeader>
-          <DialogTitle>Créer un nouveau projet</DialogTitle>
+          <DialogTitle className="text-lg sm:text-xl">Créer un nouveau projet</DialogTitle>
         </DialogHeader>
-        <form onSubmit={handleSubmit} className="space-y-4">
+        <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
           <div>
-            <Label htmlFor="titre">Titre du projet *</Label>
+            <Label htmlFor="titre" className="text-sm">Titre du projet *</Label>
             <Input
               id="titre"
               value={formData.titre}
               onChange={(e) => setFormData({ ...formData, titre: e.target.value })}
               required
+              className="mt-1"
             />
           </div>
 
           <div>
-            <Label htmlFor="description">Description</Label>
+            <Label htmlFor="description" className="text-sm">Description</Label>
             <Textarea
               id="description"
               value={formData.description}
               onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              rows={4}
+              rows={3}
+              className="mt-1"
             />
           </div>
 
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div>
-              <Label htmlFor="responsable">Responsable *</Label>
+              <Label htmlFor="responsable" className="text-sm">Responsable *</Label>
               <Select
                 value={formData.responsable_id}
                 onValueChange={(value) =>
@@ -121,7 +123,7 @@ export const CreateProjectDialog = ({
                 }
                 required
               >
-                <SelectTrigger>
+                <SelectTrigger className="mt-1">
                   <SelectValue placeholder="Sélectionner un responsable" />
                 </SelectTrigger>
                 <SelectContent>
@@ -135,12 +137,12 @@ export const CreateProjectDialog = ({
             </div>
 
             <div>
-              <Label htmlFor="statut">Statut</Label>
+              <Label htmlFor="statut" className="text-sm">Statut</Label>
               <Select
                 value={formData.statut}
                 onValueChange={(value) => setFormData({ ...formData, statut: value })}
               >
-                <SelectTrigger>
+                <SelectTrigger className="mt-1">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
@@ -161,21 +163,22 @@ export const CreateProjectDialog = ({
                 setFormData({ ...formData, is_priority: checked as boolean })
               }
             />
-            <Label htmlFor="priority" className="cursor-pointer">
+            <Label htmlFor="priority" className="cursor-pointer text-sm">
               Marquer comme projet prioritaire
             </Label>
           </div>
 
-          <div className="flex justify-end gap-2 pt-4">
+          <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3 sm:pt-4">
             <Button
               type="button"
               variant="outline"
               onClick={() => onOpenChange(false)}
               disabled={loading}
+              className="w-full sm:w-auto"
             >
               Annuler
             </Button>
-            <Button type="submit" disabled={loading}>
+            <Button type="submit" disabled={loading} className="w-full sm:w-auto">
               {loading ? "Création..." : "Créer le projet"}
             </Button>
           </div>

@@ -217,17 +217,17 @@ const Projets = () => {
   };
 
   const SkeletonCard = () => (
-    <Card className="p-6 animate-pulse">
-      <div className="space-y-4">
-        <div className="h-5 bg-muted rounded w-3/4" />
-        <div className="h-4 bg-muted rounded w-1/2" />
-        <div className="space-y-2">
-          <div className="h-3 bg-muted rounded w-full" />
-          <div className="h-2 bg-muted rounded w-full" />
+    <Card className="p-4 sm:p-6 animate-pulse">
+      <div className="space-y-3 sm:space-y-4">
+        <div className="h-4 sm:h-5 bg-muted rounded w-3/4" />
+        <div className="h-3 sm:h-4 bg-muted rounded w-1/2" />
+        <div className="space-y-1.5 sm:space-y-2">
+          <div className="h-2.5 sm:h-3 bg-muted rounded w-full" />
+          <div className="h-1.5 sm:h-2 bg-muted rounded w-full" />
         </div>
         <div className="flex gap-2">
-          <div className="h-6 bg-muted rounded w-20" />
-          <div className="h-6 bg-muted rounded w-24" />
+          <div className="h-5 sm:h-6 bg-muted rounded w-16 sm:w-20" />
+          <div className="h-5 sm:h-6 bg-muted rounded w-20 sm:w-24" />
         </div>
       </div>
     </Card>
@@ -236,7 +236,7 @@ const Projets = () => {
   const renderProjects = (projectList: Project[]) => {
     if (loading) {
       return (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           {[1, 2, 3].map((i) => <SkeletonCard key={i} />)}
         </div>
       );
@@ -244,7 +244,7 @@ const Projets = () => {
 
     if (projectList.length === 0) {
       return (
-        <p className="text-center text-muted-foreground py-8">
+        <p className="text-center text-muted-foreground py-6 sm:py-8 text-sm sm:text-base">
           Aucun projet dans cette catégorie
         </p>
       );
@@ -260,7 +260,7 @@ const Projets = () => {
           items={projectList.map(p => p.id)}
           strategy={rectSortingStrategy}
         >
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 pl-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 pl-0 sm:pl-4">
             {projectList.map((project) => (
               <SortableProjectCard
                 key={project.id}
@@ -277,23 +277,24 @@ const Projets = () => {
   };
 
   return (
-    <div className="min-h-screen bg-background p-4">
+    <div className="min-h-screen bg-background p-3 sm:p-4">
       <div className="max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4">
-            <Button variant="ghost" size="icon" onClick={() => navigate("/")}>
-              <ArrowLeft className="h-5 w-5" />
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-4 sm:mb-6">
+          <div className="flex items-center gap-2 sm:gap-4">
+            <Button variant="ghost" size="icon" onClick={() => navigate("/")} className="h-8 w-8 sm:h-10 sm:w-10">
+              <ArrowLeft className="h-4 w-4 sm:h-5 sm:w-5" />
             </Button>
-            <div className="flex items-center gap-3">
-              <Briefcase className="h-6 w-6 text-primary" />
-              <h1 className="text-3xl font-bold">Projets</h1>
+            <div className="flex items-center gap-2 sm:gap-3">
+              <Briefcase className="h-5 w-5 sm:h-6 sm:w-6 text-primary" />
+              <h1 className="text-xl sm:text-3xl font-bold">Projets</h1>
               <ModuleHelpButton moduleId="projects" />
             </div>
           </div>
           {isAdminOrManager && (
-            <Button onClick={() => setShowCreateDialog(true)}>
-              <Plus className="h-4 w-4 mr-2" />
-              Nouveau projet
+            <Button onClick={() => setShowCreateDialog(true)} className="w-full sm:w-auto text-sm">
+              <Plus className="h-4 w-4 mr-1.5 sm:mr-2" />
+              <span className="sm:hidden">Nouveau</span>
+              <span className="hidden sm:inline">Nouveau projet</span>
             </Button>
           )}
         </div>
@@ -306,7 +307,7 @@ const Projets = () => {
           filteredCount={filteredAndSortedProjects.length}
         />
 
-        <div className="mt-6">
+        <div className="mt-4 sm:mt-6">
           {renderProjects(filteredAndSortedProjects)}
         </div>
       </div>

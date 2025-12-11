@@ -149,23 +149,23 @@ export const TimeDeclarationQuickDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto">
+      <DialogContent className="max-w-md max-h-[90vh] overflow-y-auto max-sm:p-4">
         <DialogHeader>
-          <DialogTitle className="capitalize">
+          <DialogTitle className="capitalize text-base sm:text-lg">
             Déclaration du {formattedDate}
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="space-y-3 sm:space-y-4">
           {/* Base info */}
-          <div className="flex items-center gap-2 text-sm text-muted-foreground bg-muted/50 rounded-md px-3 py-2">
-            <Info className="h-4 w-4 shrink-0" />
+          <div className="flex items-center gap-2 text-xs sm:text-sm text-muted-foreground bg-muted/50 rounded-md px-2 sm:px-3 py-2">
+            <Info className="h-3.5 w-3.5 sm:h-4 sm:w-4 shrink-0" />
             <span>Base : {dailyHoursBase.toFixed(1)}h/jour</span>
           </div>
 
           {/* Hours input */}
-          <div className="space-y-2">
-            <Label htmlFor="heures">Heures travaillées</Label>
+          <div className="space-y-1.5 sm:space-y-2">
+            <Label htmlFor="heures" className="text-sm">Heures travaillées</Label>
             <Input
               id="heures"
               type="number"
@@ -176,15 +176,15 @@ export const TimeDeclarationQuickDialog = ({
               value={heures}
               onChange={(e) => setHeures(e.target.value)}
               className={cn(
-                "border-2 transition-colors",
+                "border-2 transition-colors h-10 sm:h-11",
                 !isNaN(hours) && hours > 0 && getHoursColor(hours)
               )}
             />
           </div>
 
           {/* Activity rate input */}
-          <div className="space-y-2">
-            <Label htmlFor="taux">Taux d'activité (%)</Label>
+          <div className="space-y-1.5 sm:space-y-2">
+            <Label htmlFor="taux" className="text-sm">Taux d'activité (%)</Label>
             <Input
               id="taux"
               type="number"
@@ -195,7 +195,7 @@ export const TimeDeclarationQuickDialog = ({
               value={tauxActivite}
               onChange={(e) => setTauxActivite(e.target.value)}
               className={cn(
-                "border-2 transition-colors",
+                "border-2 transition-colors h-10 sm:h-11",
                 !isNaN(activity) && activity > 0 && getActivityColor(activity)
               )}
             />
@@ -204,10 +204,10 @@ export const TimeDeclarationQuickDialog = ({
           {/* Justification section */}
           {needsJustification && (
             <>
-              <Alert variant="destructive">
-                <AlertTriangle className="h-4 w-4" />
-                <AlertTitle>Justification requise</AlertTitle>
-                <AlertDescription>
+              <Alert variant="destructive" className="py-2 sm:py-3">
+                <AlertTriangle className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
+                <AlertTitle className="text-sm">Justification requise</AlertTitle>
+                <AlertDescription className="text-xs sm:text-sm">
                   Vous devez justifier les heures manquantes ({(dailyHoursBase - hours).toFixed(1)}h)
                 </AlertDescription>
               </Alert>
@@ -221,7 +221,7 @@ export const TimeDeclarationQuickDialog = ({
           {/* Submit button */}
           <Button
             onClick={handleSubmit}
-            className="w-full"
+            className="w-full h-10 sm:h-11"
             disabled={loading || !heures || !tauxActivite || (needsJustification && !justificationData)}
           >
             {loading ? "Enregistrement..." : "Enregistrer"}

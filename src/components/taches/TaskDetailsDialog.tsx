@@ -307,7 +307,7 @@ export const TaskDetailsDialog = ({
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto max-sm:p-3">
           <DialogHeader>
             <div className="flex items-start justify-between">
               <div className="flex-1">

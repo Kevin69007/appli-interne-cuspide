@@ -193,21 +193,21 @@ export const CreateMeetingDialog = ({ open, onOpenChange, onSuccess }: CreateMee
   return (
     <>
       <Dialog open={open} onOpenChange={onOpenChange}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto max-sm:p-4">
           <DialogHeader>
-            <DialogTitle>Créer une nouvelle réunion</DialogTitle>
+            <DialogTitle className="text-lg sm:text-xl">Créer une nouvelle réunion</DialogTitle>
           </DialogHeader>
 
           <Tabs defaultValue="upload" className="w-full">
-            <TabsList className="grid w-full grid-cols-2">
-              <TabsTrigger value="upload">Importer un fichier</TabsTrigger>
-              <TabsTrigger value="live">Enregistrer en direct</TabsTrigger>
+            <TabsList className="grid w-full grid-cols-2 h-auto">
+              <TabsTrigger value="upload" className="text-xs sm:text-sm py-2">Importer un fichier</TabsTrigger>
+              <TabsTrigger value="live" className="text-xs sm:text-sm py-2">Enregistrer en direct</TabsTrigger>
             </TabsList>
 
-            <TabsContent value="upload" className="space-y-4 mt-4">
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="projects">Projets *</Label>
+            <TabsContent value="upload" className="space-y-3 sm:space-y-4 mt-3 sm:mt-4">
+              <form onSubmit={handleSubmit} className="space-y-3 sm:space-y-4">
+                <div className="space-y-1.5 sm:space-y-2">
+                  <Label htmlFor="projects" className="text-sm">Projets *</Label>
                   <MultiSelect
                     selectedValues={formData.project_ids || []}
                     onSelectedValuesChange={(values) =>
@@ -223,8 +223,8 @@ export const CreateMeetingDialog = ({ open, onOpenChange, onSuccess }: CreateMee
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="titre">Titre de la réunion</Label>
+                <div className="space-y-1.5 sm:space-y-2">
+                  <Label htmlFor="titre" className="text-sm">Titre de la réunion</Label>
                   <Input
                     id="titre"
                     value={formData.titre}
@@ -233,8 +233,8 @@ export const CreateMeetingDialog = ({ open, onOpenChange, onSuccess }: CreateMee
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="date">Date</Label>
+                <div className="space-y-1.5 sm:space-y-2">
+                  <Label htmlFor="date" className="text-sm">Date</Label>
                   <Input
                     id="date"
                     type="datetime-local"
@@ -244,8 +244,8 @@ export const CreateMeetingDialog = ({ open, onOpenChange, onSuccess }: CreateMee
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="participants">Participants *</Label>
+                <div className="space-y-1.5 sm:space-y-2">
+                  <Label htmlFor="participants" className="text-sm">Participants *</Label>
                   <MultiSelect
                     selectedValues={formData.participant_ids || []}
                     onSelectedValuesChange={(values) =>
@@ -261,32 +261,32 @@ export const CreateMeetingDialog = ({ open, onOpenChange, onSuccess }: CreateMee
                   />
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="notes">Notes</Label>
+                <div className="space-y-1.5 sm:space-y-2">
+                  <Label htmlFor="notes" className="text-sm">Notes</Label>
                   <Textarea
                     id="notes"
                     value={formData.notes}
                     onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                    rows={3}
+                    rows={2}
                   />
                 </div>
 
                 <AudioUploader onFileSelected={setAudioFile} />
 
-                <div className="flex justify-end gap-2 pt-4">
-                  <Button type="button" variant="outline" onClick={() => onOpenChange(false)}>
+                <div className="flex flex-col-reverse sm:flex-row sm:justify-end gap-2 pt-3 sm:pt-4">
+                  <Button type="button" variant="outline" onClick={() => onOpenChange(false)} className="w-full sm:w-auto">
                     Annuler
                   </Button>
-                  <Button type="submit" disabled={loading}>
+                  <Button type="submit" disabled={loading} className="w-full sm:w-auto">
                     {loading ? "Création..." : "Créer la réunion"}
                   </Button>
                 </div>
               </form>
             </TabsContent>
 
-            <TabsContent value="live" className="mt-4">
-              <div className="text-center py-8">
-                <p className="text-muted-foreground mb-4">
+            <TabsContent value="live" className="mt-3 sm:mt-4">
+              <div className="text-center py-6 sm:py-8">
+                <p className="text-muted-foreground mb-4 text-sm sm:text-base px-2">
                   Lancez un enregistrement en direct avec marquage temporel des projets et tâches abordés.
                 </p>
                 <Button
@@ -295,6 +295,7 @@ export const CreateMeetingDialog = ({ open, onOpenChange, onSuccess }: CreateMee
                     onOpenChange(false);
                   }}
                   size="lg"
+                  className="w-full sm:w-auto"
                 >
                   Démarrer l'enregistrement
                 </Button>
