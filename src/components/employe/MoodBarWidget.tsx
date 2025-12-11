@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
@@ -8,13 +9,13 @@ import { Sparkles, RefreshCw } from "lucide-react";
 
 interface MoodOption {
   emoji: string;
-  label: string;
+  labelKey: string;
   value: string;
 }
 
 interface NeedOption {
   emoji: string;
-  label: string;
+  labelKey: string;
   category: string;
 }
 
@@ -25,19 +26,19 @@ interface Quote {
 }
 
 const moodOptions: MoodOption[] = [
-  { emoji: "😔", label: "Bof", value: "bad" },
-  { emoji: "😐", label: "Meh", value: "neutral" },
-  { emoji: "😊", label: "Bien", value: "good" },
-  { emoji: "😄", label: "Top", value: "great" },
-  { emoji: "🔥", label: "Fire!", value: "fire" },
+  { emoji: "😔", labelKey: "bad", value: "bad" },
+  { emoji: "😐", labelKey: "neutral", value: "neutral" },
+  { emoji: "😊", labelKey: "good", value: "good" },
+  { emoji: "😄", labelKey: "great", value: "great" },
+  { emoji: "🔥", labelKey: "fire", value: "fire" },
 ];
 
 const needOptions: NeedOption[] = [
-  { emoji: "💪", label: "Motivation", category: "motivation" },
-  { emoji: "🎉", label: "Gaieté", category: "joy" },
-  { emoji: "🧠", label: "Info insolite", category: "fun_fact" },
-  { emoji: "☮️", label: "Zen", category: "calm" },
-  { emoji: "⚡", label: "Énergie", category: "energy" },
+  { emoji: "💪", labelKey: "motivation", category: "motivation" },
+  { emoji: "🎉", labelKey: "joy", category: "joy" },
+  { emoji: "🧠", labelKey: "fun_fact", category: "fun_fact" },
+  { emoji: "☮️", labelKey: "calm", category: "calm" },
+  { emoji: "⚡", labelKey: "energy", category: "energy" },
 ];
 
 // GIFs par catégorie de mood
@@ -51,6 +52,7 @@ const moodGifs: Record<string, string> = {
 
 export const MoodBarWidget = ({ onVoted }: { onVoted?: (voted: boolean) => void }) => {
   const { user } = useAuth();
+  const { t } = useTranslation();
   const [selectedMood, setSelectedMood] = useState<string | null>(null);
   const [selectedNeed, setSelectedNeed] = useState<string | null>(null);
   const [quote, setQuote] = useState<Quote | null>(null);
@@ -122,7 +124,7 @@ export const MoodBarWidget = ({ onVoted }: { onVoted?: (voted: boolean) => void 
     }
   };
 
-  const handleMoodSelect = (moodValue: string, emoji: string, label: string) => {
+  const handleMoodSelect = (moodValue: string) => {
     setSelectedMood(moodValue);
   };
 
@@ -143,7 +145,7 @@ export const MoodBarWidget = ({ onVoted }: { onVoted?: (voted: boolean) => void 
       const { error } = await supabase.from("daily_mood").insert({
         employee_id: employeeId,
         mood_emoji: moodOption.emoji,
-        mood_label: moodOption.label,
+        mood_label: t(`moodBar.moods.${moodOption.labelKey}`),
         need_type: selectedNeed,
         date: new Date().toISOString().split("T")[0],
       });
@@ -197,7 +199,7 @@ export const MoodBarWidget = ({ onVoted }: { onVoted?: (voted: boolean) => void 
           <div className="space-y-4">
             <div className="flex items-center justify-center gap-2">
               <Sparkles className="w-5 h-5 text-primary" />
-              <h3 className="text-lg font-semibold text-foreground">Ta citation du jour</h3>
+              <h3 className="text-lg font-semibold text-foreground">{t('moodBar.yourDailyQuote')}</h3>
               <Button
                 variant="ghost"
                 size="icon"
@@ -225,7 +227,7 @@ export const MoodBarWidget = ({ onVoted }: { onVoted?: (voted: boolean) => void 
         <div className="flex items-center justify-center gap-2">
           <Sparkles className="w-6 h-6 text-primary animate-glow" />
           <h2 className="text-2xl font-display font-bold text-foreground">
-            Donne-nous ton état d'esprit du jour !
+            {t('moodBar.title')}
           </h2>
         </div>
       </div>
@@ -233,13 +235,13 @@ export const MoodBarWidget = ({ onVoted }: { onVoted?: (voted: boolean) => void 
       <div className="space-y-6">
         <div className="space-y-3">
           <p className="text-center text-muted-foreground font-medium text-sm sm:text-base">
-            Comment te sens-tu ?
+            {t('moodBar.howDoYouFeel')}
           </p>
           <div className="grid grid-cols-3 sm:flex sm:justify-center gap-2 sm:gap-4">
             {moodOptions.map((mood) => (
               <button
                 key={mood.value}
-                onClick={() => handleMoodSelect(mood.value, mood.emoji, mood.label)}
+                onClick={() => handleMoodSelect(mood.value)}
                 className={`flex flex-col items-center gap-1 sm:gap-2 p-2 sm:p-4 rounded-lg border-2 transition-all hover:scale-110 hover:shadow-lg ${
                   selectedMood === mood.value
                     ? "border-primary bg-primary/10 scale-110 shadow-lg"
@@ -247,7 +249,9 @@ export const MoodBarWidget = ({ onVoted }: { onVoted?: (voted: boolean) => void 
                 }`}
               >
                 <span className="text-2xl sm:text-4xl">{mood.emoji}</span>
-                <span className="text-xs sm:text-sm font-medium text-foreground">{mood.label}</span>
+                <span className="text-xs sm:text-sm font-medium text-foreground">
+                  {t(`moodBar.moods.${mood.labelKey}`)}
+                </span>
               </button>
             ))}
           </div>
@@ -256,7 +260,7 @@ export const MoodBarWidget = ({ onVoted }: { onVoted?: (voted: boolean) => void 
         {selectedMood && (
           <div className="space-y-3 animate-fade-in">
             <p className="text-center text-muted-foreground font-medium text-sm sm:text-base">
-              De quoi as-tu besoin aujourd'hui ?
+              {t('moodBar.whatDoYouNeed')}
             </p>
             <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
               {needOptions.map((need) => (
@@ -270,7 +274,9 @@ export const MoodBarWidget = ({ onVoted }: { onVoted?: (voted: boolean) => void 
                   }`}
                 >
                   <span className="text-xl sm:text-2xl">{need.emoji}</span>
-                  <span className="text-xs sm:text-sm font-medium text-foreground">{need.label}</span>
+                  <span className="text-xs sm:text-sm font-medium text-foreground">
+                    {t(`moodBar.needs.${need.labelKey}`)}
+                  </span>
                 </button>
               ))}
             </div>
@@ -282,7 +288,7 @@ export const MoodBarWidget = ({ onVoted }: { onVoted?: (voted: boolean) => void 
             <div className="flex flex-col items-center gap-3">
               <div className="w-8 h-8 border-3 border-primary/30 border-t-primary rounded-full animate-spin" />
               <p className="text-muted-foreground text-center animate-pulse">
-                On te prépare une citation pour te mettre bien... ✨
+                {t('moodBar.preparingQuote')}
               </p>
             </div>
           </div>
@@ -293,7 +299,7 @@ export const MoodBarWidget = ({ onVoted }: { onVoted?: (voted: boolean) => void 
             <div className="p-4 bg-background/50 rounded-lg border border-border">
               <div className="flex items-center justify-center gap-2 mb-3">
                 <Sparkles className="w-5 h-5 text-primary" />
-                <h3 className="text-lg font-semibold text-foreground">Ta citation du jour</h3>
+                <h3 className="text-lg font-semibold text-foreground">{t('moodBar.yourDailyQuote')}</h3>
                 <Button
                   variant="ghost"
                   size="icon"
@@ -321,7 +327,7 @@ export const MoodBarWidget = ({ onVoted }: { onVoted?: (voted: boolean) => void 
             className="w-full animate-fade-in font-display"
             size="lg"
           >
-            {submitting ? "Enregistrement..." : "Valider mon humeur 🎉"}
+            {submitting ? t('submitting') : t('moodBar.validateMood')}
           </Button>
         )}
       </div>

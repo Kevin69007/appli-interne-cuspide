@@ -10,6 +10,8 @@
   "edit": "Modifier",
   "create": "Créer",
   "search": "Rechercher",
+  "searchModule": "Rechercher un module...",
+  "searchPlaceholder": "Rechercher...",
   "filter": "Filtrer",
   "export": "Exporter",
   "import": "Importer",
@@ -20,6 +22,9 @@
   "next": "Suivant",
   "previous": "Précédent",
   "close": "Fermer",
+  "noModuleFound": "Aucun module trouvé",
+  "noModuleAvailable": "Aucun module disponible",
+  "submitting": "Enregistrement...",
   "navigation": {
     "formation": "Formation & Documentation",
     "indicators": "Indicateurs & Primes",
@@ -33,5 +38,38 @@
     "stock": "Commandes & Stock",
     "planning": "Planning",
     "direction": "Suivi Direction"
+  },
+  "moodBar": {
+    "title": "Donne-nous ton état d'esprit du jour !",
+    "howDoYouFeel": "Comment te sens-tu ?",
+    "whatDoYouNeed": "De quoi as-tu besoin aujourd'hui ?",
+    "preparingQuote": "On te prépare une citation pour te mettre bien... ✨",
+    "yourDailyQuote": "Ta citation du jour",
+    "validateMood": "Valider mon humeur 🎉",
+    "moods": {
+      "bad": "Bof",
+      "neutral": "Meh",
+      "good": "Bien",
+      "great": "Top",
+      "fire": "Fire!"
+    },
+    "needs": {
+      "motivation": "Motivation",
+      "joy": "Gaieté",
+      "fun_fact": "Info insolite",
+      "calm": "Zen",
+      "energy": "Énergie"
+    }
+  },
+  "timeDeclaration": {
+    "title": "Déclaration de tes heures",
+    "today": "Aujourd'hui",
+    "notDeclared": "Non déclaré",
+    "declare": "Déclarer",
+    "delaysToMakeUp": "Retards à rattraper :",
+    "delay": "retard",
+    "delays": "retards",
+    "allUpToDate": "Tout est à jour !",
+    "hours": "heures"
   }
 }

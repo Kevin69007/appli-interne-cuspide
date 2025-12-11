@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
-import { format, subDays, isWeekend, isBefore, startOfDay } from "date-fns";
-import { fr } from "date-fns/locale";
+import { useTranslation } from "react-i18next";
+import { format, subDays, isWeekend } from "date-fns";
+import { fr, enUS } from "date-fns/locale";
 import { Clock, AlertTriangle, Check, ChevronRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -17,6 +18,7 @@ interface MissingDay {
 
 export const TimeDeclarationWidget = () => {
   const { employee } = useEmployee();
+  const { t, i18n } = useTranslation();
   const [todayDeclared, setTodayDeclared] = useState<boolean | null>(null);
   const [todayHours, setTodayHours] = useState<number | null>(null);
   const [missingDays, setMissingDays] = useState<MissingDay[]>([]);
@@ -25,6 +27,7 @@ export const TimeDeclarationWidget = () => {
   const [selectedDate, setSelectedDate] = useState<string | null>(null);
 
   const today = format(new Date(), 'yyyy-MM-dd');
+  const dateLocale = i18n.language === 'fr' ? fr : enUS;
 
   useEffect(() => {
     if (!employee?.id) return;
@@ -71,7 +74,7 @@ export const TimeDeclarationWidget = () => {
         .filter(date => !declaredDates.has(date))
         .map(date => ({
           date,
-          formattedDate: format(new Date(date), 'EEEE d MMMM', { locale: fr })
+          formattedDate: format(new Date(date), 'EEEE d MMMM', { locale: dateLocale })
         }));
 
       setMissingDays(missing);
@@ -125,10 +128,10 @@ export const TimeDeclarationWidget = () => {
               "h-4 w-4 sm:h-5 sm:w-5",
               isAllGood ? "text-green-500" : "text-orange-500"
             )} />
-            <span className="truncate">Déclaration de tes heures</span>
+            <span className="truncate">{t('timeDeclaration.title')}</span>
             {hasMissingDays && (
               <Badge variant="destructive" className="ml-auto animate-pulse text-[10px] sm:text-xs">
-                {missingDays.length} retard{missingDays.length > 1 ? 's' : ''}
+                {missingDays.length} {missingDays.length > 1 ? t('timeDeclaration.delays') : t('timeDeclaration.delay')}
               </Badge>
             )}
           </CardTitle>
@@ -145,12 +148,12 @@ export const TimeDeclarationWidget = () => {
               {todayDeclared ? (
                 <>
                   <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-green-500 shrink-0" />
-                  <span className="text-xs sm:text-sm truncate">Aujourd'hui : <strong>{todayHours}h</strong></span>
+                  <span className="text-xs sm:text-sm truncate">{t('timeDeclaration.today')} : <strong>{todayHours}h</strong></span>
                 </>
               ) : (
                 <>
                   <AlertTriangle className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-orange-500 shrink-0" />
-                  <span className="text-xs sm:text-sm font-medium truncate">Non déclaré</span>
+                  <span className="text-xs sm:text-sm font-medium truncate">{t('timeDeclaration.notDeclared')}</span>
                 </>
               )}
             </div>
@@ -160,7 +163,7 @@ export const TimeDeclarationWidget = () => {
                 onClick={() => handleDeclare()}
                 className="bg-primary hover:bg-primary/90 h-7 sm:h-8 text-xs sm:text-sm px-2 sm:px-3 shrink-0"
               >
-                Déclarer
+                {t('timeDeclaration.declare')}
               </Button>
             )}
           </div>
@@ -170,7 +173,7 @@ export const TimeDeclarationWidget = () => {
             <div className="space-y-1.5 sm:space-y-2">
               <p className="text-[10px] sm:text-xs text-muted-foreground font-medium flex items-center gap-1">
                 <AlertTriangle className="h-2.5 w-2.5 sm:h-3 sm:w-3 text-destructive" />
-                Retards à rattraper :
+                {t('timeDeclaration.delaysToMakeUp')}
               </p>
               <div className="space-y-1 sm:space-y-1.5 max-h-24 sm:max-h-32 overflow-y-auto">
                 {missingDays.slice(0, 5).map((day) => (
@@ -191,7 +194,7 @@ export const TimeDeclarationWidget = () => {
           {isAllGood && (
             <div className="flex items-center gap-1.5 sm:gap-2 text-green-600 text-xs sm:text-sm">
               <Check className="h-3.5 w-3.5 sm:h-4 sm:w-4" />
-              <span>Tout est à jour !</span>
+              <span>{t('timeDeclaration.allUpToDate')}</span>
             </div>
           )}
         </CardContent>
