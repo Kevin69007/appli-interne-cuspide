@@ -20,30 +20,33 @@ const Agenda = () => {
   return (
     <div className="min-h-screen bg-background">
       <header className="border-b bg-card">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center gap-4">
+        <div className="container mx-auto px-3 sm:px-4 py-3 sm:py-4">
+          <div className="flex items-center gap-2 sm:gap-4">
             <Button
               variant="ghost"
               size="icon"
+              className="h-8 w-8 sm:h-10 sm:w-10"
               onClick={() => navigate("/")}
             >
-              <ChevronLeft className="h-5 w-5" />
+              <ChevronLeft className="h-4 w-4 sm:h-5 sm:w-5" />
             </Button>
-            <div className="flex items-center gap-2">
-              <h1 className="text-2xl font-bold">Mon Agenda</h1>
-              <ModuleHelpButton moduleId="planning" />
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <h1 className="text-lg sm:text-2xl font-bold truncate">Mon Agenda</h1>
+                <ModuleHelpButton moduleId="planning" />
+              </div>
+              <p className="text-xs sm:text-sm text-muted-foreground hidden sm:block">Planning et événements</p>
             </div>
-            <p className="text-sm text-muted-foreground">Planning et événements</p>
           </div>
         </div>
       </header>
 
-      <main className="container mx-auto px-4 py-8">
+      <main className="container mx-auto px-3 sm:px-4 py-4 sm:py-8">
         <Tabs defaultValue="agenda" className="space-y-4">
-          <TabsList>
-            <TabsTrigger value="agenda">{t('tabs.personal')}</TabsTrigger>
-            <TabsTrigger value="planning">{t('tabs.team')}</TabsTrigger>
-            <TabsTrigger value="declaration">{t('tabs.timeDeclaration')}</TabsTrigger>
+          <TabsList scrollable>
+            <TabsTrigger value="agenda" className="text-xs sm:text-sm">{t('tabs.personal')}</TabsTrigger>
+            <TabsTrigger value="planning" className="text-xs sm:text-sm">{t('tabs.team')}</TabsTrigger>
+            <TabsTrigger value="declaration" className="text-xs sm:text-sm">{t('tabs.timeDeclaration')}</TabsTrigger>
           </TabsList>
 
           <TabsContent value="agenda" className="space-y-4">
@@ -54,7 +57,7 @@ const Agenda = () => {
             <PlanningCalendar />
           </TabsContent>
 
-          <TabsContent value="declaration" className="space-y-6">
+          <TabsContent value="declaration" className="space-y-4 sm:space-y-6">
             <TimeDeclarationForm onSuccess={() => setRefreshHistory(prev => prev + 1)} />
             <TimeDeclarationHistory key={refreshHistory} />
           </TabsContent>

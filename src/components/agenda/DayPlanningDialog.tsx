@@ -278,10 +278,10 @@ const DroppableTimeSlot = ({
         ${hour % 1 === 0 ? "border-t border-border" : ""}
       `}
     >
-      <div className="w-16 text-xs text-muted-foreground flex items-center justify-center shrink-0 border-r border-border/50">
+      <div className="w-12 sm:w-16 text-[10px] sm:text-xs text-muted-foreground flex items-center justify-center shrink-0 border-r border-border/50">
         {hour % 1 === 0 ? formatHour(hour) : ""}
       </div>
-      <div className="flex-1 px-2 py-1">
+      <div className="flex-1 px-1 sm:px-2 py-1">
         {children}
       </div>
     </div>
@@ -503,11 +503,11 @@ export const DayPlanningDialog = ({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-4xl h-[85vh] flex flex-col p-0">
-        <DialogHeader className="px-6 pt-6 pb-4 border-b">
-          <DialogTitle className="flex items-center gap-2">
-            <Calendar className="h-5 w-5 text-primary" />
-            {format(selectedDate, "EEEE d MMMM yyyy", { locale: fr })}
+      <DialogContent className="max-w-4xl h-[90vh] sm:h-[85vh] flex flex-col p-0 sm:max-w-4xl w-[95vw] sm:w-auto">
+        <DialogHeader className="px-3 sm:px-6 pt-4 sm:pt-6 pb-3 sm:pb-4 border-b">
+          <DialogTitle className="flex items-center gap-2 text-sm sm:text-base">
+            <Calendar className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+            <span className="truncate">{format(selectedDate, "EEE d MMM yyyy", { locale: fr })}</span>
           </DialogTitle>
         </DialogHeader>
 
@@ -516,28 +516,31 @@ export const DayPlanningDialog = ({
           onDragStart={handleDragStart}
           onDragEnd={handleDragEnd}
         >
-          <div className="flex-1 grid grid-cols-3 gap-4 p-6 overflow-hidden">
+          {/* Mobile: Stacked layout, Desktop: Side by side */}
+          <div className="flex-1 flex flex-col sm:grid sm:grid-cols-3 gap-3 sm:gap-4 p-3 sm:p-6 overflow-hidden">
             {/* Sortable Tasks list with droppable zone */}
-            <div className="col-span-1 flex flex-col">
-              <h4 className="text-sm font-medium mb-3 flex items-center gap-2">
-                <Clock className="h-4 w-4" />
-                Tâches du jour ({tasks.length})
+            <div className="sm:col-span-1 flex flex-col min-h-[120px] sm:min-h-0">
+              <h4 className="text-xs sm:text-sm font-medium mb-2 sm:mb-3 flex items-center gap-2">
+                <Clock className="h-3 w-3 sm:h-4 sm:w-4" />
+                Tâches ({tasks.length})
               </h4>
               <TaskListDropZone tasks={tasks} loading={loading} />
             </div>
 
             {/* Time slots */}
-            <div className="col-span-2 flex flex-col min-h-0">
-              <h4 className="text-sm font-medium mb-3 shrink-0">Planning horaire (glisser vers la gauche pour retirer)</h4>
-              <ScrollArea className="h-[500px] border rounded-lg">
+            <div className="sm:col-span-2 flex flex-col min-h-0 flex-1">
+              <h4 className="text-xs sm:text-sm font-medium mb-2 sm:mb-3 shrink-0">
+                <span className="hidden sm:inline">Planning horaire (glisser vers la gauche pour retirer)</span>
+                <span className="sm:hidden">Créneaux horaires</span>
+              </h4>
+              <ScrollArea className="flex-1 sm:h-[500px] border rounded-lg">
                 <div 
-                  className="min-w-[300px] relative" 
+                  className="min-w-[280px] sm:min-w-[300px] relative" 
                   style={{ height: `${TIME_SLOTS.length * 40}px` }}
                 >
                   {/* Background time slots (droppable areas) */}
                   {TIME_SLOTS.map(hour => {
                     const placement = getPlacementForSlot(hour);
-                    const isOccupiedButNotStart = !!placement && !isSlotStart(hour, placement);
                     
                     return (
                       <DroppableTimeSlot 
@@ -553,13 +556,13 @@ export const DayPlanningDialog = ({
                   {/* Placed tasks with absolute positioning to span multiple slots */}
                   {plannings.map(placement => {
                     if (!placement.task) return null;
-                    const topOffset = (placement.start_hour - 7) * 2 * 40; // 40px per slot, 2 slots per hour
-                    const height = placement.duration_slots * 40 - 4; // -4 for some padding
+                    const topOffset = (placement.start_hour - 7) * 2 * 40;
+                    const height = placement.duration_slots * 40 - 4;
                     
                     return (
                       <div
                         key={placement.id}
-                        className="absolute left-16 right-2"
+                        className="absolute left-12 sm:left-16 right-1 sm:right-2"
                         style={{
                           top: `${topOffset}px`,
                           height: `${height}px`,
@@ -582,9 +585,9 @@ export const DayPlanningDialog = ({
 
           <DragOverlay>
             {activeTask && (
-              <div className="p-2 rounded border-l-4 border-l-primary bg-background shadow-lg text-sm">
+              <div className="p-2 rounded border-l-4 border-l-primary bg-background shadow-lg text-xs sm:text-sm">
                 <div className="flex items-center gap-2">
-                  <GripVertical className="h-4 w-4 text-muted-foreground" />
+                  <GripVertical className="h-3 w-3 sm:h-4 sm:w-4 text-muted-foreground" />
                   <span className="truncate font-medium">{activeTask.titre}</span>
                 </div>
               </div>
@@ -592,9 +595,9 @@ export const DayPlanningDialog = ({
           </DragOverlay>
         </DndContext>
 
-        <div className="px-6 py-4 border-t bg-muted/30">
-          <p className="text-xs text-muted-foreground">
-            💡 Réordonnez les tâches à gauche. Glissez-les sur les créneaux horaires pour les planifier. Utilisez +/- pour ajuster la durée.
+        <div className="px-3 sm:px-6 py-3 sm:py-4 border-t bg-muted/30">
+          <p className="text-[10px] sm:text-xs text-muted-foreground">
+            💡 <span className="hidden sm:inline">Réordonnez les tâches à gauche. </span>Glissez vers les créneaux pour planifier. +/- pour ajuster la durée.
           </p>
         </div>
       </DialogContent>

@@ -106,26 +106,35 @@ const DroppableDay = ({ day, isToday, events, onDayClick, onEventClick }: Droppa
     data: { day },
   });
 
+  // On mobile, show max 2 events with a "+N more" indicator
+  const maxEventsVisible = typeof window !== 'undefined' && window.innerWidth < 640 ? 2 : events.length;
+  const visibleEvents = events.slice(0, maxEventsVisible);
+  const hiddenCount = events.length - maxEventsVisible;
+
   return (
     <div
       ref={setNodeRef}
       onClick={() => onDayClick(day)}
       className={`
-        aspect-square border rounded-lg p-1 flex flex-col cursor-pointer
+        aspect-square border rounded sm:rounded-lg p-0.5 sm:p-1 flex flex-col cursor-pointer
+        min-h-[40px] sm:min-h-0
         ${isToday ? "border-primary bg-primary/5" : "border-border"}
         ${isOver ? "bg-primary/20 border-primary" : ""}
         hover:bg-muted/50 transition-colors
       `}
     >
-      <span className={`text-xs font-medium ${isToday ? "text-primary" : ""}`}>
+      <span className={`text-[10px] sm:text-xs font-medium ${isToday ? "text-primary" : ""}`}>
         {day}
       </span>
-      <div className="flex-1 flex flex-col gap-0.5 mt-1">
-        {events.map((event, i) => (
+      <div className="flex-1 flex flex-col gap-0.5 mt-0.5 sm:mt-1 overflow-hidden">
+        {visibleEvents.map((event, i) => (
           <div key={i} onClick={(e) => onEventClick(event.id, event.source || 'agenda', e)}>
             <DraggableTaskBadge event={event} />
           </div>
         ))}
+        {hiddenCount > 0 && (
+          <span className="text-[8px] text-muted-foreground text-center">+{hiddenCount}</span>
+        )}
       </div>
     </div>
   );
@@ -416,19 +425,20 @@ export const MonthCalendar = () => {
   }
 
   return (
-    <Card className="p-6">
-      <div className="flex items-center justify-between mb-6">
-        <div className="flex items-center gap-3">
-          <CalendarIcon className="h-5 w-5 text-primary" />
-          <h3 className="text-lg font-semibold capitalize">{monthName}</h3>
+    <Card className="p-3 sm:p-6">
+      {/* Header - Responsive */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-4 sm:mb-6">
+        <div className="flex items-center gap-2 sm:gap-3">
+          <CalendarIcon className="h-4 w-4 sm:h-5 sm:w-5 text-primary" />
+          <h3 className="text-base sm:text-lg font-semibold capitalize">{monthName}</h3>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex items-center justify-between sm:justify-end gap-2 sm:gap-4">
           <CalendarViewSelector currentView={viewMode} onViewChange={setViewMode} />
-          <div className="flex gap-2">
-            <Button variant="outline" size="icon" onClick={handlePreviousMonth}>
+          <div className="flex gap-1 sm:gap-2">
+            <Button variant="outline" size="icon" className="h-8 w-8 sm:h-10 sm:w-10" onClick={handlePreviousMonth}>
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <Button variant="outline" size="icon" onClick={handleNextMonth}>
+            <Button variant="outline" size="icon" className="h-8 w-8 sm:h-10 sm:w-10" onClick={handleNextMonth}>
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
@@ -440,16 +450,16 @@ export const MonthCalendar = () => {
         onDragStart={handleDragStart}
         onDragEnd={handleDragEnd}
       >
-        {/* Calendar Grid */}
-        <div className="grid grid-cols-7 gap-2 mb-2">
+        {/* Calendar Grid - Mobile Optimized */}
+        <div className="grid grid-cols-7 gap-0.5 sm:gap-2 mb-1 sm:mb-2">
           {["L", "M", "M", "J", "V", "S", "D"].map((day, i) => (
-            <div key={i} className="text-center text-xs font-medium text-muted-foreground py-2">
+            <div key={i} className="text-center text-[10px] sm:text-xs font-medium text-muted-foreground py-1 sm:py-2">
               {day}
             </div>
           ))}
         </div>
 
-        <div className="grid grid-cols-7 gap-2">
+        <div className="grid grid-cols-7 gap-0.5 sm:gap-2">
           {emptyDays.map((_, i) => (
             <div key={`empty-${i}`} className="aspect-square" />
           ))}
@@ -480,31 +490,31 @@ export const MonthCalendar = () => {
         </DragOverlay>
       </DndContext>
 
-      {/* Legend */}
-      <div className="mt-6 pt-4 border-t grid grid-cols-2 gap-2 text-xs">
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded bg-cyan-500/20" />
-          <span>Horaires de travail</span>
+      {/* Legend - Responsive Grid */}
+      <div className="mt-4 sm:mt-6 pt-3 sm:pt-4 border-t grid grid-cols-1 sm:grid-cols-2 gap-1.5 sm:gap-2 text-[10px] sm:text-xs">
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded bg-cyan-500/20 shrink-0" />
+          <span className="truncate">Horaires de travail</span>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded bg-green-500/20" />
-          <span>Indicateurs</span>
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded bg-green-500/20 shrink-0" />
+          <span className="truncate">Indicateurs</span>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded bg-blue-500/20" />
-          <span>Tâches (glisser-déposer)</span>
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded bg-blue-500/20 shrink-0" />
+          <span className="truncate">Tâches (glisser-déposer)</span>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded bg-purple-500/20 border-l-2 border-purple-500" />
-          <span>Absences validées</span>
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded bg-purple-500/20 border-l-2 border-purple-500 shrink-0" />
+          <span className="truncate">Absences validées</span>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded bg-yellow-500/20 border-l-2 border-yellow-500" />
-          <span>Absences en attente</span>
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded bg-yellow-500/20 border-l-2 border-yellow-500 shrink-0" />
+          <span className="truncate">Absences en attente</span>
         </div>
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded bg-orange-500/20" />
-          <span>Incidents</span>
+        <div className="flex items-center gap-1.5 sm:gap-2">
+          <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded bg-orange-500/20 shrink-0" />
+          <span className="truncate">Incidents</span>
         </div>
       </div>
 

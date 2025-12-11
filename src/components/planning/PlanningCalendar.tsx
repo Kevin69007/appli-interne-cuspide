@@ -309,23 +309,24 @@ export const PlanningCalendar = () => {
   const monthName = currentDate.toLocaleDateString("fr-FR", { month: "long", year: "numeric" });
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-4">
+    <div className="space-y-3 sm:space-y-4">
+      {/* Header - Responsive */}
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
           <div className="flex items-center gap-2">
-            <Button variant="outline" size="icon" onClick={handlePreviousMonth}>
+            <Button variant="outline" size="icon" className="h-8 w-8 sm:h-10 sm:w-10" onClick={handlePreviousMonth}>
               <ChevronLeft className="h-4 w-4" />
             </Button>
-            <h2 className="text-xl font-semibold capitalize min-w-[200px] text-center">
+            <h2 className="text-base sm:text-xl font-semibold capitalize min-w-[140px] sm:min-w-[200px] text-center">
               {monthName}
             </h2>
-            <Button variant="outline" size="icon" onClick={handleNextMonth}>
+            <Button variant="outline" size="icon" className="h-8 w-8 sm:h-10 sm:w-10" onClick={handleNextMonth}>
               <ChevronRight className="h-4 w-4" />
             </Button>
           </div>
 
           <Select value={selectedTeam} onValueChange={setSelectedTeam}>
-            <SelectTrigger className="w-[200px]">
+            <SelectTrigger className="w-full sm:w-[200px] h-8 sm:h-10 text-xs sm:text-sm">
               <SelectValue />
             </SelectTrigger>
             <SelectContent>
@@ -339,156 +340,158 @@ export const PlanningCalendar = () => {
           </Select>
         </div>
 
-        <div className="flex gap-2">
-          <Button variant="outline" onClick={() => navigate('/conges-mood-bar')}>
-            <Plus className="h-4 w-4 mr-2" />
-            Demander un congé
+        {/* Action buttons - Responsive */}
+        <div className="flex flex-wrap gap-1.5 sm:gap-2">
+          <Button variant="outline" size="sm" className="text-xs sm:text-sm h-8 sm:h-10 flex-1 sm:flex-none" onClick={() => navigate('/conges-mood-bar')}>
+            <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Demander un </span>congé
           </Button>
           {canManage && (
             <>
-              <Button onClick={() => setShowCreateDialog(true)}>
-                <Plus className="h-4 w-4 mr-2" />
-                Ajouter un planning
+              <Button size="sm" className="text-xs sm:text-sm h-8 sm:h-10 flex-1 sm:flex-none" onClick={() => setShowCreateDialog(true)}>
+                <Plus className="h-3 w-3 sm:h-4 sm:w-4 mr-1 sm:mr-2" />
+                Planning
               </Button>
-              <Button onClick={() => {
+              <Button variant="outline" size="sm" className="text-xs sm:text-sm h-8 sm:h-10 hidden md:flex" onClick={() => {
                 setSelectedDate(new Date());
                 setShowEventDialog(true);
-              }} variant="outline">
+              }}>
                 <Plus className="h-4 w-4 mr-2" />
-                Ajouter un événement
+                Événement
               </Button>
-              <Button onClick={() => setShowMaintenanceDialog(true)} variant="outline">
+              <Button variant="outline" size="sm" className="text-xs sm:text-sm h-8 sm:h-10 hidden md:flex" onClick={() => setShowMaintenanceDialog(true)}>
                 <Plus className="h-4 w-4 mr-2" />
-                Nouvelle tâche d'entretien
+                Entretien
               </Button>
             </>
           )}
         </div>
       </div>
 
-      <div className="grid grid-cols-7 gap-2">
-        {["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"].map((day) => (
-          <div key={day} className="text-center font-semibold text-sm py-2">
-            {day}
-          </div>
-        ))}
+      {/* Calendar Grid - Responsive */}
+      <div className="overflow-x-auto -mx-3 px-3 sm:mx-0 sm:px-0 sm:overflow-visible">
+        <div className="min-w-[500px] sm:min-w-0">
+          <div className="grid grid-cols-7 gap-1 sm:gap-2">
+            {["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"].map((day) => (
+              <div key={day} className="text-center font-semibold text-[10px] sm:text-sm py-1 sm:py-2">
+                {day}
+              </div>
+            ))}
 
-        {days.map((date, index) => {
-          const daySchedules = getSchedulesForDate(date);
-          const dayAbsences = getAbsencesForDate(date);
-          const isToday = date?.toDateString() === new Date().toDateString();
+            {days.map((date, index) => {
+              const daySchedules = getSchedulesForDate(date);
+              const dayAbsences = getAbsencesForDate(date);
+              const isToday = date?.toDateString() === new Date().toDateString();
 
-          return (
-            <div
-              key={index}
-              onClick={() => date && handleDayClick(date)}
-              className={`min-h-[120px] border rounded-lg p-2 ${
-                date
-                  ? canManage
-                    ? "cursor-pointer hover:bg-accent/50"
-                    : "cursor-default"
-                  : "bg-muted/30"
-              } ${isToday ? "ring-2 ring-primary" : ""}`}
-              title={canManage && date ? "Cliquez pour ajouter un planning, événement ou tâche d'entretien" : ""}
-            >
-              {date && (
-                <>
-                  <div className="text-sm font-medium mb-1">{date.getDate()}</div>
-                  <div className="space-y-1">
-                    {/* Horaires de travail - consolidated by employee */}
-                    {daySchedules.map((schedule) => (
-                      <div
-                        key={schedule.id}
-                        className="text-xs bg-cyan-500/10 border-l-2 border-cyan-500 rounded px-1 py-0.5 group relative cursor-pointer hover:bg-cyan-500/20"
-                        title={`${schedule.employees.prenom}: ${schedule.heure_debut.slice(0, 5)} - ${schedule.heure_fin.slice(0, 5)}${schedule.originalSchedules.length > 1 ? ` (${schedule.originalSchedules.length} créneaux)` : ''}${canManage ? ' - Cliquer pour voir détails' : ''}`}
-                        onClick={(e) => date && handleEmployeeClick(
-                          schedule.employee_id,
-                          `${schedule.employees.prenom} ${schedule.employees.nom}`,
-                          date,
-                          e
-                        )}
-                      >
-                        <div className="flex items-center justify-between gap-1">
-                          <div className="flex-1 min-w-0">
-                            <div className="font-medium truncate">
-                              {schedule.employees.prenom}
-                            </div>
-                            <div className="text-muted-foreground">
-                              {schedule.heure_debut.slice(0, 5)} - {schedule.heure_fin.slice(0, 5)}
+              return (
+                <div
+                  key={index}
+                  onClick={() => date && handleDayClick(date)}
+                  className={`min-h-[80px] sm:min-h-[120px] border rounded sm:rounded-lg p-1 sm:p-2 ${
+                    date
+                      ? canManage
+                        ? "cursor-pointer hover:bg-accent/50"
+                        : "cursor-default"
+                      : "bg-muted/30"
+                  } ${isToday ? "ring-2 ring-primary" : ""}`}
+                  title={canManage && date ? "Cliquez pour ajouter un planning, événement ou tâche d'entretien" : ""}
+                >
+                  {date && (
+                    <>
+                      <div className="text-[10px] sm:text-sm font-medium mb-0.5 sm:mb-1">{date.getDate()}</div>
+                      <div className="space-y-0.5 sm:space-y-1">
+                        {/* Horaires de travail - consolidated by employee */}
+                        {daySchedules.map((schedule) => (
+                          <div
+                            key={schedule.id}
+                            className="text-[9px] sm:text-xs bg-cyan-500/10 border-l-2 border-cyan-500 rounded px-0.5 sm:px-1 py-0.5 group relative cursor-pointer hover:bg-cyan-500/20"
+                            title={`${schedule.employees.prenom}: ${schedule.heure_debut.slice(0, 5)} - ${schedule.heure_fin.slice(0, 5)}${schedule.originalSchedules.length > 1 ? ` (${schedule.originalSchedules.length} créneaux)` : ''}${canManage ? ' - Cliquer pour voir détails' : ''}`}
+                            onClick={(e) => date && handleEmployeeClick(
+                              schedule.employee_id,
+                              `${schedule.employees.prenom} ${schedule.employees.nom}`,
+                              date,
+                              e
+                            )}
+                          >
+                            <div className="flex items-center justify-between gap-0.5 sm:gap-1">
+                              <div className="flex-1 min-w-0">
+                                <div className="font-medium truncate">
+                                  {schedule.employees.prenom}
+                                </div>
+                                <div className="text-muted-foreground hidden sm:block">
+                                  {schedule.heure_debut.slice(0, 5)} - {schedule.heure_fin.slice(0, 5)}
+                                </div>
+                              </div>
+                              {canManage && (
+                                <div className="hidden sm:flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-5 w-5"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setScheduleToEdit(schedule.originalSchedules[0]);
+                                      setShowEditDialog(true);
+                                    }}
+                                  >
+                                    <Pencil className="h-3 w-3 text-primary" />
+                                  </Button>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="h-5 w-5"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      setScheduleToDelete(schedule.originalSchedules[0]);
+                                    }}
+                                  >
+                                    <Trash2 className="h-3 w-3 text-destructive" />
+                                  </Button>
+                                </div>
+                              )}
                             </div>
                           </div>
-                          {canManage && (
-                            <div className="flex gap-0.5 opacity-0 group-hover:opacity-100 transition-opacity">
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-5 w-5"
-                                onClick={(e) => {
+                        ))}
+                        
+                        {/* Absences */}
+                        {dayAbsences.map((absence) => {
+                          const isPending = absence.statut_validation !== 'valide';
+                          const canClickToValidate = canManage && isPending;
+                          
+                          return (
+                            <div
+                              key={absence.id}
+                              className={`text-[9px] sm:text-xs rounded px-0.5 sm:px-1 py-0.5 ${
+                                absence.statut_validation === 'valide'
+                                  ? 'bg-purple-500/10 border-l-2 border-purple-500'
+                                  : 'bg-yellow-500/10 border-l-2 border-yellow-500'
+                              } ${canClickToValidate ? 'cursor-pointer hover:bg-yellow-500/20 transition-colors' : ''}`}
+                              title={canClickToValidate 
+                                ? `${absence.employees.prenom} ${absence.employees.nom}: ${absence.type_absence || absence.detail || 'Absence'} - Cliquez pour valider cette demande`
+                                : `${absence.employees.prenom} ${absence.employees.nom}: ${absence.type_absence || absence.detail || 'Absence'}`
+                              }
+                              onClick={(e) => {
+                                if (canClickToValidate) {
                                   e.stopPropagation();
-                                  // Edit the first schedule of the group
-                                  setScheduleToEdit(schedule.originalSchedules[0]);
-                                  setShowEditDialog(true);
-                                }}
-                              >
-                                <Pencil className="h-3 w-3 text-primary" />
-                              </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-5 w-5"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setScheduleToDelete(schedule.originalSchedules[0]);
-                                }}
-                              >
-                                <Trash2 className="h-3 w-3 text-destructive" />
-                              </Button>
+                                  navigate('/conges-mood-bar');
+                                }
+                              }}
+                            >
+                              <span className="truncate block">
+                                {absence.employees.prenom}
+                                <span className="hidden sm:inline"> - {absence.type_absence || 'Absence'}</span>
+                              </span>
                             </div>
-                          )}
-                        </div>
+                          );
+                        })}
                       </div>
-                    ))}
-                    
-                    {/* Absences */}
-                    {dayAbsences.map((absence) => {
-                      const isPending = absence.statut_validation !== 'valide';
-                      const canClickToValidate = canManage && isPending;
-                      
-                      return (
-                        <div
-                          key={absence.id}
-                          className={`text-xs rounded px-1 py-0.5 ${
-                            absence.statut_validation === 'valide'
-                              ? 'bg-purple-500/10 border-l-2 border-purple-500'
-                              : 'bg-yellow-500/10 border-l-2 border-yellow-500'
-                          } ${canClickToValidate ? 'cursor-pointer hover:bg-yellow-500/20 transition-colors' : ''}`}
-                          title={canClickToValidate 
-                            ? `${absence.employees.prenom} ${absence.employees.nom}: ${absence.type_absence || absence.detail || 'Absence'} - Cliquez pour valider cette demande`
-                            : `${absence.employees.prenom} ${absence.employees.nom}: ${absence.type_absence || absence.detail || 'Absence'} (${absence.statut_validation === 'valide' ? 'Validée' : 'En attente'})`
-                          }
-                          onClick={(e) => {
-                            if (canClickToValidate) {
-                              e.stopPropagation();
-                              navigate('/conges-mood-bar');
-                            }
-                          }}
-                        >
-                          <div className="font-medium truncate">
-                            {absence.employees.prenom} {absence.employees.nom}
-                          </div>
-                          <div className="text-muted-foreground truncate">
-                            {absence.type_absence || absence.detail || 'Absence'}
-                            {isPending && ' ⏳'}
-                          </div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </>
-              )}
-            </div>
-          );
-        })}
+                    </>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </div>
 
       {/* Légende */}
