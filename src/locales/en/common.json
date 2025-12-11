@@ -10,6 +10,8 @@
   "edit": "Edit",
   "create": "Create",
   "search": "Search",
+  "searchModule": "Search for a module...",
+  "searchPlaceholder": "Search...",
   "filter": "Filter",
   "export": "Export",
   "import": "Import",
@@ -20,6 +22,9 @@
   "next": "Next",
   "previous": "Previous",
   "close": "Close",
+  "noModuleFound": "No module found",
+  "noModuleAvailable": "No module available",
+  "submitting": "Saving...",
   "navigation": {
     "formation": "Training & Documentation",
     "indicators": "Indicators & Bonuses",
@@ -33,5 +38,38 @@
     "stock": "Orders & Stock",
     "planning": "Schedule",
     "direction": "Management Tracking"
+  },
+  "moodBar": {
+    "title": "Tell us how you feel today!",
+    "howDoYouFeel": "How are you feeling?",
+    "whatDoYouNeed": "What do you need today?",
+    "preparingQuote": "We're preparing a quote to lift you up... ✨",
+    "yourDailyQuote": "Your daily quote",
+    "validateMood": "Validate my mood 🎉",
+    "moods": {
+      "bad": "Meh",
+      "neutral": "Okay",
+      "good": "Good",
+      "great": "Great",
+      "fire": "Fire!"
+    },
+    "needs": {
+      "motivation": "Motivation",
+      "joy": "Joy",
+      "fun_fact": "Fun fact",
+      "calm": "Zen",
+      "energy": "Energy"
+    }
+  },
+  "timeDeclaration": {
+    "title": "Time Declaration",
+    "today": "Today",
+    "notDeclared": "Not declared",
+    "declare": "Declare",
+    "delaysToMakeUp": "Delays to make up:",
+    "delay": "delay",
+    "delays": "delays",
+    "allUpToDate": "All up to date!",
+    "hours": "hours"
   }
 }

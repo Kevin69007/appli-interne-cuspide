@@ -131,7 +131,7 @@ const Index = () => {
                 <div className="relative hidden md:block" ref={searchRef}>
                   <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
                   <Input
-                    placeholder="Rechercher..."
+                    placeholder={t('searchPlaceholder')}
                     value={searchQuery}
                     onChange={(e) => {
                       setSearchQuery(e.target.value);
@@ -144,7 +144,7 @@ const Index = () => {
                     <div className="absolute top-full left-0 w-64 lg:w-80 mt-1 bg-background border border-border rounded-lg shadow-lg z-50 max-h-80 overflow-y-auto">
                       {filteredModules.length === 0 ? (
                         <div className="p-3 text-sm text-muted-foreground text-center">
-                          Aucun module trouvé
+                          {t('noModuleFound')}
                         </div>
                       ) : (
                         filteredModules.map((module) => (
@@ -266,7 +266,7 @@ const Index = () => {
           <div className="relative max-w-md mx-auto mb-4 md:hidden">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground z-10" />
             <Input
-              placeholder="Rechercher un module..."
+              placeholder={t('searchModule')}
               value={searchQuery}
               onChange={(e) => {
                 setSearchQuery(e.target.value);
@@ -279,7 +279,7 @@ const Index = () => {
               <div className="absolute top-full left-0 w-full mt-1 bg-background border border-border rounded-lg shadow-lg z-50 max-h-64 overflow-y-auto">
                 {filteredModules.length === 0 ? (
                   <div className="p-3 text-sm text-muted-foreground text-center">
-                    Aucun module trouvé
+                    {t('noModuleFound')}
                   </div>
                 ) : (
                   filteredModules.map((module) => (
@@ -318,7 +318,7 @@ const Index = () => {
               </>
             ) : modules.length === 0 ? (
               <div className="col-span-full text-center py-8 text-muted-foreground">
-                Aucun module disponible
+                {t('noModuleAvailable')}
               </div>
             ) : (
               modules.map((module) => (
