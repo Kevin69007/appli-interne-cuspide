@@ -11,6 +11,9 @@ interface PushNotificationState {
   isSubscribed: boolean;
   isLoading: boolean;
   permission: NotificationPermission | 'default';
+  isIOS: boolean;
+  isPWAInstalled: boolean;
+  needsInstallation: boolean;
 }
 
 function urlBase64ToUint8Array(base64String: string): ArrayBuffer {
@@ -24,6 +27,18 @@ function urlBase64ToUint8Array(base64String: string): ArrayBuffer {
   return outputArray.buffer;
 }
 
+// Detect if running on iOS
+function isIOSDevice(): boolean {
+  return /iPad|iPhone|iPod/.test(navigator.userAgent) || 
+    (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
+}
+
+// Detect if app is installed as PWA (standalone mode)
+function isPWAMode(): boolean {
+  return window.matchMedia('(display-mode: standalone)').matches ||
+    (window.navigator as any).standalone === true;
+}
+
 export function usePushNotifications() {
   const { employee } = useEmployee();
   const { toast } = useToast();
@@ -32,22 +47,49 @@ export function usePushNotifications() {
     isSubscribed: false,
     isLoading: true,
     permission: 'default',
+    isIOS: false,
+    isPWAInstalled: false,
+    needsInstallation: false,
   });
 
   // Check if push notifications are supported
   const checkSupport = useCallback(() => {
+    const isIOS = isIOSDevice();
+    const isPWAInstalled = isPWAMode();
+    
+    // On iOS, push notifications only work if PWA is installed
+    if (isIOS && !isPWAInstalled) {
+      return {
+        isSupported: false,
+        isIOS,
+        isPWAInstalled,
+        needsInstallation: true,
+      };
+    }
+
     const isSupported = 
       'serviceWorker' in navigator && 
       'PushManager' in window && 
       'Notification' in window;
     
-    return isSupported;
+    return {
+      isSupported,
+      isIOS,
+      isPWAInstalled,
+      needsInstallation: false,
+    };
   }, []);
 
   // Get current subscription status
   const checkSubscription = useCallback(async () => {
-    if (!checkSupport() || !employee?.id) {
-      setState(prev => ({ ...prev, isLoading: false }));
+    const support = checkSupport();
+    
+    if (!support.isSupported || !employee?.id) {
+      setState(prev => ({ 
+        ...prev, 
+        isLoading: false,
+        ...support,
+      }));
       return;
     }
 
@@ -66,7 +108,7 @@ export function usePushNotifications() {
 
         setState(prev => ({
           ...prev,
-          isSupported: true,
+          ...support,
           isSubscribed: !!data,
           isLoading: false,
           permission: Notification.permission,
@@ -74,7 +116,7 @@ export function usePushNotifications() {
       } else {
         setState(prev => ({
           ...prev,
-          isSupported: true,
+          ...support,
           isSubscribed: false,
           isLoading: false,
           permission: Notification.permission,
@@ -82,12 +124,13 @@ export function usePushNotifications() {
       }
     } catch (error) {
       console.error('Error checking push subscription:', error);
+      const support = checkSupport();
       setState(prev => ({
         ...prev,
-        isSupported: checkSupport(),
+        ...support,
         isSubscribed: false,
         isLoading: false,
-        permission: Notification.permission,
+        permission: 'Notification' in window ? Notification.permission : 'default',
       }));
     }
   }, [employee?.id, checkSupport]);
@@ -98,6 +141,16 @@ export function usePushNotifications() {
       toast({
         title: "Erreur",
         description: "Vous devez être connecté pour activer les notifications",
+        variant: "destructive",
+      });
+      return false;
+    }
+
+    const support = checkSupport();
+    if (support.needsInstallation) {
+      toast({
+        title: "Installation requise",
+        description: "Sur iOS, vous devez d'abord installer l'application sur votre écran d'accueil (Safari → Partager → Sur l'écran d'accueil)",
         variant: "destructive",
       });
       return false;
@@ -119,9 +172,8 @@ export function usePushNotifications() {
         return false;
       }
 
-      // Register service worker
-      const registration = await navigator.serviceWorker.register('/sw.js');
-      await navigator.serviceWorker.ready;
+      // Wait for service worker to be ready
+      const registration = await navigator.serviceWorker.ready;
 
       // Subscribe to push
       const subscription = await registration.pushManager.subscribe({
@@ -179,7 +231,7 @@ export function usePushNotifications() {
       setState(prev => ({ ...prev, isLoading: false }));
       return false;
     }
-  }, [employee?.id, toast]);
+  }, [employee?.id, toast, checkSupport]);
 
   // Unsubscribe from push notifications
   const unsubscribe = useCallback(async () => {
@@ -228,14 +280,14 @@ export function usePushNotifications() {
 
   // Initialize on mount
   useEffect(() => {
-    const isSupported = checkSupport();
+    const support = checkSupport();
     setState(prev => ({ 
       ...prev, 
-      isSupported,
-      permission: isSupported ? Notification.permission : 'default',
+      ...support,
+      permission: 'Notification' in window ? Notification.permission : 'default',
     }));
     
-    if (isSupported && employee?.id) {
+    if (support.isSupported && employee?.id) {
       checkSubscription();
     } else {
       setState(prev => ({ ...prev, isLoading: false }));
