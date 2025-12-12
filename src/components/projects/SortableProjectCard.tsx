@@ -1,3 +1,4 @@
+import { memo } from "react";
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { GripVertical } from "lucide-react";
@@ -10,7 +11,7 @@ interface SortableProjectCardProps {
   canEdit: boolean;
 }
 
-export const SortableProjectCard = ({
+export const SortableProjectCard = memo(({
   project,
   onUpdate,
   currentEmployeeId,
@@ -51,4 +52,4 @@ export const SortableProjectCard = ({
       />
     </div>
   );
-};
+});
