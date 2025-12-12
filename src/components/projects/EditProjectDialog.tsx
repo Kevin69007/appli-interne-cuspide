@@ -45,8 +45,10 @@ export const EditProjectDialog = ({
   });
 
   useEffect(() => {
-    fetchEmployees();
-  }, []);
+    if (open) {
+      fetchEmployees();
+    }
+  }, [open]);
 
   useEffect(() => {
     if (project) {

@@ -145,13 +145,15 @@ export const ProjectCard = memo(({ project, onUpdate, currentEmployeeId, canEdit
       </div>
     </Card>
 
-    <EditProjectDialog
-      open={showEditDialog}
-      onOpenChange={setShowEditDialog}
-      project={project}
-      currentEmployeeId={currentEmployeeId}
-      onProjectUpdated={onUpdate}
-    />
+    {showEditDialog && (
+      <EditProjectDialog
+        open={showEditDialog}
+        onOpenChange={setShowEditDialog}
+        project={project}
+        currentEmployeeId={currentEmployeeId}
+        onProjectUpdated={onUpdate}
+      />
+    )}
     </>
   );
 });
