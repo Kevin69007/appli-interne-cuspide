@@ -97,7 +97,11 @@ export function MultiSelectCombobox({
               <button
                 type="button"
                 className="w-full text-sm px-2 py-1.5 rounded hover:bg-accent text-left"
-                onClick={() => {
+                onPointerDown={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                }}
+                onPointerUp={() => {
                   if (safeSelectedValues.length === safeOptions.length) {
                     onSelectedValuesChange([]);
                   } else {
@@ -118,6 +122,13 @@ export function MultiSelectCombobox({
                     key={option.value}
                     value={option.label}
                     onSelect={(selectedLabel) => handleSelect(selectedLabel)}
+                    onPointerDown={(e) => {
+                      e.preventDefault();
+                      e.stopPropagation();
+                    }}
+                    onPointerUp={() => {
+                      handleSelect(option.label);
+                    }}
                   >
                     <Check
                       className={cn(
